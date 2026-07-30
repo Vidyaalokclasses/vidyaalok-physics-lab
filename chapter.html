@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-L8DFSQTR66');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electric Charges & Fields | Vidyaalok Classes</title>
+<script src="main.js"></script>
+<style>
+:root{
+  --bg-1:#0a0f16;
+  --bg-2:#131b28;
+  --bg-3:#1b3042;
+  --text:#eef7ff;
+  --muted:#becedf;
+  --gold:#ffd166;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:'Segoe UI',sans-serif;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(255,209,102,0.11), transparent 16%),
+    radial-gradient(circle at 86% 18%, rgba(92,210,255,0.12), transparent 19%),
+    linear-gradient(135deg,var(--bg-1),var(--bg-2),var(--bg-3));
+}
+
+.nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:18px 24px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  background:rgba(7,11,17,0.5);
+  backdrop-filter:blur(12px);
+}
+
+.brand{
+  font-size:24px;
+  font-weight:800;
+}
+
+.links{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  color:var(--text);
+  text-decoration:none;
+  font-size:13px;
+  font-weight:700;
+}
+
+.page{
+  width:min(1240px,95vw);
+  margin:0 auto;
+  padding:22px 0 30px;
+}
+
+.head{
+  margin-bottom:16px;
+  padding:22px 24px;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  box-shadow:0 24px 52px rgba(0,0,0,0.22);
+}
+
+.tag{
+  display:inline-block;
+  margin-bottom:12px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:rgba(255,209,102,0.12);
+  border:1px solid rgba(255,209,102,0.22);
+  color:var(--gold);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+
+.head h1{
+  margin:0 0 10px;
+  font-size:clamp(34px,4.8vw,54px);
+  line-height:0.98;
+}
+
+.head p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.75;
+  max-width:52rem;
+}
+
+  .topics{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:16px;
+}
+
+.topic{
+  min-height:250px;
+  padding:22px;
+  border-radius:28px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  box-shadow:0 22px 46px rgba(0,0,0,0.22);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  cursor:pointer;
+  transition:transform 0.22s ease, border-color 0.22s ease;
+}
+
+.topic:hover{
+  transform:translateY(-6px);
+  border-color:rgba(255,209,102,0.32);
+}
+
+.topic-number{
+  font-size:44px;
+  font-weight:800;
+  line-height:1;
+  color:rgba(255,255,255,0.12);
+}
+
+.topic-kicker{
+  margin:12px 0 8px;
+  color:var(--gold);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+
+.topic h2{
+  margin:0 0 10px;
+  font-size:24px;
+  line-height:1.1;
+}
+
+.topic p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.65;
+  font-size:14px;
+}
+
+.topic-foot{
+  margin-top:16px;
+  color:#ebf8ff;
+  font-size:13px;
+  font-weight:700;
+}
+
+@media(max-width:1100px){
+  .topics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:680px){
+  .nav{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .topics{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand">🔬 Vidyaalok Classes</div>
+  <div class="links">
+    <a class="chip" href="index.html">Home</a>
+    <a class="chip" href="class12.html">Class 12</a>
+  </div>
+</div>
+
+<main class="page">
+  <section class="head">
+    <div class="tag">Class 12 Chapter</div>
+    <h1>Electric Charges & Fields</h1>
+    <p>
+      Choose a topic module directly. The page is now compact so the simulations and revision tools are reachable immediately, without needing to scroll through extra sections first.
+    </p>
+  </section>
+
+  <section class="topics">
+    <article class="topic" onclick="goTo('coulomb.html')">
+      <div>
+        <div class="topic-number">01</div>
+        <div class="topic-kicker">Simulation</div>
+        <h2>Coulomb's Law</h2>
+        <p>Study how electrostatic force changes with charge, separation, and medium.</p>
+      </div>
+      <div class="topic-foot">Open module →</div>
+    </article>
+
+    <article class="topic" onclick="goTo('fieldlines.html')">
+      <div>
+        <div class="topic-number">02</div>
+        <div class="topic-kicker">Simulation</div>
+        <h2>Electric Field Lines</h2>
+        <p>Compare 2D and 3D field geometry for positive, negative, and paired charges.</p>
+      </div>
+      <div class="topic-foot">Open module →</div>
+    </article>
+
+    <article class="topic" onclick="goTo('equipotential.html')">
+      <div>
+        <div class="topic-number">03</div>
+        <div class="topic-kicker">Simulation</div>
+        <h2>Equipotential Surfaces</h2>
+        <p>Visualize how potential shapes relate to field lines for different charge distributions.</p>
+      </div>
+      <div class="topic-foot">Open module →</div>
+    </article>
+
+    <article class="topic" onclick="goTo('flux-gauss.html')">
+      <div>
+        <div class="topic-number">04</div>
+        <div class="topic-kicker">Concept</div>
+        <h2>Flux and Gauss's Law</h2>
+        <p>Review electric flux, Gaussian surfaces, and the standard symmetry-based field results.</p>
+      </div>
+      <div class="topic-foot">Open module →</div>
+    </article>
+
+    <article class="topic" onclick="goTo('formulas.html')">
+      <div>
+        <div class="topic-number">05</div>
+        <div class="topic-kicker">Revision</div>
+        <h2>Formulas</h2>
+        <p>Open the formula browser with one-topic-at-a-time revision for all major chapter results.</p>
+      </div>
+      <div class="topic-foot">Open module →</div>
+    </article>
+  </section>
+</main>
+</body>
+</html>

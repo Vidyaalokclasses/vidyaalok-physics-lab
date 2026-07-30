@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-L8DFSQTR66');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflection | Vidyaalok Classes</title>
+<script src="main.js"></script>
+<style>
+:root{
+  --bg-1:#0b1020;
+  --bg-2:#13203a;
+  --bg-3:#1a3d63;
+  --text:#eef6ff;
+  --muted:#c0d2e2;
+  --gold:#ffd166;
+  --cyan:#8de5ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:'Segoe UI',sans-serif;
+  background:
+    radial-gradient(circle at 12% 14%, rgba(255,209,102,0.1), transparent 16%),
+    radial-gradient(circle at 84% 18%, rgba(141,229,255,0.14), transparent 18%),
+    linear-gradient(135deg,var(--bg-1),var(--bg-2),var(--bg-3));
+}
+.nav{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.08);
+  background:rgba(7,10,18,0.5);backdrop-filter:blur(12px);
+}
+.brand{font-size:24px;font-weight:800}
+.links{display:flex;gap:10px;flex-wrap:wrap}
+.chip{
+  padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);color:var(--text);text-decoration:none;font-size:13px;font-weight:700;
+}
+.page{width:min(1240px,95vw);margin:0 auto;padding:22px 0 30px}
+.hero{
+  margin-bottom:16px;padding:24px 26px;border-radius:32px;border:1px solid rgba(255,255,255,0.12);
+  background:
+    radial-gradient(circle at top right, rgba(141,229,255,0.1), transparent 26%),
+    linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+  box-shadow:0 24px 54px rgba(0,0,0,0.24);
+}
+.tag{
+  display:inline-block;margin-bottom:12px;padding:8px 12px;border-radius:999px;
+  background:rgba(255,209,102,0.12);border:1px solid rgba(255,209,102,0.22);color:var(--gold);
+  font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;
+}
+.hero h1{margin:0 0 12px;font-size:clamp(34px,4.8vw,54px);line-height:0.98}
+.hero p,.card p,.footer-note{margin:0;color:var(--muted);line-height:1.75}
+.hero-pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.pill{
+  padding:9px 13px;border-radius:999px;background:rgba(141,229,255,0.1);
+  border:1px solid rgba(141,229,255,0.18);color:#def8ff;font-size:13px;font-weight:700;
+}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{
+  min-height:240px;padding:22px;border-radius:28px;border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);box-shadow:0 22px 46px rgba(0,0,0,0.22);
+  transition:transform 0.22s ease,border-color 0.22s ease;
+}
+.card.live{
+  cursor:pointer;
+}
+.card.live:hover{
+  transform:translateY(-5px);
+  border-color:rgba(255,209,102,0.3);
+}
+.card-kicker{
+  margin-bottom:12px;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;
+}
+.card h2{margin:0 0 10px;font-size:28px;line-height:1.05}
+.topic-list{margin:12px 0 0;padding-left:18px;color:#dbf3ff;line-height:1.7;font-size:14px}
+.footer-note{
+  margin-top:16px;padding:18px 20px;border-radius:26px;border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.05);
+}
+@media(max-width:860px){
+  .grid{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .nav{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand">🔬 Vidyaalok Classes</div>
+  <div class="links">
+    <a class="chip" href="index.html">Home</a>
+    <a class="chip" href="class12.html">Class 12</a>
+    <a class="chip" href="ray-optics.html">Ray Optics</a>
+  </div>
+</div>
+
+<main class="page">
+  <section class="hero">
+    <div class="tag">Ray Optics · Part 1</div>
+    <h1>Reflection</h1>
+    <p>
+      This section organizes the reflection portion of Ray Optics into the exact idea blocks we can build next: laws of reflection, plane mirrors, curved mirrors, and mirror combinations. The structure is ready for later interactive ray-diagram pages.
+    </p>
+    <div class="hero-pills">
+      <span class="pill">Laws of reflection</span>
+      <span class="pill">Plane mirror</span>
+      <span class="pill">Concave mirror</span>
+      <span class="pill">Convex mirror</span>
+      <span class="pill">Mirror combinations</span>
+    </div>
+  </section>
+
+  <section class="grid">
+    <article class="card live" onclick="goTo('laws-reflection.html')">
+      <div class="card-kicker">Block 1</div>
+      <h2>Laws of Reflection</h2>
+      <p>Set up the basic direction rules before moving into image formation.</p>
+      <ul class="topic-list">
+        <li>Incident ray, reflected ray, and normal lie in the same plane</li>
+        <li>Angle of incidence equals angle of reflection</li>
+        <li>Reversibility of path</li>
+      </ul>
+    </article>
+
+    <article class="card live" onclick="goTo('plane-mirror.html')">
+      <div class="card-kicker">Block 2</div>
+      <h2>Plane Mirror</h2>
+      <p>Image location, lateral inversion, and object-image motion ideas.</p>
+      <ul class="topic-list">
+        <li>Image distance equals object distance</li>
+        <li>Virtual and erect image</li>
+        <li>Mirror movement and image shift</li>
+        <li>Number of images with two plane mirrors</li>
+      </ul>
+    </article>
+
+    <article class="card live" onclick="goTo('curved-mirror.html')">
+      <div class="card-kicker">Block 3</div>
+      <h2>Curved Mirrors</h2>
+      <p>Concave and convex mirror ray diagrams and formula results.</p>
+      <ul class="topic-list">
+        <li>Principal axis, pole, focus, and centre of curvature</li>
+        <li>Mirror formula and magnification</li>
+        <li>Concave mirror image cases</li>
+        <li>Convex mirror image cases</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <div class="card-kicker">Block 4</div>
+      <h2>Mirror Combinations</h2>
+      <p>Build compound reflection setups from the single-mirror rules.</p>
+      <ul class="topic-list">
+        <li>Plane mirror combinations</li>
+        <li>Curved mirror combinations</li>
+        <li>Successive image formation</li>
+        <li>Sign convention consistency</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="footer-note">
+    The next strong move here is to build a reflection simulator sequence in this order:
+    plane mirror first, then curved mirrors, then combined mirror systems.
+  </section>
+</main>
+</body>
+</html>
