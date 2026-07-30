@@ -1,264 +1,242 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-L8DFSQTR66');
-</script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Electric Charges & Fields | Vidyaalok Classes</title>
-<script src="main.js"></script>
-<style>
-:root{
-  --bg-1:#0a0f16;
-  --bg-2:#131b28;
-  --bg-3:#1b3042;
-  --text:#eef7ff;
-  --muted:#becedf;
-  --gold:#ffd166;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electric Charges & Fields | Vidyaalok Classes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #080c14;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
 
-*{box-sizing:border-box}
+    /* Top Navbar */
+    .navbar {
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .nav-btn {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
 
-body{
-  margin:0;
-  min-height:100vh;
-  color:var(--text);
-  font-family:'Segoe UI',sans-serif;
-  background:
-    radial-gradient(circle at 12% 16%, rgba(255,209,102,0.11), transparent 16%),
-    radial-gradient(circle at 86% 18%, rgba(92,210,255,0.12), transparent 19%),
-    linear-gradient(135deg,var(--bg-1),var(--bg-2),var(--bg-3));
-}
+    /* Hero Banner */
+    .chapter-banner {
+      max-width: 1200px;
+      margin: 0 auto 2.5rem;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.4));
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 24px;
+      padding: 2.5rem;
+      backdrop-filter: blur(12px);
+    }
+    .chapter-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+    .chapter-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.5px;
+    }
+    .chapter-desc {
+      color: #94a3b8;
+      font-size: 1rem;
+      max-width: 700px;
+      line-height: 1.6;
+    }
 
-.nav{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:18px 24px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  background:rgba(7,11,17,0.5);
-  backdrop-filter:blur(12px);
-}
+    /* Topic Cards Grid */
+    .topics-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
 
-.brand{
-  font-size:24px;
-  font-weight:800;
-}
+    .topic-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 280px;
+      transition: all 0.25 ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    .topic-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      background: rgba(15, 23, 42, 0.9);
+    }
 
-.links{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.chip{
-  padding:10px 14px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(255,255,255,0.06);
-  color:var(--text);
-  text-decoration:none;
-  font-size:13px;
-  font-weight:700;
-}
-
-.page{
-  width:min(1240px,95vw);
-  margin:0 auto;
-  padding:22px 0 30px;
-}
-
-.head{
-  margin-bottom:16px;
-  padding:22px 24px;
-  border-radius:30px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(255,255,255,0.06);
-  box-shadow:0 24px 52px rgba(0,0,0,0.22);
-}
-
-.tag{
-  display:inline-block;
-  margin-bottom:12px;
-  padding:8px 12px;
-  border-radius:999px;
-  background:rgba(255,209,102,0.12);
-  border:1px solid rgba(255,209,102,0.22);
-  color:var(--gold);
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-.head h1{
-  margin:0 0 10px;
-  font-size:clamp(34px,4.8vw,54px);
-  line-height:0.98;
-}
-
-.head p{
-  margin:0;
-  color:var(--muted);
-  line-height:1.75;
-  max-width:52rem;
-}
-
-  .topics{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
-  gap:16px;
-}
-
-.topic{
-  min-height:250px;
-  padding:22px;
-  border-radius:28px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(255,255,255,0.06);
-  box-shadow:0 22px 46px rgba(0,0,0,0.22);
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  cursor:pointer;
-  transition:transform 0.22s ease, border-color 0.22s ease;
-}
-
-.topic:hover{
-  transform:translateY(-6px);
-  border-color:rgba(255,209,102,0.32);
-}
-
-.topic-number{
-  font-size:44px;
-  font-weight:800;
-  line-height:1;
-  color:rgba(255,255,255,0.12);
-}
-
-.topic-kicker{
-  margin:12px 0 8px;
-  color:var(--gold);
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-.topic h2{
-  margin:0 0 10px;
-  font-size:24px;
-  line-height:1.1;
-}
-
-.topic p{
-  margin:0;
-  color:var(--muted);
-  line-height:1.65;
-  font-size:14px;
-}
-
-.topic-foot{
-  margin-top:16px;
-  color:#ebf8ff;
-  font-size:13px;
-  font-weight:700;
-}
-
-@media(max-width:1100px){
-  .topics{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-}
-
-@media(max-width:680px){
-  .nav{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .topics{
-    grid-template-columns:1fr;
-  }
-}
-</style>
+    .topic-num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 0.5rem;
+    }
+    .topic-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fbbf24;
+      margin-bottom: 0.5rem;
+    }
+    .topic-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 0.75rem;
+      line-height: 1.3;
+    }
+    .topic-desc {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+    .open-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: auto;
+    }
+    .topic-card:hover .open-link {
+      color: #38bdf8;
+    }
+  </style>
 </head>
 <body>
-<div class="nav">
-  <div class="brand">🔬 Vidyaalok Classes</div>
-  <div class="links">
-    <a class="chip" href="index.html">Home</a>
-    <a class="chip" href="class12.html">Class 12</a>
-  </div>
-</div>
 
-<main class="page">
-  <section class="head">
-    <div class="tag">Class 12 Chapter</div>
-    <h1>Electric Charges & Fields</h1>
-    <p>
+  <!-- Top Navigation -->
+  <nav class="navbar">
+    <div class="brand">🔬 Vidyaalok Classes</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-btn">Home</a>
+      <a href="class12.html" class="nav-btn">Class 12</a>
+    </div>
+  </nav>
+
+  <!-- Chapter Banner -->
+  <header class="chapter-banner">
+    <span class="chapter-badge">Class 12 Chapter</span>
+    <h1 class="chapter-title">Electric Charges & Fields</h1>
+    <p class="chapter-desc">
       Choose a topic module directly. The page is now compact so the simulations and revision tools are reachable immediately, without needing to scroll through extra sections first.
     </p>
-  </section>
+  </header>
 
-  <section class="topics">
-    <article class="topic" onclick="goTo('coulomb.html')">
-      <div>
-        <div class="topic-number">01</div>
-        <div class="topic-kicker">Simulation</div>
-        <h2>Coulomb's Law</h2>
-        <p>Study how electrostatic force changes with charge, separation, and medium.</p>
-      </div>
-      <div class="topic-foot">Open module →</div>
-    </article>
+  <!-- Topic Modules Grid -->
+  <main class="topics-grid">
 
-    <article class="topic" onclick="goTo('fieldlines.html')">
+    <!-- 01 Coulomb's Law -->
+    <a href="coulomb.html" class="topic-card">
       <div>
-        <div class="topic-number">02</div>
-        <div class="topic-kicker">Simulation</div>
-        <h2>Electric Field Lines</h2>
-        <p>Compare 2D and 3D field geometry for positive, negative, and paired charges.</p>
+        <div class="topic-num">01</div>
+        <div class="topic-tag">SIMULATION</div>
+        <div class="topic-name">Coulomb's Law</div>
+        <div class="topic-desc">Study how electrostatic force changes with charge, separation, and medium.</div>
       </div>
-      <div class="topic-foot">Open module →</div>
-    </article>
+      <div class="open-link">Open module ➔</div>
+    </a>
 
-    <article class="topic" onclick="goTo('equipotential.html')">
+    <!-- 02 Electric Field Lines -->
+    <a href="fieldlines.html" class="topic-card">
       <div>
-        <div class="topic-number">03</div>
-        <div class="topic-kicker">Simulation</div>
-        <h2>Equipotential Surfaces</h2>
-        <p>Visualize how potential shapes relate to field lines for different charge distributions.</p>
+        <div class="topic-num">02</div>
+        <div class="topic-tag">SIMULATION</div>
+        <div class="topic-name">Electric Field Lines</div>
+        <div class="topic-desc">Compare 2D and 3D field geometry for positive, negative, and paired charges.</div>
       </div>
-      <div class="topic-foot">Open module →</div>
-    </article>
+      <div class="open-link">Open module ➔</div>
+    </a>
 
-    <article class="topic" onclick="goTo('flux-gauss.html')">
+    <!-- 03 Equipotential Surfaces -->
+    <a href="equipotential.html" class="topic-card">
       <div>
-        <div class="topic-number">04</div>
-        <div class="topic-kicker">Concept</div>
-        <h2>Flux and Gauss's Law</h2>
-        <p>Review electric flux, Gaussian surfaces, and the standard symmetry-based field results.</p>
+        <div class="topic-num">03</div>
+        <div class="topic-tag">SIMULATION</div>
+        <div class="topic-name">Equipotential Surfaces</div>
+        <div class="topic-desc">Visualize how potential shapes relate to field lines for different charge distributions.</div>
       </div>
-      <div class="topic-foot">Open module →</div>
-    </article>
+      <div class="open-link">Open module ➔</div>
+    </a>
 
-    <article class="topic" onclick="goTo('formulas.html')">
+    <!-- 04 Flux and Gauss's Law -->
+    <a href="flux-gauss.html" class="topic-card">
       <div>
-        <div class="topic-number">05</div>
-        <div class="topic-kicker">Revision</div>
-        <h2>Formulas</h2>
-        <p>Open the formula browser with one-topic-at-a-time revision for all major chapter results.</p>
+        <div class="topic-num">04</div>
+        <div class="topic-tag">CONCEPT</div>
+        <div class="topic-name">Flux and Gauss's Law</div>
+        <div class="topic-desc">Review electric flux, Gaussian surfaces, and the standard symmetry-based field results.</div>
       </div>
-      <div class="topic-foot">Open module →</div>
-    </article>
-  </section>
-</main>
+      <div class="open-link">Open module ➔</div>
+    </a>
+
+    <!-- 05 Formulas -->
+    <a href="formulas.html" class="topic-card">
+      <div>
+        <div class="topic-num">05</div>
+        <div class="topic-tag">REVISION</div>
+        <div class="topic-name">Formulas</div>
+        <div class="topic-desc">Open the formula browser with one-topic-at-a-time revision for all major chapter results.</div>
+      </div>
+      <div class="open-link">Open module ➔</div>
+    </a>
+
+  </main>
+
 </body>
 </html>
