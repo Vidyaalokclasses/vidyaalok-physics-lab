@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-L8DFSQTR66');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flux & Gauss's Law | Vidyaalok Classes</title>
+<script src="main.js"></script>
+<style>
+:root{
+  --bg-1:#07101a;
+  --bg-2:#102132;
+  --bg-3:#18374d;
+  --text:#eff8ff;
+  --muted:#bfd1df;
+  --accent:#ffd166;
+  --panel:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.12);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:'Segoe UI',sans-serif;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(125,220,255,0.14), transparent 18%),
+    radial-gradient(circle at 86% 20%, rgba(255,209,102,0.11), transparent 17%),
+    linear-gradient(135deg,var(--bg-1),var(--bg-2),var(--bg-3));
+}
+
+.nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:18px 24px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  background:rgba(6,10,16,0.54);
+  backdrop-filter:blur(12px);
+}
+
+.brand{
+  font-size:24px;
+  font-weight:800;
+}
+
+.links{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.chip{
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  color:var(--text);
+  text-decoration:none;
+  font-size:13px;
+  font-weight:700;
+}
+
+.page{
+  width:min(1180px,94vw);
+  margin:0 auto;
+  padding:22px 0 30px;
+}
+
+.hero,
+.card{
+  border-radius:30px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  box-shadow:0 24px 52px rgba(0,0,0,0.24);
+  backdrop-filter:blur(12px);
+}
+
+.hero{
+  padding:26px;
+  margin-bottom:16px;
+}
+
+.tag{
+  display:inline-block;
+  margin-bottom:10px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:rgba(255,209,102,0.12);
+  border:1px solid rgba(255,209,102,0.22);
+  color:var(--accent);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+
+.hero h1{
+  margin:0 0 10px;
+  font-size:clamp(34px,4.9vw,56px);
+  line-height:0.98;
+}
+
+.hero p,
+.card p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.75;
+  font-size:14px;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+
+.card{
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:280px;
+}
+
+.card h2{
+  margin:10px 0 10px;
+  font-size:28px;
+  line-height:1.05;
+}
+
+.kicker{
+  color:var(--accent);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+
+.pill-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:16px;
+}
+
+.pill{
+  padding:9px 13px;
+  border-radius:999px;
+  background:rgba(125,220,255,0.1);
+  border:1px solid rgba(125,220,255,0.16);
+  color:#dcf8ff;
+  font-size:13px;
+  font-weight:700;
+}
+
+.cta{
+  margin-top:18px;
+  padding:12px 16px;
+  border:none;
+  border-radius:18px;
+  background:linear-gradient(135deg, rgba(255,209,102,0.24), rgba(125,220,255,0.14));
+  border:1px solid rgba(255,209,102,0.28);
+  color:var(--text);
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+  text-align:left;
+}
+
+@media(max-width:860px){
+  .cards{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:680px){
+  .nav{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="brand">🔬 Vidyaalok Classes</div>
+  <div class="links">
+    <a class="chip" href="index.html">Home</a>
+    <a class="chip" href="class12.html">Class 12</a>
+    <a class="chip" href="chapter.html">Electric Charges & Fields</a>
+  </div>
+</div>
+
+<main class="page">
+  <section class="hero">
+    <div class="tag">Gauss Topic Hub</div>
+    <h1>Flux and Gauss's Law</h1>
+    <p>
+      This topic is now divided into two separate interactive parts so each idea stays focused and easy to study. Open the flux-through-surface simulator for \(\Phi = EA\cos\theta\), or open the cube-based Gauss’s law simulator for enclosed-charge cases.
+    </p>
+    <div class="pill-row">
+      <span class="pill">3D flux surface</span>
+      <span class="pill">Area vector</span>
+      <span class="pill">Cube flux</span>
+      <span class="pill">Gauss symmetry</span>
+    </div>
+  </section>
+
+  <section class="cards">
+    <article class="card">
+      <div>
+        <div class="kicker">Part 1</div>
+        <h2>Electric Flux Simulator</h2>
+        <p>
+          Visualize field lines passing through a surface in 3D. Change the area, electric field strength, and the angle between \(\vec E\) and \(\vec A\), then observe how the flux updates live line by line.
+        </p>
+      </div>
+      <button class="cta" type="button" onclick="goTo('flux-simulator.html')">Open Flux Simulator →</button>
+    </article>
+
+    <article class="card">
+      <div>
+        <div class="kicker">Part 2</div>
+        <h2>Cube Flux by Gauss's Law</h2>
+        <p>
+          Place a point charge at the cube centre, corner, or face centre and see how multiple cubes together enclose the charge. The simulator shows field arrows and the corresponding flux through one cube.
+        </p>
+      </div>
+      <button class="cta" type="button" onclick="goTo('gauss-cube.html')">Open Cube Flux Simulator →</button>
+    </article>
+  </section>
+</main>
+
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']]
+  },
+  svg: {
+    fontCache: 'global'
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</body>
+</html>
