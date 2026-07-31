@@ -3,242 +3,242 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vidyaalok Classes - 3D Interactive Physics Portal</title>
+  <title>Electric Charges & Fields | Vidyaalok Classes</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #080c14;
+      background: #0b0f17;
       color: #e2e8f0;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      padding: 2.5rem 2rem;
     }
 
-    /* Header & Hero Section */
-    header {
-      background: radial-gradient(circle at top, #0f172a 0%, #080c14 100%);
-      padding: 3rem 1.5rem 2rem;
-      text-align: center;
-      border-bottom: 1px solid rgba(56, 189, 248, 0.15);
-    }
-    .brand-title {
-      font-size: 2.8rem;
-      font-weight: 800;
-      letter-spacing: 2px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
-    }
-    .tagline {
-      color: #94a3b8;
-      font-size: 1.1rem;
-      max-width: 600px;
-      margin: 0 auto 1.5rem;
-    }
-    .stats-bar {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      font-size: 0.85rem;
-      color: #38bdf8;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* Main Container */
-    main {
-      max-width: 1100px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      flex: 1;
-      width: 100%;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-      gap: 2rem;
-    }
-
-    /* Class Cards */
-    .card {
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      border-radius: 16px;
-      padding: 1.5rem;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    }
-    .card-header {
+    /* Top Navigation */
+    .navbar {
+      max-width: 1400px;
+      margin: 0 auto 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 0.75rem;
-      margin-bottom: 1.25rem;
     }
-    .card-title {
+    .brand {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: -0.5px;
+    }
+    .brand-icon {
       font-size: 1.4rem;
-      font-weight: 700;
-      color: #38bdf8;
     }
-    .badge {
-      font-size: 0.7rem;
-      padding: 0.25rem 0.6rem;
+    .nav-buttons {
+      display: flex;
+      gap: 0.6rem;
+    }
+    .nav-btn {
+      background: #161f2e;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      padding: 0.5rem 1.2rem;
       border-radius: 20px;
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      text-decoration: none;
+      font-size: 0.85rem;
       font-weight: 600;
     }
 
-    /* Chapter Groups */
-    .chapter-title {
-      font-size: 0.85rem;
-      color: #64748b;
+    /* Hero Banner */
+    .hero-card {
+      max-width: 1400px;
+      margin: 0 auto 2.5rem;
+      background: #111823;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 3rem;
+    }
+    .chapter-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin: 1rem 0 0.5rem;
-      font-weight: 700;
+      color: #eab308;
+      background: rgba(234, 179, 8, 0.1);
+      border: 1px solid rgba(234, 179, 8, 0.25);
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      margin-bottom: 1.2rem;
     }
-    .sim-list {
-      list-style: none;
+    .hero-title {
+      font-size: 3.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 1rem;
+      letter-spacing: -1px;
     }
-    .sim-item {
-      margin-bottom: 0.5rem;
-    }
-    .sim-link {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      background: rgba(30, 41, 59, 0.5);
-      border-radius: 10px;
-      color: #cbd5e1;
-      text-decoration: none;
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
-      border: 1px solid transparent;
-    }
-    .sim-link:hover {
-      background: rgba(56, 189, 248, 0.1);
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.4);
-      transform: translateX(4px);
+    .hero-subtitle {
+      color: #94a3b8;
+      font-size: 1.05rem;
+      max-width: 800px;
+      line-height: 1.6;
     }
 
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 2rem 1rem;
-      color: #475569;
-      font-size: 0.85rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    /* 5-Column Grid Layout */
+    .grid-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 1200px) {
+      .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+    }
+
+    /* Horizontal Cards matching Second Picture */
+    .module-card {
+      background: #111823;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 2rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      min-height: 380px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .module-card:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-3px);
+    }
+
+    .card-number {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #232d3f;
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+    .card-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #eab308;
+      margin-bottom: 0.6rem;
+    }
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 1rem;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+    }
+    .card-desc {
+      font-size: 0.88rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 2rem;
+    }
+    .card-action {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: auto;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand-title">VIDYAALOK CLASSES</div>
-    <div class="tagline">3D Interactive Physics Lab & Conceptual Sandboxes for JEE & NEET</div>
-    <div class="stats-bar">
-      <span>⚡ Real-Time Physics</span>
-      <span>🎯 Concept Visualization</span>
-      <span>🧪 Zero-Code WebGL</span>
+  <!-- Top Navigation -->
+  <nav class="navbar">
+    <div class="brand">
+      <span class="brand-icon">🔬</span> Vidyaalok Classes
     </div>
-  </header>
-
-  <main>
-    <div class="grid">
-
-      <!-- CLASS 11 CARD -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Class 11 Physics</span>
-          <span class="badge">Mechanics & Waves</span>
-        </div>
-
-        <div class="chapter-title">Kinematics & Dynamics</div>
-        <ul class="sim-list">
-          <li class="sim-item">
-            <a href="projectile.html" class="sim-link">
-              <span>🚀 Projectile Motion Trajectory</span>
-              <span>➔</span>
-            </a>
-          </li>
-          <li class="sim-item">
-            <a href="bullet-impact.html" class="sim-link">
-              <span>🎯 Penetrating Bullet Challenge</span>
-              <span>➔</span>
-            </a>
-          </li>
-        </ul>
-
-        <div class="chapter-title">Ray Optics Foundation</div>
-        <ul class="sim-list">
-          <li class="sim-item">
-            <a href="reflection.html" class="sim-link">
-              <span>🪞 Laws of Reflection</span>
-              <span>➔</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- CLASS 12 CARD -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Class 12 Physics</span>
-          <span class="badge">Electrodynamics & Optics</span>
-        </div>
-
-        <div class="chapter-title">Electrostatics</div>
-        <ul class="sim-list">
-          <li class="sim-item">
-            <a href="coulomb.html" class="sim-link">
-              <span>⚡ Coulomb's Law (3D Force Vectors)</span>
-              <span>➔</span>
-            </a>
-          </li>
-          <li class="sim-item">
-            <a href="fieldlines.html" class="sim-link">
-              <span>🌌 Electric Field Lines & Dipoles</span>
-              <span>➔</span>
-            </a>
-          </li>
-          <li class="sim-item">
-            <a href="flux-gauss.html" class="sim-link">
-              <span>📦 Gauss's Law & Surface Flux</span>
-              <span>➔</span>
-            </a>
-          </li>
-        </ul>
-
-        <div class="chapter-title">Ray Optics & Wave Optics</div>
-        <ul class="sim-list">
-          <li class="sim-item">
-            <a href="ray-optics.html" class="sim-link">
-              <span>🌈 Refraction & Prism Dispersion</span>
-              <span>➔</span>
-            </a>
-          </li>
-          <li class="sim-item">
-            <a href="curved-mirror.html" class="sim-link">
-              <span>🔍 Spherical Mirrors & Ray Diagrams</span>
-              <span>➔</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
+    <div class="nav-buttons">
+      <a href="index.html" class="nav-btn">Home</a>
+      <a href="class12.html" class="nav-btn">Class 12</a>
     </div>
-  </main>
+  </nav>
 
-  <footer>
-    Vidyaalok Classes © 2026 | Interactive Physics Learning Platform
-  </footer>
+  <!-- Hero Header -->
+  <div class="hero-card">
+    <span class="chapter-tag">Class 12 Chapter</span>
+    <h1 class="hero-title">Electric Charges & Fields</h1>
+    <p class="hero-subtitle">
+      Choose a topic module directly. The page is now compact so the simulations and revision tools are reachable immediately, without needing to scroll through extra sections first.
+    </p>
+  </div>
+
+  <!-- 5 Cards Layout -->
+  <div class="grid-container">
+
+    <!-- 01 Coulomb's Law -->
+    <a href="coulomb.html" class="module-card">
+      <div>
+        <div class="card-number">01</div>
+        <div class="card-tag">SIMULATION</div>
+        <div class="card-title">Coulomb's Law</div>
+        <div class="card-desc">Study how electrostatic force changes with charge, separation, and medium.</div>
+      </div>
+      <div class="card-action">Open module &rarr;</div>
+    </a>
+
+    <!-- 02 Electric Field Lines -->
+    <a href="fieldlines.html" class="module-card">
+      <div>
+        <div class="card-number">02</div>
+        <div class="card-tag">SIMULATION</div>
+        <div class="card-title">Electric Field Lines</div>
+        <div class="card-desc">Compare 2D and 3D field geometry for positive, negative, and paired charges.</div>
+      </div>
+      <div class="card-action">Open module &rarr;</div>
+    </a>
+
+    <!-- 03 Equipotential Surfaces -->
+    <a href="equipotential.html" class="module-card">
+      <div>
+        <div class="card-number">03</div>
+        <div class="card-tag">SIMULATION</div>
+        <div class="card-title">Equipotential Surfaces</div>
+        <div class="card-desc">Visualize how potential shapes relate to field lines for different charge distributions.</div>
+      </div>
+      <div class="card-action">Open module &rarr;</div>
+    </a>
+
+    <!-- 04 Flux and Gauss's Law -->
+    <a href="flux-gauss.html" class="module-card">
+      <div>
+        <div class="card-number">04</div>
+        <div class="card-tag">CONCEPT</div>
+        <div class="card-title">Flux and Gauss's Law</div>
+        <div class="card-desc">Review electric flux, Gaussian surfaces, and the standard symmetry-based field results.</div>
+      </div>
+      <div class="card-action">Open module &rarr;</div>
+    </a>
+
+    <!-- 05 Formulas -->
+    <a href="formulas.html" class="module-card">
+      <div>
+        <div class="card-number">05</div>
+        <div class="card-tag">REVISION</div>
+        <div class="card-title">Formulas</div>
+        <div class="card-desc">Open the formula browser with one-topic-at-a-time revision for all major chapter results.</div>
+      </div>
+      <div class="card-action">Open module &rarr;</div>
+    </a>
+
+  </div>
 
 </body>
 </html>
