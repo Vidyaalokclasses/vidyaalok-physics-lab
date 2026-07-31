@@ -1,438 +1,388 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-L8DFSQTR66');
-</script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Coulomb's Law | Vidyaalok Classes</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coulomb's Law | Vidyaalok Classes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #060913;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+    }
+    
+    #canvas-container {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
 
-<style>
-:root{
-  --bg-1:#1b1210;
-  --bg-2:#291915;
-  --bg-3:#43261b;
-  --panel:rgba(255,245,234,0.08);
-  --border:rgba(255,214,170,0.16);
-  --text:#fff7ef;
-  --muted:#dfcabf;
-  --gold:#ffd089;
-  --blue:#7bddff;
-}
+    /* Top Navigation Header */
+    .top-bar {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-btn {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #e2e8f0;
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    .nav-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.6);
+      color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    }
 
-*{box-sizing:border-box}
+    /* Futuristic Glassmorphism Control Panel */
+    .ui-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 340px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 20px;
+      padding: 22px;
+      z-index: 10;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    .brand-header {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 2px;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .sim-title {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 18px;
+    }
 
-body{
-  margin:0;
-  color:var(--text);
-  font-family:'Segoe UI',sans-serif;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(255,208,137,0.18), transparent 22%),
-    radial-gradient(circle at 84% 72%, rgba(123,221,255,0.12), transparent 24%),
-    linear-gradient(135deg,var(--bg-1),var(--bg-2),var(--bg-3));
-}
+    .control-group {
+      margin-bottom: 16px;
+    }
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #cbd5e1;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #38bdf8;
+      cursor: pointer;
+    }
 
-.nav{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  padding:16px 24px;
-  background:rgba(28,16,13,0.62);
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  backdrop-filter:blur(12px);
-}
+    /* Live Data Card */
+    .data-card {
+      background: rgba(30, 41, 59, 0.6);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 20px;
+      border-left: 4px solid #38bdf8;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+    }
+    .data-row:last-child {
+      margin-bottom: 0;
+    }
+    .data-value {
+      font-weight: 800;
+      font-family: monospace;
+      font-size: 1.05rem;
+      color: #f43f5e;
+      text-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+    }
 
-.brand{
-  font-size:24px;
-  font-weight:800;
-}
+    .instructions {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(10px);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
 
-.nav-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.chip{
-  padding:10px 14px;
-  border-radius:999px;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.12);
-  color:var(--text);
-  text-decoration:none;
-  font-size:13px;
-  font-weight:700;
-}
-
-.page{
-  width:min(1200px,95vw);
-  margin:0 auto;
-  padding:16px 0 24px;
-}
-
-.topbar{
-  display:grid;
-  grid-template-columns:1.2fr 0.8fr;
-  gap:14px;
-  margin-bottom:14px;
-}
-
-.intro,
-.metrics,
-.control-panel,
-.canvas-card{
-  border:1px solid var(--border);
-  background:var(--panel);
-  border-radius:24px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.26);
-  backdrop-filter:blur(12px);
-}
-
-.intro,
-.metrics,
-.control-panel{
-  padding:16px 18px;
-}
-
-.kicker{
-  display:inline-block;
-  margin-bottom:8px;
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(255,208,137,0.14);
-  color:var(--gold);
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-.intro h1{
-  margin:0 0 8px;
-  font-size:34px;
-  line-height:1;
-}
-
-.intro p,
-.metric-note{
-  margin:0;
-  color:var(--muted);
-  line-height:1.65;
-  font-size:14px;
-}
-
-.metrics{
-  display:grid;
-  gap:12px;
-}
-
-.metric-label{
-  color:var(--blue);
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-.metric-value{
-  margin-top:6px;
-  font-size:22px;
-  font-weight:800;
-}
-
-.control-panel{
-  margin-bottom:14px;
-}
-
-.controls{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:12px;
-}
-
-.control label{
-  display:block;
-  margin-bottom:8px;
-  color:#f6d8b2;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-input,select{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:14px;
-  background:rgba(0,0,0,0.34);
-  color:white;
-  font-weight:700;
-}
-
-.simulation-container{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:14px;
-}
-
-.canvas-card{
-  padding:12px;
-}
-
-.canvas-title{
-  margin-bottom:8px;
-  color:#f6d7b4;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.08em;
-  text-transform:uppercase;
-}
-
-canvas{
-  width:100%;
-  max-width:100%;
-  background:#0f1015;
-  border-radius:16px;
-  display:block;
-}
-
-@media(max-width:900px){
-  .topbar,
-  .simulation-container{
-    grid-template-columns:1fr;
-  }
-}
-
-@media(max-width:720px){
-  .nav{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .controls{
-    grid-template-columns:1fr;
-  }
-}
-</style>
+  <!-- Three.js + OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
-
 <body>
 
-<div class="nav">
-  <div class="brand">🔬 Vidyaalok Classes</div>
-  <div class="nav-actions">
-    <a class="chip" href="chapter.html">Electric Charges & Fields</a>
-    <a class="chip" href="class12.html">Class 12</a>
+  <div id="canvas-container"></div>
+
+  <!-- Top Navigation -->
+  <div class="top-bar">
+    <a href="chapter.html" class="nav-btn">&larr; Electric Charges & Fields</a>
+    <a href="index.html" class="nav-btn">Home</a>
   </div>
-</div>
 
-<main class="page">
-  <section class="topbar">
-    <div class="intro">
-      <div class="kicker">Coulomb Module</div>
-      <h1>Coulomb's Law</h1>
-      <p>
-        Adjust the two charges, choose the medium, and read the interaction immediately. The simulation stays in view from the top of the page.
-      </p>
+  <!-- Interactive Control Panel -->
+  <div class="ui-panel">
+    <div class="brand-header">VIDYAALOK CLASSES</div>
+    <div class="sim-title">3D Electrostatic Force Simulator</div>
+
+    <div class="control-group">
+      <label>Charge $q_1$: <span id="q1-val" style="color:#38bdf8">+5 μC</span></label>
+      <input type="range" id="q1" min="-10" max="10" value="5" step="1">
     </div>
 
-    <div class="metrics">
-      <div>
-        <div class="metric-label">Instant Distance</div>
-        <div class="metric-value" id="distanceText">Distance = --</div>
-      </div>
-      <div>
-        <div class="metric-label">Instant Force</div>
-        <div class="metric-value" id="forceText">Force = --</div>
-      </div>
-      <div class="metric-note">Red and green charges show the pair. The graph tracks how force changes with separation.</div>
+    <div class="control-group">
+      <label>Charge $q_2$: <span id="q2-val" style="color:#f43f5e">-5 μC</span></label>
+      <input type="range" id="q2" min="-10" max="10" value="-5" step="1">
     </div>
-  </section>
 
-  <section class="control-panel">
-    <div class="controls">
-      <div class="control">
-        <label for="q1">Charge q1 (μC)</label>
-        <input type="number" id="q1" value="1" step="0.1">
+    <div class="control-group">
+      <label>Separation Distance $r$: <span id="r-val" style="color:#a855f7">4.0 m</span></label>
+      <input type="range" id="r" min="1" max="8" value="4" step="0.1">
+    </div>
+
+    <div class="data-card">
+      <div class="data-row">
+        <span>Force Magnitude ($F$):</span>
+        <span class="data-value" id="force-val">14.06 N</span>
       </div>
-      <div class="control">
-        <label for="q2">Charge q2 (μC)</label>
-        <input type="number" id="q2" value="-1" step="0.1">
-      </div>
-      <div class="control">
-        <label for="medium">Medium</label>
-        <select id="medium">
-          <option value="1">Vacuum</option>
-          <option value="80">Water</option>
-          <option value="2.5">Glass</option>
-        </select>
+      <div class="data-row">
+        <span>Interaction Type:</span>
+        <span id="type-val" style="color:#38bdf8; font-weight:bold;">ATTRACTIVE</span>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section class="simulation-container">
-    <div class="canvas-card">
-      <div class="canvas-title">Interaction Zone</div>
-      <canvas id="canvas" width="500" height="300"></canvas>
-    </div>
-    <div class="canvas-card">
-      <div class="canvas-title">Force Curve</div>
-      <canvas id="graph" width="500" height="300"></canvas>
-    </div>
-  </section>
-</main>
+  <div class="instructions">
+    🖱️ <b>Left Click + Drag:</b> Rotate 3D Camera | <b>Scroll:</b> Zoom | <b>Right Click:</b> Pan
+  </div>
 
-<script>
-function sci(n){
-  if(n===0) return "0";
-  let e=Math.floor(Math.log10(Math.abs(n)));
-  let m=n/Math.pow(10,e);
-  return m.toFixed(2)+" × 10<sup>"+e+"</sup>";
-}
+  <script>
+    // --- 1. SCENE SETUP ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x060913, 0.025);
 
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
-const gtx=document.getElementById("graph").getContext("2d");
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 3, 9);
 
-let c1={x:150,y:150}, c2={x:350,y:150}, drag=null;
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
 
-function getCanvasPoint(e){
-  const r = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / r.width;
-  const scaleY = canvas.height / r.height;
-  return {
-    x:(e.clientX - r.left) * scaleX,
-    y:(e.clientY - r.top) * scaleY
-  };
-}
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
 
-canvas.onmousedown=e=>{
-  let {x,y}=getCanvasPoint(e);
-  if(Math.hypot(x-c1.x,y-c1.y)<20) drag="c1";
-  else if(Math.hypot(x-c2.x,y-c2.y)<20) drag="c2";
-};
+    // --- 2. LIGHTING & CYBER GRID ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
 
-canvas.onmousemove=e=>{
-  if(!drag) return;
-  let {x,y}=getCanvasPoint(e);
-  drag==="c1"?c1={x,y}:c2={x,y};
-};
+    const light1 = new THREE.PointLight(0x38bdf8, 2, 30);
+    light1.position.set(-5, 5, 5);
+    scene.add(light1);
 
-canvas.onmouseup=()=>drag=null;
-canvas.onmouseleave=()=>drag=null;
+    const light2 = new THREE.PointLight(0xf43f5e, 2, 30);
+    light2.position.set(5, 5, 5);
+    scene.add(light2);
 
-function drawArrow(x1,y1,x2,y2){
-  let dx=x2-x1, dy=y2-y1;
-  let a=Math.atan2(dy,dx);
-  let len=8;
+    const gridHelper = new THREE.GridHelper(24, 24, 0x38bdf8, 0x1e293b);
+    gridHelper.position.y = -2;
+    gridHelper.material.opacity = 0.25;
+    gridHelper.material.transparent = true;
+    scene.add(gridHelper);
 
-  ctx.beginPath();
-  ctx.moveTo(x1,y1);
-  ctx.lineTo(x2,y2);
-  ctx.strokeStyle="white";
-  ctx.stroke();
+    // --- 3. SHINY NEON SPHERE CREATION ---
+    function createGlowSphere(colorHex) {
+      const group = new THREE.Group();
+      
+      // Shiny Metallic Core Sphere
+      const geo = new THREE.SphereGeometry(0.55, 32, 32);
+      const mat = new THREE.MeshStandardMaterial({
+        color: colorHex,
+        emissive: colorHex,
+        emissiveIntensity: 0.9,
+        roughness: 0.1,
+        metalness: 0.9
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      group.add(mesh);
 
-  ctx.beginPath();
-  ctx.moveTo(x2,y2);
-  ctx.lineTo(x2-len*Math.cos(a-Math.PI/6),y2-len*Math.sin(a-Math.PI/6));
-  ctx.lineTo(x2-len*Math.cos(a+Math.PI/6),y2-len*Math.sin(a+Math.PI/6));
-  ctx.fillStyle="white";
-  ctx.fill();
-}
+      // Outer Glowing Aura Mesh
+      const haloGeo = new THREE.SphereGeometry(0.8, 16, 16);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: colorHex,
+        transparent: true,
+        opacity: 0.3,
+        wireframe: true
+      });
+      const haloMesh = new THREE.Mesh(haloGeo, haloMat);
+      group.add(haloMesh);
 
-function drawGraph(q1,q2,eps,r){
-  gtx.clearRect(0,0,500,300);
+      return group;
+    }
 
-  let maxF=0,data=[];
-  for(let d=0.5;d<=3;d+=0.05){
-    let F=(1/(4*Math.PI*eps))*(q1*q2)/(d*d);
-    data.push({d,F});
-    maxF=Math.max(maxF,Math.abs(F));
-  }
-  maxF*=1.2;
+    const sphere1 = createGlowSphere(0x38bdf8); // Blue (+)
+    const sphere2 = createGlowSphere(0xf43f5e); // Red (-)
+    scene.add(sphere1);
+    scene.add(sphere2);
 
-  gtx.strokeStyle="white";
-  gtx.beginPath();
-  gtx.moveTo(40,150); gtx.lineTo(480,150);
-  gtx.moveTo(40,20); gtx.lineTo(40,280);
-  gtx.stroke();
+    // --- 4. FORCE VECTOR ARROW ---
+    const arrowDir = new THREE.Vector3(1, 0, 0);
+    const arrowHelper = new THREE.ArrowHelper(arrowDir, new THREE.Vector3(0,0,0), 1, 0x38bdf8, 0.35, 0.25);
+    scene.add(arrowHelper);
 
-  gtx.strokeStyle="cyan";
-  gtx.beginPath();
-  data.forEach((p,i)=>{
-    let x=40+(p.d/3)*440;
-    let y=150-(p.F/maxF)*120;
-    i===0?gtx.moveTo(x,y):gtx.lineTo(x,y);
-  });
-  gtx.stroke();
+    // --- 5. FLOATING PARTICLES FIELD ---
+    const particleCount = 80;
+    const pGeo = new THREE.BufferGeometry();
+    const pPos = new Float32Array(particleCount * 3);
 
-  let F=(1/(4*Math.PI*eps))*(q1*q2)/(r*r);
-  let px=40+(r/3)*440;
-  let py=150-(F/maxF)*120;
+    for(let i = 0; i < particleCount * 3; i++) {
+      pPos[i] = (Math.random() - 0.5) * 12;
+    }
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    const pMat = new THREE.PointsMaterial({ color: 0x38bdf8, size: 0.06, transparent: true, opacity: 0.6 });
+    const particleSystem = new THREE.Points(pGeo, pMat);
+    scene.add(particleSystem);
 
-  gtx.fillStyle="yellow";
-  gtx.beginPath();
-  gtx.arc(px,py,5,0,2*Math.PI);
-  gtx.fill();
-}
+    // --- 6. SIMULATION CALCULATIONS ---
+    const k = 8.99; // Coulomb scaling factor
 
-function draw(){
-  ctx.clearRect(0,0,500,300);
+    function updateSimulation() {
+      const q1 = parseFloat(document.getElementById('q1').value);
+      const q2 = parseFloat(document.getElementById('q2').value);
+      const r = parseFloat(document.getElementById('r').value);
 
-  let q1v=q1.value*1e-6;
-  let q2v=q2.value*1e-6;
+      // UI Labels
+      document.getElementById('q1-val').innerText = (q1 >= 0 ? '+' : '') + q1 + ' μC';
+      document.getElementById('q2-val').innerText = (q2 >= 0 ? '+' : '') + q2 + ' μC';
+      document.getElementById('r-val').innerText = r.toFixed(1) + ' m';
 
-  let dx=c2.x-c1.x, dy=c2.y-c1.y;
-  let dist=Math.hypot(dx,dy);
-  let r=dist*0.01;
+      // Positions
+      sphere1.position.x = -r / 2;
+      sphere2.position.x = r / 2;
 
-  let eps=8.854e-12*medium.value;
-  let F=(1/(4*Math.PI*eps))*(q1v*q2v)/(r*r);
+      // Color Logic based on Charge Sign
+      const col1 = q1 >= 0 ? 0x38bdf8 : 0xf43f5e;
+      const col2 = q2 >= 0 ? 0x38bdf8 : 0xf43f5e;
 
-  distanceText.innerHTML="Distance = "+r.toFixed(3)+" m";
-  forceText.innerHTML="Force = "+sci(Math.abs(F))+" N";
+      sphere1.children[0].material.color.setHex(col1);
+      sphere1.children[0].material.emissive.setHex(col1);
+      sphere1.children[1].material.color.setHex(col1);
 
-  ctx.fillStyle=q1v>0?"red":"green";
-  ctx.beginPath(); ctx.arc(c1.x,c1.y,20,0,2*Math.PI); ctx.fill();
-  ctx.fillStyle="white";
-  ctx.font="bold 13px Segoe UI";
-  ctx.textAlign="center";
-  ctx.fillText(q1.value+" μC", c1.x, c1.y-28);
+      sphere2.children[0].material.color.setHex(col2);
+      sphere2.children[0].material.emissive.setHex(col2);
+      sphere2.children[1].material.color.setHex(col2);
 
-  ctx.fillStyle=q2v>0?"red":"green";
-  ctx.beginPath(); ctx.arc(c2.x,c2.y,20,0,2*Math.PI); ctx.fill();
-  ctx.fillStyle="white";
-  ctx.fillText(q2.value+" μC", c2.x, c2.y-28);
+      // Coulomb Formula: F = k * |q1 * q2| / r^2
+      const force = (k * Math.abs(q1 * q2)) / (r * r);
+      const isRepulsive = (q1 * q2) > 0;
 
-  let ux=dx/dist, uy=dy/dist;
+      document.getElementById('force-val').innerText = force.toFixed(2) + ' N';
+      const typeLabel = document.getElementById('type-val');
+      
+      if (q1 === 0 || q2 === 0) {
+        typeLabel.innerText = 'NEUTRAL';
+        typeLabel.style.color = '#94a3b8';
+      } else if (isRepulsive) {
+        typeLabel.innerText = 'REPULSIVE';
+        typeLabel.style.color = '#f43f5e';
+      } else {
+        typeLabel.innerText = 'ATTRACTIVE';
+        typeLabel.style.color = '#38bdf8';
+      }
 
-  let Fabs = Math.abs(F);
-  let scale = Math.pow(Fabs, 0.3);
-  let L = 15 + scale * 80;
-  L = Math.min(L, 120);
+      // Force Vector Styling
+      const arrowLength = Math.min(Math.max(force * 0.15, 0.5), 3.5);
+      arrowHelper.position.copy(sphere2.position);
+      
+      if (isRepulsive) {
+        arrowHelper.setDirection(new THREE.Vector3(1, 0, 0));
+        arrowHelper.setColor(0xf43f5e);
+      } else {
+        arrowHelper.setDirection(new THREE.Vector3(-1, 0, 0));
+        arrowHelper.setColor(0x38bdf8);
+      }
+      arrowHelper.setLength(arrowLength, arrowLength * 0.3, arrowLength * 0.2);
+    }
 
-  if(F>0){
-    drawArrow(c1.x,c1.y,c1.x-ux*L,c1.y-uy*L);
-    drawArrow(c2.x,c2.y,c2.x+ux*L,c2.y+uy*L);
-  }else{
-    drawArrow(c1.x,c1.y,c1.x+ux*L,c1.y+uy*L);
-    drawArrow(c2.x,c2.y,c2.x-ux*L,c2.y-uy*L);
-  }
+    // Event Listeners
+    ['q1', 'q2', 'r'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateSimulation);
+    });
 
-  drawGraph(q1v,q2v,eps,r);
-  requestAnimationFrame(draw);
-}
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 
-draw();
-</script>
+    // --- 7. CONTINUOUS ANIMATION LOOP ---
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.02;
 
+      // Continuous rotation & glowing halo pulsation
+      sphere1.rotation.y += 0.01;
+      sphere2.rotation.y += 0.01;
+      
+      sphere1.children[1].rotation.z -= 0.015;
+      sphere2.children[1].rotation.z -= 0.015;
+
+      const pulseScale = 1 + Math.sin(time * 3) * 0.08;
+      sphere1.children[1].scale.set(pulseScale, pulseScale, pulseScale);
+      sphere2.children[1].scale.set(pulseScale, pulseScale, pulseScale);
+
+      // Animate ambient field particles
+      const positions = particleSystem.geometry.attributes.position.array;
+      const r = parseFloat(document.getElementById('r').value);
+      for(let i = 0; i < particleCount; i++) {
+        positions[i * 3 + 1] += Math.sin(time + i) * 0.003;
+      }
+      particleSystem.geometry.attributes.position.needsUpdate = true;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    updateSimulation();
+    animate();
+  </script>
 </body>
 </html>
