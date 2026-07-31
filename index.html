@@ -3,242 +3,181 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Electric Charges & Fields | Vidyaalok Classes</title>
+  <title>Vidyaalok Classes by Alokesh Nanda Sir</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: #0b0f17;
       color: #e2e8f0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
-      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2.5rem 1.5rem;
     }
 
     /* Top Navigation */
     .navbar {
-      max-width: 1400px;
+      max-width: 1100px;
       margin: 0 auto 2rem;
+      width: 100%;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .brand {
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       font-weight: 800;
       color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
       letter-spacing: -0.5px;
-    }
-    .brand-icon {
-      font-size: 1.4rem;
-    }
-    .nav-buttons {
-      display: flex;
-      gap: 0.6rem;
-    }
-    .nav-btn {
-      background: #161f2e;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      padding: 0.5rem 1.2rem;
-      border-radius: 20px;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
     }
 
     /* Hero Banner */
-    .hero-card {
-      max-width: 1400px;
-      margin: 0 auto 2.5rem;
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto 3rem;
+      width: 100%;
+      text-align: center;
       background: #111823;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 24px;
-      padding: 3rem;
-    }
-    .chapter-tag {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #eab308;
-      background: rgba(234, 179, 8, 0.1);
-      border: 1px solid rgba(234, 179, 8, 0.25);
-      padding: 0.35rem 0.9rem;
-      border-radius: 20px;
-      margin-bottom: 1.2rem;
+      padding: 3.5rem 2rem;
     }
     .hero-title {
       font-size: 3.2rem;
       font-weight: 800;
       color: #ffffff;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
       letter-spacing: -1px;
+    }
+    .hero-author {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #eab308;
+      margin-bottom: 1.2rem;
     }
     .hero-subtitle {
       color: #94a3b8;
       font-size: 1.05rem;
-      max-width: 800px;
+      max-width: 650px;
+      margin: 0 auto;
       line-height: 1.6;
     }
 
-    /* 5-Column Grid Layout */
-    .grid-container {
-      max-width: 1400px;
-      margin: 0 auto;
+    /* Class Cards Container */
+    .class-selection {
+      max-width: 900px;
+      margin: 0 auto 3rem;
+      width: 100%;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 1.25rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
     }
 
-    @media (max-width: 1200px) {
-      .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    @media (max-width: 640px) {
+      .class-selection {
+        grid-template-columns: 1fr;
       }
     }
 
-    /* Horizontal Cards matching Second Picture */
-    .module-card {
+    .class-card {
       background: #111823;
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 20px;
-      padding: 2rem 1.6rem;
+      padding: 2.5rem 2rem;
+      text-decoration: none;
+      transition: all 0.25s ease;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      text-decoration: none;
-      min-height: 380px;
-      transition: border-color 0.2s ease, transform 0.2s ease;
+      min-height: 220px;
     }
-    .module-card:hover {
+    .class-card:hover {
       border-color: rgba(255, 255, 255, 0.25);
-      transform: translateY(-3px);
+      transform: translateY(-4px);
     }
 
-    .card-number {
-      font-size: 3rem;
-      font-weight: 800;
-      color: #232d3f;
-      line-height: 1;
-      margin-bottom: 1.5rem;
-    }
-    .card-tag {
-      font-size: 0.72rem;
+    .class-tag {
+      font-size: 0.75rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: #eab308;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.5rem;
     }
-    .card-title {
-      font-size: 1.5rem;
-      font-weight: 700;
+    .class-title {
+      font-size: 2rem;
+      font-weight: 800;
       color: #ffffff;
-      margin-bottom: 1rem;
-      line-height: 1.25;
-      letter-spacing: -0.3px;
+      margin-bottom: 0.5rem;
     }
-    .card-desc {
-      font-size: 0.88rem;
+    .class-desc {
+      font-size: 0.9rem;
       color: #94a3b8;
       line-height: 1.5;
-      margin-bottom: 2rem;
     }
-    .card-action {
-      font-size: 0.88rem;
+    .class-action {
+      font-size: 0.9rem;
       font-weight: 700;
       color: #ffffff;
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      margin-top: auto;
+      margin-top: 1.5rem;
+    }
+
+    footer {
+      text-align: center;
+      color: #475569;
+      font-size: 0.85rem;
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation -->
+  <!-- Navigation -->
   <nav class="navbar">
-    <div class="brand">
-      <span class="brand-icon">🔬</span> Vidyaalok Classes
-    </div>
-    <div class="nav-buttons">
-      <a href="index.html" class="nav-btn">Home</a>
-      <a href="class12.html" class="nav-btn">Class 12</a>
-    </div>
+    <div class="brand">🔬 Vidyaalok Classes</div>
   </nav>
 
-  <!-- Hero Header -->
-  <div class="hero-card">
-    <span class="chapter-tag">Class 12 Chapter</span>
-    <h1 class="hero-title">Electric Charges & Fields</h1>
+  <!-- Banner -->
+  <div class="hero">
+    <h1 class="hero-title">Vidyaalok Classes</h1>
+    <div class="hero-author">by Alokesh Nanda Sir</div>
     <p class="hero-subtitle">
-      Choose a topic module directly. The page is now compact so the simulations and revision tools are reachable immediately, without needing to scroll through extra sections first.
+      Interactive 3D Physics Lab & Conceptual Sandboxes for Board Exams, JEE, and NEET Preparation.
     </p>
   </div>
 
-  <!-- 5 Cards Layout -->
-  <div class="grid-container">
+  <!-- Class Options -->
+  <div class="class-selection">
 
-    <!-- 01 Coulomb's Law -->
-    <a href="coulomb.html" class="module-card">
+    <!-- Class 11 Option -->
+    <a href="class11.html" class="class-card">
       <div>
-        <div class="card-number">01</div>
-        <div class="card-tag">SIMULATION</div>
-        <div class="card-title">Coulomb's Law</div>
-        <div class="card-desc">Study how electrostatic force changes with charge, separation, and medium.</div>
+        <div class="class-tag">FOUNDATION & JEE</div>
+        <div class="class-title">Class 11</div>
+        <div class="class-desc">Kinematics, Mechanics, Waves, Oscillations, and Thermal Physics.</div>
       </div>
-      <div class="card-action">Open module &rarr;</div>
+      <div class="class-action">Explore Chapters &rarr;</div>
     </a>
 
-    <!-- 02 Electric Field Lines -->
-    <a href="fieldlines.html" class="module-card">
+    <!-- Class 12 Option -->
+    <a href="class12.html" class="class-card">
       <div>
-        <div class="card-number">02</div>
-        <div class="card-tag">SIMULATION</div>
-        <div class="card-title">Electric Field Lines</div>
-        <div class="card-desc">Compare 2D and 3D field geometry for positive, negative, and paired charges.</div>
+        <div class="class-tag">BOARD & COMPETITIVE</div>
+        <div class="class-title">Class 12</div>
+        <div class="class-desc">Electrostatics, Optics, Magnetism, Modern Physics, and Electronics.</div>
       </div>
-      <div class="card-action">Open module &rarr;</div>
-    </a>
-
-    <!-- 03 Equipotential Surfaces -->
-    <a href="equipotential.html" class="module-card">
-      <div>
-        <div class="card-number">03</div>
-        <div class="card-tag">SIMULATION</div>
-        <div class="card-title">Equipotential Surfaces</div>
-        <div class="card-desc">Visualize how potential shapes relate to field lines for different charge distributions.</div>
-      </div>
-      <div class="card-action">Open module &rarr;</div>
-    </a>
-
-    <!-- 04 Flux and Gauss's Law -->
-    <a href="flux-gauss.html" class="module-card">
-      <div>
-        <div class="card-number">04</div>
-        <div class="card-tag">CONCEPT</div>
-        <div class="card-title">Flux and Gauss's Law</div>
-        <div class="card-desc">Review electric flux, Gaussian surfaces, and the standard symmetry-based field results.</div>
-      </div>
-      <div class="card-action">Open module &rarr;</div>
-    </a>
-
-    <!-- 05 Formulas -->
-    <a href="formulas.html" class="module-card">
-      <div>
-        <div class="card-number">05</div>
-        <div class="card-tag">REVISION</div>
-        <div class="card-title">Formulas</div>
-        <div class="card-desc">Open the formula browser with one-topic-at-a-time revision for all major chapter results.</div>
-      </div>
-      <div class="card-action">Open module &rarr;</div>
+      <div class="class-action">Explore Chapters &rarr;</div>
     </a>
 
   </div>
+
+  <footer>
+    © 2026 Vidyaalok Classes by Alokesh Nanda Sir
+  </footer>
 
 </body>
 </html>
