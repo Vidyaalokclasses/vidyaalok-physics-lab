@@ -1,233 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vidyaalok Classes by Alokesh Nanda Sir</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      background: #060913;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.12) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(244, 63, 94, 0.05) 0px, transparent 50%);
-      color: #f1f5f9;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 2.5rem 1.5rem;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidyaalok Physics Lab | Interactive Simulations</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #ff9900;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2b2b2b;
+            --text-muted: #6c757d;
+        }
 
-    /* Top Navigation */
-    .navbar {
-      max-width: 1100px;
-      margin: 0 auto 2.5rem;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .brand {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-    }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-    /* Hero Banner */
-    .hero {
-      max-width: 1100px;
-      margin: 0 auto 3rem;
-      width: 100%;
-      text-align: center;
-      background: rgba(15, 23, 42, 0.65);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 28px;
-      padding: 4rem 2rem;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .hero-title {
-      font-size: 3.6rem;
-      font-weight: 900;
-      letter-spacing: -1px;
-      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
-      filter: drop-shadow(0 4px 12px rgba(56, 189, 248, 0.2));
-    }
-    .hero-author {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #fbbf24;
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.5px;
-      text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-    }
-    .hero-subtitle {
-      color: #cbd5e1;
-      font-size: 1.1rem;
-      max-width: 700px;
-      margin: 0 auto;
-      line-height: 1.7;
-    }
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color), #003d82);
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
 
-    /* Class Cards Grid */
-    .class-selection {
-      max-width: 950px;
-      margin: 0 auto 3rem;
-      width: 100%;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-    }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin: 0 0 1rem 0;
+            letter-spacing: 1px;
+        }
 
-    @media (max-width: 680px) {
-      .class-selection {
-        grid-template-columns: 1fr;
-      }
-    }
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 0.5rem auto;
+            color: #e6f2ff;
+        }
 
-    .class-card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 24px;
-      padding: 2.8rem 2.2rem;
-      text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 240px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      position: relative;
-    }
+        .hero .instructor {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-top: 1rem;
+        }
 
-    .class-card:hover {
-      border-color: rgba(56, 189, 248, 0.6);
-      transform: translateY(-6px);
-      box-shadow: 0 20px 40px rgba(56, 189, 248, 0.15), 0 0 20px rgba(56, 189, 248, 0.1);
-      background: rgba(15, 23, 42, 0.85);
-    }
+        /* Main Content */
+        .container {
+            max-width: 1000px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+            flex-grow: 1;
+        }
 
-    .class-tag {
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 0.35rem 0.8rem;
-      border-radius: 20px;
-      display: inline-block;
-      margin-bottom: 1rem;
-      width: fit-content;
-    }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
 
-    .class-title {
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 0.6rem;
-      letter-spacing: -0.5px;
-    }
+        /* Class Selection Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
 
-    .class-desc {
-      font-size: 0.95rem;
-      color: #94a3b8;
-      line-height: 1.6;
-    }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
 
-    .class-action {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 2rem;
-      transition: transform 0.2s ease;
-    }
+        .card h2 {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
 
-    .class-card:hover .class-action {
-      color: #60a5fa;
-      transform: translateX(6px);
-    }
+        .card p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
 
-    footer {
-      text-align: center;
-      color: #64748b;
-      font-size: 0.85rem;
-    }
-  </style>
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card:hover .btn {
+            background-color: #004494;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: #e9ecef;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="brand">🔬 Vidyaalok Classes</div>
-  </nav>
+    <div class="hero">
+        <h1>Vidyaalok Physics Lab</h1>
+        <p>Interactive virtual experiments for Board Exams, NEET, and JEE preparation.</p>
+        <div class="instructor">Curated by Alokesh Nanda</div>
+    </div>
 
-  <!-- Banner -->
-  <div class="hero">
-    <h1 class="hero-title">Vidyaalok Classes</h1>
-    <div class="hero-author">by Alokesh Nanda Sir</div>
-    <p class="hero-subtitle">
-      Interactive 3D Physics Lab & Conceptual Sandboxes for Board Exams, JEE, and NEET Preparation.
-    </p>
-  </div>
+    <div class="container">
+        <div class="grid">
+            
+            <!-- Class 11 Card -->
+            <a href="class11/index.html" class="card">
+                <h2>Class 11</h2>
+                <p>Mechanics, Thermodynamics, Waves, and Properties of Matter.</p>
+                <span class="btn">Enter Class 11</span>
+            </a>
 
-  <!-- Class Options -->
-  <div class="class-selection">
+            <!-- Class 12 Card -->
+            <a href="class12/index.html" class="card">
+                <h2>Class 12</h2>
+                <p>Electrostatics, Ray Optics, Magnetism, and Modern Physics.</p>
+                <span class="btn">Enter Class 12</span>
+            </a>
 
-    <!-- Class 11 Option -->
-    <a href="class11.html" class="class-card">
-      <div>
-        <div class="class-tag">FOUNDATION & JEE</div>
-        <div class="class-title">Class 11</div>
-        <div class="class-desc">Kinematics, Mechanics, Waves, Oscillations, and Thermal Physics.</div>
-      </div>
-      <div class="class-action">Explore Chapters &rarr;</div>
-    </a>
+        </div>
+    </div>
 
-    <!-- Class 12 Option -->
-    <a href="class12.html" class="class-card">
-      <div>
-        <div class="class-tag">BOARD & COMPETITIVE</div>
-        <div class="class-title">Class 12</div>
-        <div class="class-desc">Electrostatics, Optics, Magnetism, Modern Physics, and Electronics.</div>
-      </div>
-      <div class="class-action">Explore Chapters &rarr;</div>
-    </a>
-
-  </div>
-
-  <footer>
-    © 2026 Vidyaalok Classes by Alokesh Nanda Sir
-  </footer>
+    <footer>
+        &copy; 2026 Vidyaalok Physics Lab. Designed for interactive learning.
+    </footer>
 
 </body>
 </html>
