@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Charges & Fields | Vidyaalok Lab</title>
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+            --card-glow: rgba(0, 229, 255, 0.15);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Particle Background */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 1.5rem 3rem;
+            background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .back-btn:hover {
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 3rem 1rem 1rem 1rem;
+        }
+
+        .header h2 {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, var(--primary), #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Grid Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex-grow: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            perspective: 1000px;
+        }
+
+        /* Chapter Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            transform-style: preserve-3d;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .card:hover {
+            border-color: rgba(0, 229, 255, 0.5);
+            box-shadow: 0 10px 30px var(--card-glow);
+        }
+
+        .card-content {
+            transform: translateZ(30px);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin: 0 0 1rem 0;
+            color: var(--text-main);
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex-grow: 1;
+            margin-bottom: 2rem;
+        }
+
+        .btn-text {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .btn-text::after {
+            content: '→';
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .btn-text::after {
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="wrapper">
+        <nav class="navbar">
+            <!-- Notice the ../ tells the browser to go UP one folder back to Class 12 -->
+            <a href="../index.html" class="back-btn">← Class 12</a>
+            <h1>Chapter 01</h1>
+        </nav>
+
+        <div class="header">
+            <h2>Electric Charges & Fields</h2>
+            <p>Interactive simulations for electrostatics.</p>
+        </div>
+
+        <div class="container">
+            <div class="grid">
+                
+                <!-- Coulomb's Law -->
+                <a href="coulomb.html" class="card">
+                    <div class="card-content">
+                        <h3>Coulomb's Law</h3>
+                        <p>Simulate the electrostatic force between two point charges. Adjust charge magnitudes and distance to see the effect on the force vector.</p>
+                        <div class="btn-text">Launch Simulator</div>
+                    </div>
+                </a>
+
+                <!-- Electric Field Lines -->
+                <a href="fieldlines.html" class="card">
+                    <div class="card-content">
+                        <h3>Electric Field Lines</h3>
+                        <p>Place multiple positive and negative charges on the canvas and visualize the resulting electric field lines and vectors.</p>
+                        <div class="btn-text">Launch Simulator</div>
+                    </div>
+                </a>
+
+                <!-- Equipotential Surfaces -->
+                <a href="equipotential.html" class="card">
+                    <div class="card-content">
+                        <h3>Equipotential Surfaces</h3>
+                        <p>Map the equipotential regions around various charge configurations. Observe how potential decreases with distance.</p>
+                        <div class="btn-text">Launch Simulator</div>
+                    </div>
+                </a>
+
+                <!-- Electric Flux / Gauss -->
+                <a href="flux-gauss.html" class="card">
+                    <div class="card-content">
+                        <h3>Electric Flux & Gauss's Law</h3>
+                        <p>Explore how electric flux changes when you alter the area, electric field strength, and angle of a surface.</p>
+                        <div class="btn-text">Launch Simulator</div>
+                    </div>
+                </a>
+
+                <!-- Gauss Cube (from your zip structure) -->
+                <a href="gauss-cube.html" class="card">
+                    <div class="card-content">
+                        <h3>Flux through a Cube</h3>
+                        <p>Interactive 3D visualization showing electric flux passing through the different faces of a cube enclosing a charge.</p>
+                        <div class="btn-text">Launch Simulator</div>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* 3D Tilt Effect */
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -10; 
+                const rotateY = ((x - centerX) / centerX) * 10;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+                card.style.transition = `transform 0.5s ease`;
+            });
+            card.addEventListener('mouseenter', () => {
+                card.style.transition = `none`;
+            });
+        });
+
+        /* Particle Background (Electricity Theme) */
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2;
+                // Add a flicker effect to simulate charge
+                this.flicker = Math.random() * 0.05;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > height) this.vy = -this.vy;
+            }
+            draw() {
+                const opacity = 0.3 + Math.sin(Date.now() * this.flicker) * 0.2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 229, 255, ${opacity})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                // Draw connecting "field" lines
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 229, 255, ${(1 - distance/120) * 0.2})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
