@@ -71,6 +71,7 @@
         /* Control Panel */
         .controls {
             width: 380px;
+            flex-shrink: 0; /* FIX: Prevents the panel from being squished */
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
@@ -213,6 +214,7 @@
         /* Right Panel Layout (Canvas + Graph) */
         .right-panel {
             flex-grow: 1;
+            min-width: 0; /* FIX: Prevents flex children from blowing out the layout */
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -226,6 +228,7 @@
             backdrop-filter: blur(10px);
             box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
             width: 100%;
+            height: 100%;
             overflow: hidden;
         }
 
@@ -237,9 +240,11 @@
             flex: 1; 
         }
 
-        /* Remove width/height 100% to let JS dictate exact resolution */
         canvas {
             display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
         }
         
         @media (max-width: 900px) {
@@ -291,7 +296,6 @@
                 <label>
                     <span>Medium</span>
                 </label>
-                <!-- Using Unicode ᵣ for the subscript inside the option tag -->
                 <select id="medium">
                     <option value="1">Vacuum / Air (εᵣ = 1)</option>
                     <option value="80">Water (εᵣ = 80)</option>
@@ -364,27 +368,32 @@
         // Physics Constant (k in vacuum)
         const k0 = 8.987e9; 
         
-        // --- RESIZE OBSERVER (Fixes Canvas Stretching) ---
+        // --- RESIZE OBSERVER (Fixes Canvas Stretching and Centering) ---
         const resizeObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
-                if (entry.target.id === 'simWrapper') {
-                    simCanvas.width = entry.contentRect.width;
-                    simCanvas.height = entry.contentRect.height;
-                } else if (entry.target.id === 'graphWrapper') {
-                    graphCanvas.width = entry.contentRect.width;
-                    graphCanvas.height = entry.contentRect.height;
+            // requestAnimationFrame prevents infinite resize loops and waits for layout to snap
+            window.requestAnimationFrame(() => {
+                let shouldDraw = false;
+                for (let entry of entries) {
+                    if (entry.target.id === 'simWrapper') {
+                        simCanvas.width = Math.floor(entry.contentRect.width);
+                        simCanvas.height = Math.floor(entry.contentRect.height);
+                        shouldDraw = true;
+                    } else if (entry.target.id === 'graphWrapper') {
+                        graphCanvas.width = Math.floor(entry.contentRect.width);
+                        graphCanvas.height = Math.floor(entry.contentRect.height);
+                        shouldDraw = true;
+                    }
                 }
-            }
-            drawAll(); // Redraw with perfect round aspect ratio
+                if (shouldDraw) drawAll();
+            });
         });
 
         resizeObserver.observe(document.getElementById('simWrapper'));
         resizeObserver.observe(document.getElementById('graphWrapper'));
 
-        // Always force Scientific Notation output
         function formatScientificHTML(num) {
             if (num === 0) return "0 N";
-            let expStr = num.toExponential(2); // e.g. "1.00e-1"
+            let expStr = num.toExponential(2); 
             let parts = expStr.split('e');
             let base = parts[0];
             let exponent = parseInt(parts[1]); 
@@ -410,7 +419,6 @@
         }
 
         function drawAll() {
-            // Check if canvas has loaded dimensions yet
             if(simCanvas.width === 0) return;
 
             const er = parseFloat(mediumSelect.value); 
@@ -443,6 +451,7 @@
             const centerY = simCanvas.height / 2;
             const centerX = simCanvas.width / 2;
             
+            // Map the physical distance to pixels, keeping it inside the canvas
             const maxPxDist = Math.min(simCanvas.width * 0.7, 600);
             const pixelDist = (r / 10) * maxPxDist; 
             
@@ -485,7 +494,7 @@
             }
 
             function drawCharge(x, y, chargeValue) {
-                const radius = 35; // Perfect circle radius
+                const radius = 35; 
                 let color = "rgba(255, 255, 255, 0.1)"; 
                 let glow = "transparent";
                 if (chargeValue > 0) {
