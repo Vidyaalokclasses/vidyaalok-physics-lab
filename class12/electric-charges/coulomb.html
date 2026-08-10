@@ -251,23 +251,22 @@
             flex: 1; 
         }
 
-        /* Watermark Logo styling */
+        /* Transparent Watermark Logo styling */
         .watermark {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60%;
-            height: 60%;
-            /* Make sure your image is in the root directory named exactly this: */
-            background-image: url('../../final logo copy.jpg'); 
+            width: 50%; 
+            height: 50%;
+            /* Points to the transparent logo in your root folder */
+            background-image: url('../../logo.png'); 
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            opacity: 0.08; 
+            opacity: 0.12; 
             pointer-events: none; 
             z-index: 0;
-            mix-blend-mode: luminosity; 
         }
 
         canvas {
@@ -322,7 +321,7 @@
                         <span class="denominator">r<sup>2</sup></span>
                     </div>
                 </div>
-                <!-- New Constants Section -->
+                <!-- Constants Section -->
                 <div class="constants-info">
                     &epsilon;<sub>0</sub> = 8.854 &times; 10<sup>-12</sup> C<sup>2</sup> / (N&middot;m<sup>2</sup>)<br>
                     1 / (4&pi;&epsilon;<sub>0</sub>) = 8.987 &times; 10<sup>9</sup> N&middot;m<sup>2</sup> / C<sup>2</sup>
@@ -374,11 +373,13 @@
         <!-- Right Side: Simulation and Graph -->
         <div class="right-panel">
             <div class="canvas-container sim-container" id="simWrapper">
+                <!-- Transparent Watermark -->
                 <div class="watermark"></div>
                 <canvas id="simCanvas"></canvas>
             </div>
             
             <div class="canvas-container graph-container" id="graphWrapper">
+                <!-- Transparent Watermark -->
                 <div class="watermark"></div>
                 <canvas id="graphCanvas"></canvas>
             </div>
