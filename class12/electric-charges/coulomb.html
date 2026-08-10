@@ -71,7 +71,7 @@
         /* Control Panel */
         .controls {
             width: 380px;
-            flex-shrink: 0; /* FIX: Prevents the panel from being squished */
+            flex-shrink: 0; 
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
@@ -125,6 +125,17 @@
 
         .denominator {
             padding: 0 6px;
+        }
+
+        /* Physical Constants Info */
+        .constants-info {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(0, 229, 255, 0.2);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.6;
         }
 
         .control-group {
@@ -214,7 +225,7 @@
         /* Right Panel Layout (Canvas + Graph) */
         .right-panel {
             flex-grow: 1;
-            min-width: 0; /* FIX: Prevents flex children from blowing out the layout */
+            min-width: 0; 
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
@@ -240,11 +251,32 @@
             flex: 1; 
         }
 
+        /* Watermark Logo styling */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            /* Make sure your image is in the root directory named exactly this: */
+            background-image: url('../../final logo copy.jpg'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08; 
+            pointer-events: none; 
+            z-index: 0;
+            mix-blend-mode: luminosity; 
+        }
+
         canvas {
             display: block;
             width: 100%;
             height: 100%;
             border-radius: 16px;
+            position: relative;
+            z-index: 1;
         }
         
         @media (max-width: 900px) {
@@ -276,7 +308,7 @@
         <div class="controls">
             <h2>Parameters</h2>
 
-            <!-- Scientific Fraction Formula -->
+            <!-- Scientific Fraction Formula & Constants -->
             <div class="formula-box">
                 <div class="math-equation">
                     <span>F = </span>
@@ -289,6 +321,11 @@
                         <span class="numerator">|q<sub>1</sub>q<sub>2</sub>|</span>
                         <span class="denominator">r<sup>2</sup></span>
                     </div>
+                </div>
+                <!-- New Constants Section -->
+                <div class="constants-info">
+                    &epsilon;<sub>0</sub> = 8.854 &times; 10<sup>-12</sup> C<sup>2</sup> / (N&middot;m<sup>2</sup>)<br>
+                    1 / (4&pi;&epsilon;<sub>0</sub>) = 8.987 &times; 10<sup>9</sup> N&middot;m<sup>2</sup> / C<sup>2</sup>
                 </div>
             </div>
 
@@ -337,10 +374,12 @@
         <!-- Right Side: Simulation and Graph -->
         <div class="right-panel">
             <div class="canvas-container sim-container" id="simWrapper">
+                <div class="watermark"></div>
                 <canvas id="simCanvas"></canvas>
             </div>
             
             <div class="canvas-container graph-container" id="graphWrapper">
+                <div class="watermark"></div>
                 <canvas id="graphCanvas"></canvas>
             </div>
         </div>
@@ -370,7 +409,6 @@
         
         // --- RESIZE OBSERVER (Fixes Canvas Stretching and Centering) ---
         const resizeObserver = new ResizeObserver(entries => {
-            // requestAnimationFrame prevents infinite resize loops and waits for layout to snap
             window.requestAnimationFrame(() => {
                 let shouldDraw = false;
                 for (let entry of entries) {
