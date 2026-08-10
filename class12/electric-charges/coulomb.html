@@ -12,8 +12,6 @@
             --panel-bg: rgba(255, 255, 255, 0.03);
             --text-main: #ffffff;
             --text-muted: #a0aabf;
-            --positive: #ff3366;
-            --negative: #33ccff;
         }
 
         body, html {
@@ -72,7 +70,7 @@
 
         /* Control Panel */
         .controls {
-            width: 350px;
+            width: 380px;
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
@@ -93,15 +91,39 @@
             padding-bottom: 0.5rem;
         }
 
+        /* Scientific Formula Box */
         .formula-box {
             background: rgba(0, 0, 0, 0.3);
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid rgba(0, 229, 255, 0.2);
-            text-align: center;
-            font-size: 1.1rem;
             color: #e6f2ff;
+        }
+
+        .math-equation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2rem;
             font-style: italic;
+        }
+
+        .fraction {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .numerator {
+            border-bottom: 1px solid #e6f2ff;
+            padding: 0 6px;
+        }
+
+        .denominator {
+            padding: 0 6px;
         }
 
         .control-group {
@@ -204,20 +226,20 @@
             backdrop-filter: blur(10px);
             box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
             width: 100%;
+            overflow: hidden;
         }
 
         .sim-container {
-            flex: 2; /* Takes up 2/3 of vertical space */
+            flex: 2; 
         }
 
         .graph-container {
-            flex: 1; /* Takes up 1/3 of vertical space */
+            flex: 1; 
         }
 
+        /* Remove width/height 100% to let JS dictate exact resolution */
         canvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
+            display: block;
         }
         
         @media (max-width: 900px) {
@@ -249,19 +271,32 @@
         <div class="controls">
             <h2>Parameters</h2>
 
+            <!-- Scientific Fraction Formula -->
             <div class="formula-box">
-                F = (1 / 4&pi;&epsilon;<sub>0</sub>&epsilon;<sub>r</sub>) &middot; |q<sub>1</sub>q<sub>2</sub>| / r<sup>2</sup>
+                <div class="math-equation">
+                    <span>F = </span>
+                    <div class="fraction">
+                        <span class="numerator">1</span>
+                        <span class="denominator">4&pi;&epsilon;<sub>0</sub>&epsilon;<sub>r</sub></span>
+                    </div>
+                    <span>&middot;</span>
+                    <div class="fraction">
+                        <span class="numerator">|q<sub>1</sub>q<sub>2</sub>|</span>
+                        <span class="denominator">r<sup>2</sup></span>
+                    </div>
+                </div>
             </div>
 
             <div class="control-group">
                 <label>
                     <span>Medium</span>
                 </label>
+                <!-- Using Unicode ᵣ for the subscript inside the option tag -->
                 <select id="medium">
-                    <option value="1">Vacuum / Air (&epsilon;r = 1)</option>
-                    <option value="80">Water (&epsilon;r = 80)</option>
-                    <option value="5.6">Glass (&epsilon;r ≈ 5.6)</option>
-                    <option value="2.2">Paper (&epsilon;r ≈ 2.2)</option>
+                    <option value="1">Vacuum / Air (εᵣ = 1)</option>
+                    <option value="80">Water (εᵣ = 80)</option>
+                    <option value="5.6">Glass (εᵣ ≈ 5.6)</option>
+                    <option value="2.2">Paper (εᵣ ≈ 2.2)</option>
                 </select>
             </div>
 
@@ -284,9 +319,9 @@
             <div class="control-group">
                 <label>
                     <span>Distance (r)</span>
-                    <span class="val-display" id="r-val">3 m</span>
+                    <span class="val-display" id="r-val">1.5 m</span>
                 </label>
-                <input type="range" id="r" min="1" max="10" step="0.5" value="3">
+                <input type="range" id="r" min="1" max="10" step="0.5" value="1.5">
             </div>
 
             <div class="results">
@@ -297,11 +332,11 @@
 
         <!-- Right Side: Simulation and Graph -->
         <div class="right-panel">
-            <div class="canvas-container sim-container">
+            <div class="canvas-container sim-container" id="simWrapper">
                 <canvas id="simCanvas"></canvas>
             </div>
             
-            <div class="canvas-container graph-container">
+            <div class="canvas-container graph-container" id="graphWrapper">
                 <canvas id="graphCanvas"></canvas>
             </div>
         </div>
@@ -327,39 +362,33 @@
         const fVal = document.getElementById('f-val');
 
         // Physics Constant (k in vacuum)
-        const k0 = 8.987e9; // N m²/C²
+        const k0 = 8.987e9; 
         
-        function resizeCanvases() {
-            // Resize Sim Canvas
-            const simContainer = simCanvas.parentElement;
-            simCanvas.width = simContainer.clientWidth;
-            simCanvas.height = simContainer.clientHeight;
-            
-            // Resize Graph Canvas
-            const graphContainer = graphCanvas.parentElement;
-            graphCanvas.width = graphContainer.clientWidth;
-            graphCanvas.height = graphContainer.clientHeight;
-            
-            drawAll();
-        }
+        // --- RESIZE OBSERVER (Fixes Canvas Stretching) ---
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                if (entry.target.id === 'simWrapper') {
+                    simCanvas.width = entry.contentRect.width;
+                    simCanvas.height = entry.contentRect.height;
+                } else if (entry.target.id === 'graphWrapper') {
+                    graphCanvas.width = entry.contentRect.width;
+                    graphCanvas.height = entry.contentRect.height;
+                }
+            }
+            drawAll(); // Redraw with perfect round aspect ratio
+        });
 
-        window.addEventListener('resize', resizeCanvases);
+        resizeObserver.observe(document.getElementById('simWrapper'));
+        resizeObserver.observe(document.getElementById('graphWrapper'));
 
-        // Helper to format scientific notation properly with HTML <sup> tags
+        // Always force Scientific Notation output
         function formatScientificHTML(num) {
-            if (num === 0) return "0.00 N";
-            
-            let expStr = num.toExponential(2); // e.g., "4.50e-5"
+            if (num === 0) return "0 N";
+            let expStr = num.toExponential(2); // e.g. "1.00e-1"
             let parts = expStr.split('e');
             let base = parts[0];
-            let exponent = parseInt(parts[1]); // parses "-5" or "+3" to integers
-
-            // Use standard fixed decimal for typical numbers to keep it readable
-            if (exponent >= -2 && exponent <= 2) {
-                return num.toFixed(3) + " N"; 
-            }
+            let exponent = parseInt(parts[1]); 
             
-            // Return nicely formatted scientific notation
             return `${base} &times; 10<sup>${exponent}</sup> N`;
         }
 
@@ -381,18 +410,18 @@
         }
 
         function drawAll() {
-            // 1. Get current values
-            const er = parseFloat(mediumSelect.value); // Dielectric constant
+            // Check if canvas has loaded dimensions yet
+            if(simCanvas.width === 0) return;
+
+            const er = parseFloat(mediumSelect.value); 
             const q1 = parseFloat(q1Slider.value);
             const q2 = parseFloat(q2Slider.value);
             const r = parseFloat(rSlider.value);
 
-            // Update UI Labels
             q1Val.innerText = `${q1 > 0 ? '+' : ''}${q1} μC`;
             q2Val.innerText = `${q2 > 0 ? '+' : ''}${q2} μC`;
             rVal.innerText = `${r} m`;
 
-            // Calculate Effective K and Force
             const k = k0 / er;
             const q1C = q1 * 1e-6;
             const q2C = q2 * 1e-6;
@@ -402,13 +431,9 @@
                 force = (k * Math.abs(q1C * q2C)) / (r * r);
             }
             
-            // Set Force Display using innerHTML to render the <sup> tag
             fVal.innerHTML = formatScientificHTML(force);
 
-            // 2. Draw Simulation
             drawSimulation(q1, q2, r, force);
-            
-            // 3. Draw Graph
             drawGraph(q1, q2, r, force, k);
         }
 
@@ -418,13 +443,12 @@
             const centerY = simCanvas.height / 2;
             const centerX = simCanvas.width / 2;
             
-            const maxPxDist = Math.min(simCanvas.width * 0.8, 800);
+            const maxPxDist = Math.min(simCanvas.width * 0.7, 600);
             const pixelDist = (r / 10) * maxPxDist; 
             
             const x1 = centerX - (pixelDist / 2);
             const x2 = centerX + (pixelDist / 2);
 
-            // Distance line
             simCtx.beginPath();
             simCtx.moveTo(x1, centerY + 60);
             simCtx.lineTo(x2, centerY + 60);
@@ -449,21 +473,19 @@
             
             let arrowLength = 0;
             if (force > 0) {
-                // Logarithmic scaling for visual representation of force vectors
                 arrowLength = Math.max(40, Math.min(150, 40 + Math.log10(force * 1000) * 30));
             }
 
             if (isAttracting) {
-                drawArrow(simCtx, x1 + 35, centerY, x1 + 35 + arrowLength, centerY, "#00e5ff");
-                drawArrow(simCtx, x2 - 35, centerY, x2 - 35 - arrowLength, centerY, "#00e5ff");
+                drawArrow(simCtx, x1 + 45, centerY, x1 + 45 + arrowLength, centerY, "#00e5ff");
+                drawArrow(simCtx, x2 - 45, centerY, x2 - 45 - arrowLength, centerY, "#00e5ff");
             } else if (isRepelling) {
-                drawArrow(simCtx, x1 - 35, centerY, x1 - 35 - arrowLength, centerY, "#ff007f");
-                drawArrow(simCtx, x2 + 35, centerY, x2 + 35 + arrowLength, centerY, "#ff007f");
+                drawArrow(simCtx, x1 - 45, centerY, x1 - 45 - arrowLength, centerY, "#ff007f");
+                drawArrow(simCtx, x2 + 45, centerY, x2 + 45 + arrowLength, centerY, "#ff007f");
             }
 
-            // Draw Charge function inside scope
             function drawCharge(x, y, chargeValue) {
-                const radius = 30;
+                const radius = 35; // Perfect circle radius
                 let color = "rgba(255, 255, 255, 0.1)"; 
                 let glow = "transparent";
                 if (chargeValue > 0) {
@@ -479,7 +501,7 @@
                 simCtx.fillStyle = color; simCtx.fill();
                 simCtx.lineWidth = 2; simCtx.strokeStyle = "rgba(255, 255, 255, 0.5)"; simCtx.stroke();
 
-                simCtx.fillStyle = "#ffffff"; simCtx.font = "bold 24px system-ui";
+                simCtx.fillStyle = "#ffffff"; simCtx.font = "bold 26px system-ui";
                 simCtx.textAlign = "center"; simCtx.textBaseline = "middle";
                 if (chargeValue > 0) simCtx.fillText("+", x, y);
                 else if (chargeValue < 0) simCtx.fillText("-", x, y);
@@ -498,15 +520,13 @@
             const w = graphCanvas.width - padX - 40;
             const h = graphCanvas.height - padY - 40;
             
-            // Draw Axes
             graphCtx.strokeStyle = "rgba(255, 255, 255, 0.3)";
             graphCtx.lineWidth = 2;
             graphCtx.beginPath();
-            graphCtx.moveTo(padX, padY); graphCtx.lineTo(padX, padY + h); // Y axis
-            graphCtx.lineTo(padX + w, padY + h); // X axis
+            graphCtx.moveTo(padX, padY); graphCtx.lineTo(padX, padY + h); 
+            graphCtx.lineTo(padX + w, padY + h); 
             graphCtx.stroke();
             
-            // Labels
             graphCtx.fillStyle = "#a0aabf";
             graphCtx.font = "12px system-ui";
             graphCtx.textAlign = "center";
@@ -520,10 +540,9 @@
 
             if (q1 === 0 || q2 === 0) return;
 
-            // Plot curve mapping F vs r
             const q1C = Math.abs(q1 * 1e-6);
             const q2C = Math.abs(q2 * 1e-6);
-            const maxF = (k * q1C * q2C) / (1 * 1); // Max force occurs at minimum distance (r=1)
+            const maxF = (k * q1C * q2C) / (1 * 1); 
             
             graphCtx.beginPath();
             graphCtx.strokeStyle = "#00e5ff";
@@ -539,7 +558,6 @@
             }
             graphCtx.stroke();
             
-            // Draw current location dot on the curve
             let currPx = padX + ((currentR - 1) / 9) * w;
             let currPy = padY + h - (currentForce / maxF) * h;
             
@@ -552,13 +570,10 @@
             graphCtx.stroke();
         }
 
-        // Attach listeners
         [mediumSelect, q1Slider, q2Slider, rSlider].forEach(input => {
             input.addEventListener('input', drawAll);
         });
 
-        // Initial setup
-        setTimeout(resizeCanvases, 100);
     </script>
 </body>
 </html>
