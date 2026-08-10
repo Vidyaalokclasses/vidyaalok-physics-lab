@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coulomb's Law Simulator | Vidyaalok Lab</title>
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+            --positive: #ff3366;
+            --negative: #33ccff;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden; /* Prevent scrolling for app-like feel */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 1rem 2rem;
+            background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .back-btn:hover {
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex-grow: 1;
+            padding: 1.5rem;
+            gap: 1.5rem;
+            height: calc(100vh - 80px);
+            box-sizing: border-box;
+        }
+
+        /* Control Panel */
+        .controls {
+            width: 350px;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .controls h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .val-display {
+            color: var(--text-main);
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        /* Modern Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        /* Results Display */
+        .results {
+            margin-top: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+        }
+
+        .results h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .force-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            font-family: monospace;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            flex-grow: 1;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .workspace {
+                flex-direction: column;
+                overflow-y: auto;
+                height: auto;
+            }
+            .controls {
+                width: 100%;
+            }
+            .canvas-container {
+                height: 400px;
+                flex-grow: 0;
+            }
+            body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Chapter 01</a>
+        <h1>Coulomb's Law Simulator</h1>
+    </nav>
+
+    <div class="workspace">
+        <!-- Control Panel -->
+        <div class="controls">
+            <h2>Parameters</h2>
+
+            <div class="control-group">
+                <label>
+                    <span>Charge 1 (q₁)</span>
+                    <span class="val-display" id="q1-val">5 μC</span>
+                </label>
+                <input type="range" id="q1" min="-10" max="10" step="1" value="5">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <span>Charge 2 (q₂)</span>
+                    <span class="val-display" id="q2-val">-5 μC</span>
+                </label>
+                <input type="range" id="q2" min="-10" max="10" step="1" value="-5">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <span>Distance (r)</span>
+                    <span class="val-display" id="r-val">3 m</span>
+                </label>
+                <input type="range" id="r" min="1" max="10" step="0.5" value="3">
+            </div>
+
+            <div class="results">
+                <h3>Electrostatic Force</h3>
+                <div class="force-value" id="f-val">0.00 N</div>
+            </div>
+        </div>
+
+        <!-- Simulation Canvas -->
+        <div class="canvas-container">
+            <canvas id="simCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Inputs
+        const q1Slider = document.getElementById('q1');
+        const q2Slider = document.getElementById('q2');
+        const rSlider = document.getElementById('r');
+        
+        // Displays
+        const q1Val = document.getElementById('q1-val');
+        const q2Val = document.getElementById('q2-val');
+        const rVal = document.getElementById('r-val');
+        const fVal = document.getElementById('f-val');
+
+        // Physics Constants
+        const k = 8.987e9; // N m²/C²
+        
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawSimulation();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Arrow drawing utility function
+        function drawArrow(fromX, fromY, toX, toY, color) {
+            const headlen = 15; // length of head in pixels
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function drawSimulation() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Get current values
+            const q1 = parseFloat(q1Slider.value);
+            const q2 = parseFloat(q2Slider.value);
+            const r = parseFloat(rSlider.value);
+
+            // Update UI Labels
+            q1Val.innerText = `${q1 > 0 ? '+' : ''}${q1} μC`;
+            q2Val.innerText = `${q2 > 0 ? '+' : ''}${q2} μC`;
+            rVal.innerText = `${r} m`;
+
+            // Calculate Force (F = k * |q1| * |q2| / r^2)
+            // Convert microCoulombs to Coulombs for the math
+            const q1C = q1 * 1e-6;
+            const q2C = q2 * 1e-6;
+            let force = 0;
+            
+            if (r !== 0) {
+                force = (k * Math.abs(q1C * q2C)) / (r * r);
+            }
+            
+            // Display Force in Scientific Notation if large/small, otherwise fixed
+            if (force === 0) {
+                fVal.innerText = "0.00 N";
+            } else if (force > 100 || force < 0.01) {
+                fVal.innerText = force.toExponential(2) + " N";
+            } else {
+                fVal.innerText = force.toFixed(3) + " N";
+            }
+
+            // --- RENDER VISUALS --- //
+            const centerY = canvas.height / 2;
+            const centerX = canvas.width / 2;
+            
+            // Map r (1 to 10 meters) to pixels (100px to canvasWidth * 0.8)
+            const maxPxDist = Math.min(canvas.width * 0.8, 800);
+            const pixelDist = (r / 10) * maxPxDist; 
+            
+            const x1 = centerX - (pixelDist / 2);
+            const x2 = centerX + (pixelDist / 2);
+
+            // Draw distance line and label
+            ctx.beginPath();
+            ctx.moveTo(x1, centerY + 60);
+            ctx.lineTo(x2, centerY + 60);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw ticks for distance line
+            ctx.beginPath();
+            ctx.moveTo(x1, centerY + 50); ctx.lineTo(x1, centerY + 70);
+            ctx.moveTo(x2, centerY + 50); ctx.lineTo(x2, centerY + 70);
+            ctx.stroke();
+
+            // Draw distance text
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            ctx.font = "14px system-ui";
+            ctx.textAlign = "center";
+            ctx.fillText(`r = ${r} m`, centerX, centerY + 85);
+
+            // Determine forces (Attract or Repel)
+            const isAttracting = Math.sign(q1) !== Math.sign(q2) && q1 !== 0 && q2 !== 0;
+            const isRepelling = Math.sign(q1) === Math.sign(q2) && q1 !== 0 && q2 !== 0;
+            
+            // Dynamic arrow length based on force (logarithmic scale to keep it visible on screen)
+            let arrowLength = 0;
+            if (force > 0) {
+                // Map the theoretical force to a usable pixel length between 40px and 150px
+                arrowLength = Math.max(40, Math.min(150, 40 + Math.log10(force * 1000) * 30));
+            }
+
+            // Draw Arrows
+            if (isAttracting) {
+                drawArrow(x1 + 35, centerY, x1 + 35 + arrowLength, centerY, "#00e5ff"); // q1 feels pull to right
+                drawArrow(x2 - 35, centerY, x2 - 35 - arrowLength, centerY, "#00e5ff"); // q2 feels pull to left
+            } else if (isRepelling) {
+                drawArrow(x1 - 35, centerY, x1 - 35 - arrowLength, centerY, "#ff007f"); // q1 pushed left
+                drawArrow(x2 + 35, centerY, x2 + 35 + arrowLength, centerY, "#ff007f"); // q2 pushed right
+            }
+
+            // Function to draw a charge particle
+            function drawCharge(x, y, chargeValue) {
+                const radius = 30;
+                
+                // Colors based on charge
+                let color = "rgba(255, 255, 255, 0.1)"; // Neutral
+                let glow = "transparent";
+                if (chargeValue > 0) {
+                    color = "#ff3366";
+                    glow = "rgba(255, 51, 102, 0.5)";
+                } else if (chargeValue < 0) {
+                    color = "#33ccff";
+                    glow = "rgba(51, 204, 255, 0.5)";
+                }
+
+                // Outer Glow
+                ctx.beginPath();
+                ctx.arc(x, y, radius + 10, 0, Math.PI * 2);
+                ctx.fillStyle = glow;
+                ctx.fill();
+
+                // Inner Circle
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+                ctx.stroke();
+
+                // Plus/Minus Sign
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 24px system-ui";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                if (chargeValue > 0) ctx.fillText("+", x, y);
+                else if (chargeValue < 0) ctx.fillText("-", x, y);
+                else ctx.fillText("0", x, y);
+            }
+
+            // Draw the charges on top of the arrows
+            drawCharge(x1, centerY, q1);
+            drawCharge(x2, centerY, q2);
+        }
+
+        // Attach listeners
+        [q1Slider, q2Slider, rSlider].forEach(slider => {
+            slider.addEventListener('input', drawSimulation);
+        });
+
+        // Initial setup
+        setTimeout(resizeCanvas, 100);
+    </script>
+</body>
+</html>
