@@ -3,161 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidyaalok Physics Lab | Interactive Simulations</title>
+    <title>Vidyaalok Physics Lab | Interactive 3D Simulations</title>
     <style>
         :root {
-            --primary-color: #0056b3;
-            --secondary-color: #ff9900;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-main: #2b2b2b;
-            --text-muted: #6c757d;
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
         }
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+        body, html {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Canvas Background for Particles */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Main Content Wrapper */
+        .wrapper {
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            align-items: center;
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, var(--primary-color), #003d82);
-            color: white;
             text-align: center;
-            padding: 4rem 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 5rem 2rem 2rem 2rem;
+            margin-bottom: 2rem;
         }
 
         .hero h1 {
-            font-size: 2.5rem;
-            margin: 0 0 1rem 0;
-            letter-spacing: 1px;
+            font-size: 3.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, var(--primary), #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 229, 255, 0.3);
+            letter-spacing: 2px;
         }
 
         .hero p {
             font-size: 1.2rem;
+            color: var(--text-muted);
             max-width: 600px;
-            margin: 0 auto 0.5rem auto;
-            color: #e6f2ff;
+            margin: 1rem auto;
         }
 
         .hero .instructor {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--secondary-color);
-            margin-top: 1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary);
+            margin-top: 1.5rem;
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 30px;
+            background: rgba(0, 229, 255, 0.05);
         }
 
-        /* Main Content */
-        .container {
-            max-width: 1000px;
-            margin: 3rem auto;
-            padding: 0 2rem;
-            flex-grow: 1;
-        }
-
+        /* 3D Card Grid */
         .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 1rem;
+            display: flex;
+            gap: 3rem;
+            padding: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1000px;
+            width: 100%;
+            perspective: 1000px; /* Required for 3D effect */
         }
 
-        /* Class Selection Cards */
+        /* The Card */
         .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 2.5rem 2rem;
-            text-align: center;
+            width: 320px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             text-decoration: none;
             color: inherit;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            box-sizing: border-box;
+            transform-style: preserve-3d; /* Allows inner elements to pop out */
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
-            border-color: var(--primary-color);
+            border-color: rgba(0, 229, 255, 0.5);
+            box-shadow: 0 15px 40px rgba(0, 229, 255, 0.2);
+        }
+
+        /* Card Content that pops out in 3D */
+        .card-content {
+            transform: translateZ(60px); /* Pushes content towards the user */
+            pointer-events: none;
         }
 
         .card h2 {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-top: 0;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            margin: 0 0 1rem 0;
+            color: var(--text-main);
         }
 
         .card p {
             color: var(--text-muted);
-            font-size: 1.1rem;
-            line-height: 1.5;
+            font-size: 1rem;
+            line-height: 1.6;
             margin-bottom: 2rem;
         }
 
-        .btn {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.8rem 2rem;
-            border-radius: 6px;
-            font-weight: 600;
+        .card .btn-text {
+            color: var(--primary);
+            font-weight: bold;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .card:hover .btn {
-            background-color: #004494;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 1.5rem;
-            background-color: #e9ecef;
-            color: var(--text-muted);
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card .btn-text::after {
+            content: '→';
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .btn-text::after {
+            transform: translateX(5px);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 2rem;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.85rem;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <div class="hero">
-        <h1>Vidyaalok Physics Lab</h1>
-        <p>Interactive virtual experiments for Board Exams, NEET, and JEE preparation.</p>
-        <div class="instructor">Curated by Alokesh Nanda</div>
-    </div>
+    <!-- Background Animation -->
+    <canvas id="particleCanvas"></canvas>
 
-    <div class="container">
+    <div class="wrapper">
+        <div class="hero">
+            <h1>Vidyaalok Physics Lab</h1>
+            <p>Next-generation virtual experiments for Board Exams, NEET, and JEE preparation.</p>
+            <div class="instructor">Curated by Alokesh Nanda</div>
+        </div>
+
         <div class="grid">
             
             <!-- Class 11 Card -->
-            <a href="class11/index.html" class="card">
-                <h2>Class 11</h2>
-                <p>Mechanics, Thermodynamics, Waves, and Properties of Matter.</p>
-                <span class="btn">Enter Class 11</span>
+            <a href="class11/index.html" class="card" id="card1">
+                <div class="card-content">
+                    <h2>Class 11</h2>
+                    <p>Mechanics, Thermodynamics, Waves, and Properties of Matter.</p>
+                    <div class="btn-text">Initialize Simulator</div>
+                </div>
             </a>
 
             <!-- Class 12 Card -->
-            <a href="class12/index.html" class="card">
-                <h2>Class 12</h2>
-                <p>Electrostatics, Ray Optics, Magnetism, and Modern Physics.</p>
-                <span class="btn">Enter Class 12</span>
+            <a href="class12/index.html" class="card" id="card2">
+                <div class="card-content">
+                    <h2>Class 12</h2>
+                    <p>Electrostatics, Ray Optics, Magnetism, and Modern Physics.</p>
+                    <div class="btn-text">Initialize Simulator</div>
+                </div>
             </a>
 
         </div>
+
+        <footer>
+            &copy; 2026 Vidyaalok Physics Lab. Powered by interactive visualization.
+        </footer>
     </div>
 
-    <footer>
-        &copy; 2026 Vidyaalok Physics Lab. Designed for interactive learning.
-    </footer>
+    <script>
+        /* --- 1. 3D Hover Tilt Effect --- */
+        const cards = document.querySelectorAll('.card');
 
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left; // x position within the element
+                const y = e.clientY - rect.top;  // y position within the element
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -15; // Max rotation 15deg
+                const rotateY = ((x - centerX) / centerX) * 15;
+
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+                card.style.transition = `transform 0.5s ease`; // Smooth snap back
+            });
+
+            card.addEventListener('mouseenter', () => {
+                card.style.transition = `none`; // Remove transition while moving for instant response
+            });
+        });
+
+        /* --- 2. Background Particle Network (Physics/Tech feel) --- */
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > height) this.vy = -this.vy;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.5)';
+                ctx.fill();
+            }
+        }
+
+        // Create particles
+        for (let i = 0; i < 70; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw particles and connect them
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                // Connect nearby particles to look like molecular bonds or fields
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 229, 255, ${1 - distance/150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    </script>
 </body>
 </html>
