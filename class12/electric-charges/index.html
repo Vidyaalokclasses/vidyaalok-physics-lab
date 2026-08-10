@@ -187,7 +187,6 @@
 
     <div class="wrapper">
         <nav class="navbar">
-            <!-- Notice the ../ tells the browser to go UP one folder back to Class 12 -->
             <a href="../index.html" class="back-btn">← Class 12</a>
             <h1>Chapter 01</h1>
         </nav>
@@ -236,12 +235,21 @@
                     </div>
                 </a>
 
-                <!-- Gauss Cube (from your zip structure) -->
+                <!-- Gauss Cube -->
                 <a href="gauss-cube.html" class="card">
                     <div class="card-content">
                         <h3>Flux through a Cube</h3>
                         <p>Interactive 3D visualization showing electric flux passing through the different faces of a cube enclosing a charge.</p>
                         <div class="btn-text">Launch Simulator</div>
+                    </div>
+                </a>
+
+                <!-- Formula Sheet -->
+                <a href="formulas.html" class="card" style="border-color: rgba(255, 0, 127, 0.3);">
+                    <div class="card-content">
+                        <h3 style="color: var(--secondary);">Formula Sheet</h3>
+                        <p>Quick reference guide for Coulomb's Law, Electric Field intensity, Dipole moment, Gauss's Law, and continuous charge distributions.</p>
+                        <div class="btn-text" style="color: var(--secondary);">View Formulas</div>
                     </div>
                 </a>
 
@@ -292,7 +300,6 @@
                 this.vx = (Math.random() - 0.5) * 0.5;
                 this.vy = (Math.random() - 0.5) * 0.5;
                 this.radius = Math.random() * 2;
-                // Add a flicker effect to simulate charge
                 this.flicker = Math.random() * 0.05;
             }
             update() {
