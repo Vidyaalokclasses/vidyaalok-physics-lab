@@ -307,7 +307,7 @@
             <div class="control-group">
                 <label for="angleRange">Angle Between E & A (θ)</label>
                 <div class="range-row">
-                    <input id="angleRange" type="range" min="0" max="85" step="1" value="0">
+                    <input id="angleRange" type="range" min="0" max="90" step="1" value="0">
                     <div class="range-value" id="angleValue">0°</div>
                 </div>
             </div>
@@ -452,7 +452,12 @@
             const theta = parseFloat(angleRange.value);
             const thetaRad = theta * Math.PI / 180;
             const side = Math.sqrt(area) * 3.2;
-            const flux = E * area * Math.cos(thetaRad);
+            let flux = E * area * Math.cos(thetaRad);
+            
+            // Clean up tiny floating point errors specifically for exactly 90 degrees
+            if (theta === 90) {
+                flux = 0;
+            }
 
             planeMesh.scale.set(side, side, 1);
             planeOutline.scale.set(side, side, 1);
@@ -470,13 +475,16 @@
 
             formulaLine.innerHTML = `\\(\\Phi = EA\\cos\\theta\\)<br>\\(\\Phi = ${E.toFixed(1)} \\times ${area.toFixed(1)} \\times \\cos ${theta.toFixed(0)}^\\circ\\)<br>\\(\\Phi = ${flux.toFixed(2)}\\)`;
             
-            modeExplanation.textContent = theta === 0
-                ? "When the area vector is parallel to the electric field, the flux is maximum."
-                : "As the surface tilts, only the projected area contributes, so the electric flux decreases with angle.";
-                
-            formulaNote.innerHTML = theta === 0
-                ? "At \\(\\theta = 0^\\circ\\), the field lines pass normally through the surface."
-                : "Tilting the surface changes the effective area seen by the field to \\(A\\cos\\theta\\).";
+            if (theta === 0) {
+                modeExplanation.textContent = "When the area vector is parallel to the electric field, the flux is maximum.";
+                formulaNote.innerHTML = "At \\(\\theta = 0^\\circ\\), the field lines pass normally through the surface.";
+            } else if (theta === 90) {
+                modeExplanation.textContent = "When the area vector is perpendicular to the field, no field lines pass through the surface. Flux is zero.";
+                formulaNote.innerHTML = "At \\(\\theta = 90^\\circ\\), \\(\\cos(90^\\circ) = 0\\), meaning the field merely skims the surface.";
+            } else {
+                modeExplanation.textContent = "As the surface tilts, only the projected area contributes, so the electric flux decreases with angle.";
+                formulaNote.innerHTML = "Tilting the surface changes the effective area seen by the field to \\(A\\cos\\theta\\).";
+            }
 
             if(window.MathJax && window.MathJax.typesetPromise){
                 window.MathJax.typesetPromise([formulaLine, formulaNote]);
