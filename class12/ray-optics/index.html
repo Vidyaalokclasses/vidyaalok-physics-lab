@@ -187,7 +187,7 @@
 
     <div class="wrapper">
         <nav class="navbar">
-            <a href="../index.html" class="back-btn">← Class 12</a>
+            <a href="../../class12/index.html" class="back-btn">← Class 12 Hub</a>
             <h1>Chapter 09</h1>
         </nav>
 
@@ -211,7 +211,7 @@
                 <!-- Plane Mirror -->
                 <a href="plane-mirror.html" class="card">
                     <div class="card-content">
-                        <h3>Plane Mirror Formations</h3>
+                        <h3>Plane Mirror</h3>
                         <p>Visualize how virtual images are formed by plane mirrors. Understand object distance, image distance, and lateral inversion with interactive ray tracing.</p>
                         <div class="btn-text">Launch Simulator</div>
                     </div>
@@ -287,17 +287,15 @@
         class Ray {
             constructor() {
                 this.reset();
-                this.x = Math.random() * width; // random start position
+                this.x = Math.random() * width;
             }
             reset() {
                 this.x = Math.random() * width < width / 2 ? 0 : width;
                 this.y = Math.random() * height;
                 this.length = Math.random() * 150 + 50;
                 this.speed = Math.random() * 3 + 2;
-                // Move mostly horizontally like light beams
                 this.vx = this.x === 0 ? this.speed : -this.speed; 
                 this.vy = (Math.random() - 0.5) * 0.5;
-                // Randomly choose laser red or green
                 this.color = Math.random() > 0.5 ? 'rgba(255, 0, 85, 0.4)' : 'rgba(0, 255, 170, 0.4)';
             }
             update() {
