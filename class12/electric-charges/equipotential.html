@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipotential Surfaces | Vidyaalok Lab</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+            --positive: #ff3366;
+            --negative: #33ccff;
+            --equi: #ffaa00;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 1rem 2rem;
+            background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .back-btn {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex-grow: 1;
+            padding: 1.5rem;
+            gap: 1.5rem;
+            height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
+
+        /* Control Panel */
+        .controls {
+            width: 380px;
+            flex-shrink: 0; 
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .controls h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            color: #e6f2ff;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        select {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        select option {
+            background: var(--bg-dark);
+        }
+
+        .legend {
+            margin-top: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+        }
+
+        .legend span {
+            display: block;
+            font-weight: bold;
+        }
+
+        /* Right Panel Layout */
+        .right-panel {
+            flex-grow: 1;
+            min-width: 0; 
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* Transparent Watermark Logo */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75%; 
+            height: 75%;
+            background-image: url('../../logo.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.12; 
+            pointer-events: none; 
+            z-index: 0;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        #container3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @media (max-width: 900px) {
+            .workspace {
+                flex-direction: column;
+                overflow-y: auto;
+                height: auto;
+            }
+            .controls {
+                width: 100%;
+            }
+            .right-panel {
+                height: 600px;
+                flex-grow: 0;
+            }
+            body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Chapter 01</a>
+        <h1>Equipotential Surfaces</h1>
+    </nav>
+
+    <div class="workspace">
+        
+        <!-- Control Panel -->
+        <div class="controls">
+            <h2>Parameters</h2>
+
+            <div class="instructions">
+                Equipotential surfaces are always perpendicular to electric field lines. Use the 3D mode to view their true spatial symmetry.
+            </div>
+
+            <div class="control-group">
+                <label for="dimension">Dimension</label>
+                <select id="dimension">
+                    <option value="2d">2D View</option>
+                    <option value="3d">3D View (Interactive)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="mode">Charge Distribution</label>
+                <select id="mode">
+                    <option value="point+">Single Positive Point Charge</option>
+                    <option value="point-">Single Negative Point Charge</option>
+                    <option value="line+">Positive Line Charge</option>
+                    <option value="line-">Negative Line Charge</option>
+                    <option value="sheet+">Positive Plane Sheet</option>
+                    <option value="sheet-">Negative Plane Sheet</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="showMode">Display Mode</label>
+                <select id="showMode">
+                    <option value="both">Show Both</option>
+                    <option value="equipotential">Equipotential Only</option>
+                    <option value="field">Field Lines Only</option>
+                </select>
+            </div>
+
+            <div class="legend">
+                <span style="color: var(--positive);">■ Positive Source</span>
+                <span style="color: var(--negative);">■ Negative Source</span>
+                <span style="color: var(--equi);">■ Equipotential Surfaces</span>
+                <span style="color: var(--primary);">■ Electric Field Lines</span>
+            </div>
+        </div>
+
+        <!-- Simulation Area -->
+        <div class="right-panel" id="simWrapper">
+            <div class="watermark"></div>
+            <!-- 2D Canvas -->
+            <canvas id="canvas2d"></canvas>
+            <!-- 3D Container -->
+            <div id="container3d" style="display:none;"></div>
+        </div>
+
+    </div>
+
+    <!-- Three.js Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        const canvas = document.getElementById("canvas2d");
+        const ctx = canvas.getContext("2d");
+        const dimension = document.getElementById("dimension");
+        const mode = document.getElementById("mode");
+        const showMode = document.getElementById("showMode");
+        const container3d = document.getElementById("container3d");
+
+        let is3D = false;
+        let distribution = null;
+
+        let scene, camera, renderer, orbit;
+        let sourceObjects = [];
+        let equipotentialObjects = [];
+        let fieldObjects = [];
+        let animationStarted = false;
+
+        // --- RESIZE OBSERVER (Responsive 2D and 3D) ---
+        const resizeObserver = new ResizeObserver(entries => {
+            window.requestAnimationFrame(() => {
+                for (let entry of entries) {
+                    if (entry.target.id === 'simWrapper') {
+                        canvas.width = Math.floor(entry.contentRect.width);
+                        canvas.height = Math.floor(entry.contentRect.height);
+                        if (is3D && renderer) {
+                            onResize();
+                        }
+                    }
+                }
+                setDistribution(); // Update center positions based on new size
+            });
+        });
+        resizeObserver.observe(document.getElementById('simWrapper'));
+
+        function setDistribution(){
+            const cx = canvas.width > 0 ? canvas.width / 2 : 450;
+            const cy = canvas.height > 0 ? canvas.height / 2 : 270;
+            const value = mode.value;
+
+            if(value === "point+" || value === "point-"){
+                distribution = {
+                    kind:"point",
+                    sign:value.endsWith("+") ? 1 : -1,
+                    x: cx,
+                    y: cy
+                };
+            } else if(value === "line+" || value === "line-"){
+                distribution = {
+                    kind:"line",
+                    sign:value.endsWith("+") ? 1 : -1,
+                    x: cx,
+                    y: cy
+                };
+            } else {
+                distribution = {
+                    kind:"sheet",
+                    sign:value.endsWith("+") ? 1 : -1,
+                    y: cy
+                };
+            }
+        }
+
+        function shouldDrawEquipotential(){
+            return showMode.value === "both" || showMode.value === "equipotential";
+        }
+
+        function shouldDrawField(){
+            return showMode.value === "both" || showMode.value === "field";
+        }
+
+        function potential2D(x, y){
+            if(distribution.kind === "point"){
+                const dx = x - distribution.x;
+                const dy = y - distribution.y;
+                const r = Math.hypot(dx, dy) + 8;
+                return distribution.sign / r;
+            }
+
+            if(distribution.kind === "line"){
+                const dx = x - distribution.x;
+                const dy = y - distribution.y;
+                const r = Math.hypot(dx, dy) + 10;
+                return distribution.sign * Math.log(r / 10) * 0.02;
+            }
+
+            return distribution.sign * (y - distribution.y) * 0.00028;
+        }
+
+        function field2D(x, y){
+            if(distribution.kind === "point"){
+                const dx = x - distribution.x;
+                const dy = y - distribution.y;
+                const r = Math.hypot(dx, dy) + 2;
+                const scale = distribution.sign / (r * r * r);
+                return {Ex:scale * dx, Ey:scale * dy};
+            }
+
+            if(distribution.kind === "line"){
+                const dx = x - distribution.x;
+                const dy = y - distribution.y;
+                const r = Math.hypot(dx, dy) + 2;
+                const scale = distribution.sign / (r * r);
+                return {Ex:scale * dx / r, Ey:scale * dy / r};
+            }
+
+            return {Ex:0, Ey:distribution.sign * 0.002};
+        }
+
+        function drawFieldArrow2D(x, y, angle){
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 8 * Math.cos(angle - Math.PI / 6), y - 8 * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(x - 8 * Math.cos(angle + Math.PI / 6), y - 8 * Math.sin(angle + Math.PI / 6));
+            ctx.fillStyle = "#00e5ff";
+            ctx.fill();
+        }
+
+        function drawBackground(){
+            if(canvas.width === 0 || canvas.height === 0) return;
+            const image = ctx.createImageData(canvas.width, canvas.height);
+
+            // Generate dark-themed topographic heatmap
+            for(let y = 0; y < canvas.height; y += 2){
+                for(let x = 0; x < canvas.width; x += 2){
+                    const V = potential2D(x, y);
+                    const magnitude = Math.min(Math.abs(V) * 900, 1);
+
+                    let r = 7;
+                    let g = 11;
+                    let b = 25;
+
+                    if(V >= 0){
+                        r = 7 + 100 * magnitude;
+                        g = 11 + 20 * magnitude;
+                        b = 25 + 40 * magnitude;
+                    } else {
+                        r = 7 + 10 * magnitude;
+                        g = 11 + 80 * magnitude;
+                        b = 25 + 150 * magnitude;
+                    }
+
+                    for(let oy = 0; oy < 2; oy++){
+                        for(let ox = 0; ox < 2; ox++){
+                            const px = x + ox;
+                            const py = y + oy;
+                            if(px >= canvas.width || py >= canvas.height) continue;
+                            const i = (py * canvas.width + px) * 4;
+                            image.data[i] = Math.round(r);
+                            image.data[i + 1] = Math.round(g);
+                            image.data[i + 2] = Math.round(b);
+                            // Set alpha to 160 so the watermark is visible underneath
+                            image.data[i + 3] = 160; 
+                        }
+                    }
+                }
+            }
+            ctx.putImageData(image, 0, 0);
+        }
+
+        function getContourLevels(){
+            if(distribution.kind === "point"){
+                return distribution.sign > 0
+                ? [0.008, 0.011, 0.015, 0.021, 0.03, 0.045, 0.07]
+                : [-0.07, -0.045, -0.03, -0.021, -0.015, -0.011, -0.008];
+            }
+
+            if(distribution.kind === "line"){
+                return distribution.sign > 0
+                ? [0.004, 0.008, 0.012, 0.016, 0.022, 0.028, 0.036]
+                : [-0.036, -0.028, -0.022, -0.016, -0.012, -0.008, -0.004];
+            }
+
+            return [-0.05, -0.035, -0.02, -0.01, 0.01, 0.02, 0.035, 0.05];
+        }
+
+        function interp(p1, p2, v1, v2, level){
+            const t = (level - v1) / (v2 - v1);
+            return {
+                x:p1.x + t * (p2.x - p1.x),
+                y:p1.y + t * (p2.y - p1.y)
+            };
+        }
+
+        function drawContours2D(){
+            const step = 12;
+            const levels = getContourLevels();
+            ctx.strokeStyle = "#ffaa00"; // Neon Gold
+            ctx.lineWidth = 1.5;
+
+            for(const level of levels){
+                for(let y = 0; y < canvas.height - step; y += step){
+                    for(let x = 0; x < canvas.width - step; x += step){
+                        const p0 = {x:x, y:y};
+                        const p1 = {x:x + step, y:y};
+                        const p2 = {x:x + step, y:y + step};
+                        const p3 = {x:x, y:y + step};
+
+                        const v0 = potential2D(p0.x, p0.y);
+                        const v1 = potential2D(p1.x, p1.y);
+                        const v2 = potential2D(p2.x, p2.y);
+                        const v3 = potential2D(p3.x, p3.y);
+
+                        const pts = [];
+
+                        if((v0 < level && v1 >= level) || (v0 >= level && v1 < level)) pts.push(interp(p0, p1, v0, v1, level));
+                        if((v1 < level && v2 >= level) || (v1 >= level && v2 < level)) pts.push(interp(p1, p2, v1, v2, level));
+                        if((v2 < level && v3 >= level) || (v2 >= level && v3 < level)) pts.push(interp(p2, p3, v2, v3, level));
+                        if((v3 < level && v0 >= level) || (v3 >= level && v0 < level)) pts.push(interp(p3, p0, v3, v0, level));
+
+                        if(pts.length === 2){
+                            ctx.beginPath();
+                            ctx.moveTo(pts[0].x, pts[0].y);
+                            ctx.lineTo(pts[1].x, pts[1].y);
+                            ctx.stroke();
+                        } else if(pts.length === 4){
+                            ctx.beginPath();
+                            ctx.moveTo(pts[0].x, pts[0].y);
+                            ctx.lineTo(pts[1].x, pts[1].y);
+                            ctx.stroke();
+
+                            ctx.beginPath();
+                            ctx.moveTo(pts[2].x, pts[2].y);
+                            ctx.lineTo(pts[3].x, pts[3].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+        }
+
+        function traceFieldLine2D(startX, startY){
+            const path = [];
+            let x = startX;
+            let y = startY;
+
+            for(let i = 0; i < 420; i++){
+                const {Ex, Ey} = field2D(x, y);
+                const mag = Math.hypot(Ex, Ey);
+                if(mag < 1e-6) break;
+
+                x += (Ex / mag) * 2.2;
+                y += (Ey / mag) * 2.2;
+                path.push({x, y});
+
+                if(x < 0 || x > canvas.width || y < 0 || y > canvas.height) break;
+
+                if(distribution.kind === "point" || distribution.kind === "line"){
+                    const r = Math.hypot(x - distribution.x, y - distribution.y);
+                    if(distribution.sign < 0 && r < 13) break;
+                }
+            }
+
+            return path;
+        }
+
+        function drawPoint2D(){
+            if(shouldDrawEquipotential()){
+                drawContours2D();
+            }
+
+            if(shouldDrawField()){
+                ctx.strokeStyle = "#00e5ff"; // Neon Cyan
+                ctx.lineWidth = 1.25;
+                const seeds = 18;
+                const seedRadius = distribution.sign > 0 ? 18 : Math.max(canvas.width, canvas.height) * 0.4;
+
+                for(let i = 0; i < seeds; i++){
+                    const angle = (i / seeds) * 2 * Math.PI;
+                    const sx = distribution.x + Math.cos(angle) * seedRadius;
+                    const sy = distribution.y + Math.sin(angle) * seedRadius;
+                    const path = traceFieldLine2D(sx, sy);
+                    if(path.length < 2) continue;
+
+                    ctx.beginPath();
+                    ctx.moveTo(sx, sy);
+                    path.forEach(p => ctx.lineTo(p.x, p.y));
+                    ctx.stroke();
+
+                    for(let j = 14; j < path.length; j += 36){
+                        const p = path[j];
+                        const {Ex, Ey} = field2D(p.x, p.y);
+                        drawFieldArrow2D(p.x, p.y, Math.atan2(Ey, Ex));
+                    }
+                }
+            }
+
+            ctx.beginPath();
+            ctx.arc(distribution.x, distribution.y, 14, 0, 2 * Math.PI);
+            ctx.fillStyle = distribution.sign > 0 ? "#ff3366" : "#33ccff";
+            ctx.fill();
+
+            ctx.fillStyle = "#000000";
+            ctx.font = "bold 18px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(distribution.sign > 0 ? "+" : "-", distribution.x, distribution.y + 1);
+        }
+
+        function drawLineTopView(panelX, panelY, panelW, panelH){
+            const cx = panelX + panelW / 2;
+            const cy = panelY + panelH / 2;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(panelX, panelY, panelW, panelH);
+            ctx.clip();
+
+            ctx.strokeStyle = "rgba(0, 229, 255, 0.3)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(panelX, panelY, panelW, panelH);
+
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            ctx.font = "bold 16px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.fillText("Top View", cx, panelY + 24);
+
+            if(shouldDrawEquipotential()){
+                ctx.strokeStyle = "#ffaa00";
+                ctx.lineWidth = 1.4;
+                const radii = [24, 42, 64, 90, 118, 150];
+                radii.forEach(r => {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                    ctx.stroke();
+                });
+            }
+
+            if(shouldDrawField()){
+                ctx.strokeStyle = "#00e5ff";
+                ctx.lineWidth = 1.25;
+                const seeds = 18;
+                const seedRadius = distribution.sign > 0 ? 18 : 165;
+
+                for(let i = 0; i < seeds; i++){
+                    const angle = (i / seeds) * 2 * Math.PI;
+                    const sx = cx + Math.cos(angle) * seedRadius;
+                    const sy = cy + Math.sin(angle) * seedRadius;
+
+                    let x = sx;
+                    let y = sy;
+                    const path = [];
+
+                    for(let k = 0; k < 260; k++){
+                        const dx = x - cx;
+                        const dy = y - cy;
+                        const r = Math.hypot(dx, dy) + 2;
+                        const scale = distribution.sign / (r * r);
+                        const ex = scale * dx / r;
+                        const ey = scale * dy / r;
+                        const mag = Math.hypot(ex, ey);
+                        if(mag < 1e-6) break;
+
+                        x += (ex / mag) * 2.2;
+                        y += (ey / mag) * 2.2;
+                        path.push({x, y, ex, ey});
+
+                        if(x < panelX || x > panelX + panelW || y < panelY || y > panelY + panelH) break;
+                        if(distribution.sign < 0 && Math.hypot(x - cx, y - cy) < 13) break;
+                    }
+
+                    if(path.length < 2) continue;
+
+                    ctx.beginPath();
+                    ctx.moveTo(sx, sy);
+                    path.forEach(p => ctx.lineTo(p.x, p.y));
+                    ctx.stroke();
+
+                    for(let j = 12; j < path.length; j += 30){
+                        const p = path[j];
+                        drawFieldArrow2D(p.x, p.y, Math.atan2(p.ey, p.ex));
+                    }
+                }
+            }
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, 11, 0, 2 * Math.PI);
+            ctx.fillStyle = distribution.sign > 0 ? "#ff3366" : "#33ccff";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255,255,255,0.75)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = "#000000";
+            ctx.font = "bold 16px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(distribution.sign > 0 ? "+" : "-", cx, cy + 1);
+
+            ctx.restore();
+        }
+
+        function drawLineSideView(panelX, panelY, panelW, panelH){
+            const cx = panelX + panelW / 2;
+            const cy = panelY + panelH / 2;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(panelX, panelY, panelW, panelH);
+            ctx.clip();
+
+            ctx.strokeStyle = "rgba(0, 229, 255, 0.3)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(panelX, panelY, panelW, panelH);
+
+            ctx.fillStyle = "rgba(255,255,255,0.8)";
+            ctx.font = "bold 16px Segoe UI";
+            ctx.textAlign = "center";
+            ctx.fillText("Side View", cx, panelY + 24);
+
+            if(shouldDrawEquipotential()){
+                ctx.strokeStyle = "#ffaa00";
+                ctx.lineWidth = 1.35;
+                const offsets = [28, 54, 86, 124, 166];
+                offsets.forEach(d => {
+                    ctx.beginPath();
+                    ctx.moveTo(cx - d, panelY + 44);
+                    ctx.lineTo(cx - d, panelY + panelH - 24);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(cx + d, panelY + 44);
+                    ctx.lineTo(cx + d, panelY + panelH - 24);
+                    ctx.stroke();
+                });
+            }
+
+            ctx.strokeStyle = distribution.sign > 0 ? "#ff3366" : "#33ccff";
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(cx, panelY + 50);
+            ctx.lineTo(cx, panelY + panelH - 24);
+            ctx.stroke();
+
+            if(shouldDrawField()){
+                ctx.strokeStyle = "#00e5ff";
+                ctx.lineWidth = 1.15;
+                for(let y = panelY + 70; y <= panelY + panelH - 40; y += 34){
+                    if(distribution.sign > 0){
+                        ctx.beginPath();
+                        ctx.moveTo(cx - 10, y);
+                        ctx.lineTo(panelX + 26, y);
+                        ctx.stroke();
+                        drawFieldArrow2D(cx - 92, y, Math.PI);
+
+                        ctx.beginPath();
+                        ctx.moveTo(cx + 10, y);
+                        ctx.lineTo(panelX + panelW - 26, y);
+                        ctx.stroke();
+                        drawFieldArrow2D(cx + 92, y, 0);
+                    } else {
+                        ctx.beginPath();
+                        ctx.moveTo(panelX + 26, y);
+                        ctx.lineTo(cx - 10, y);
+                        ctx.stroke();
+                        drawFieldArrow2D(cx - 92, y, 0);
+
+                        ctx.beginPath();
+                        ctx.moveTo(panelX + panelW - 26, y);
+                        ctx.lineTo(cx + 10, y);
+                        ctx.stroke();
+                        drawFieldArrow2D(cx + 92, y, Math.PI);
+                    }
+                }
+            }
+            ctx.restore();
+        }
+
+        function drawLine2D(){
+            const gap = 18;
+            const panelW = (canvas.width - gap * 3) / 2;
+            const panelH = canvas.height - 60;
+            const leftX = gap;
+            const rightX = gap * 2 + panelW;
+            const topY = 42;
+
+            drawLineTopView(leftX, topY, panelW, panelH);
+            drawLineSideView(rightX, topY, panelW, panelH);
+        }
+
+        function drawSheet2D(){
+            if(shouldDrawEquipotential()){
+                drawContours2D();
+            }
+
+            ctx.strokeStyle = distribution.sign > 0 ? "#ff3366" : "#33ccff";
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(70, distribution.y);
+            ctx.lineTo(canvas.width - 70, distribution.y);
+            ctx.stroke();
+
+            if(shouldDrawField()){
+                ctx.strokeStyle = "#00e5ff";
+                ctx.lineWidth = 1.25;
+                for(let x = 100; x <= canvas.width - 100; x += 60){
+                    if(distribution.sign > 0){
+                        if(distribution.y - 120 > 10){
+                            ctx.beginPath();
+                            ctx.moveTo(x, distribution.y - 18);
+                            ctx.lineTo(x, distribution.y - 120);
+                            ctx.stroke();
+                            drawFieldArrow2D(x, distribution.y - 72, -Math.PI / 2);
+                        }
+                        if(distribution.y + 120 < canvas.height - 10){
+                            ctx.beginPath();
+                            ctx.moveTo(x, distribution.y + 18);
+                            ctx.lineTo(x, distribution.y + 120);
+                            ctx.stroke();
+                            drawFieldArrow2D(x, distribution.y + 72, Math.PI / 2);
+                        }
+                    } else {
+                        if(distribution.y - 120 > 10){
+                            ctx.beginPath();
+                            ctx.moveTo(x, distribution.y - 120);
+                            ctx.lineTo(x, distribution.y - 18);
+                            ctx.stroke();
+                            drawFieldArrow2D(x, distribution.y - 72, Math.PI / 2);
+                        }
+                        if(distribution.y + 120 < canvas.height - 10){
+                            ctx.beginPath();
+                            ctx.moveTo(x, distribution.y + 120);
+                            ctx.lineTo(x, distribution.y + 18);
+                            ctx.stroke();
+                            drawFieldArrow2D(x, distribution.y + 72, -Math.PI / 2);
+                        }
+                    }
+                }
+            }
+
+            ctx.fillStyle = distribution.sign > 0 ? "#ff3366" : "#33ccff";
+            ctx.font = "bold 20px Segoe UI";
+            ctx.textAlign = "left";
+            ctx.fillText(distribution.sign > 0 ? "+ sheet" : "- sheet", 78, distribution.y - 18);
+        }
+
+        function draw2D(){
+            if(!is3D && canvas.width > 0){
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background heatmap with transparency
+                drawBackground();
+
+                if(distribution.kind === "point"){
+                    drawPoint2D();
+                } else if(distribution.kind === "line"){
+                    drawLine2D();
+                } else {
+                    drawSheet2D();
+                }
+            }
+            requestAnimationFrame(draw2D);
+        }
+
+        // --- 3D PHYSICS & RENDERING (Three.js) ---
+        function init3D(){
+            if(renderer) return;
+
+            scene = new THREE.Scene();
+            scene.background = null; // Transparent for watermark
+
+            camera = new THREE.PerspectiveCamera(
+                55,
+                container3d.clientWidth / container3d.clientHeight,
+                0.1,
+                2000
+            );
+            camera.position.set(0, 70, 150);
+
+            renderer = new THREE.WebGLRenderer({antialias:true, alpha: true});
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
+            renderer.setSize(container3d.clientWidth, container3d.clientHeight);
+            container3d.innerHTML = "";
+            container3d.appendChild(renderer.domElement);
+
+            orbit = new THREE.OrbitControls(camera, renderer.domElement);
+            orbit.enableDamping = true;
+            orbit.dampingFactor = 0.08;
+            orbit.rotateSpeed = 0.85;
+            orbit.zoomSpeed = 0.9;
+            orbit.panSpeed = 0.8;
+            orbit.minDistance = 35;
+            orbit.maxDistance = 420;
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.72);
+            scene.add(ambient);
+
+            const key = new THREE.DirectionalLight(0xffffff, 0.82);
+            key.position.set(90, 120, 70);
+            scene.add(key);
+
+            const fill = new THREE.DirectionalLight(0x66aaff, 0.28);
+            fill.position.set(-80, 50, -90);
+            scene.add(fill);
+
+            const grid = new THREE.GridHelper(220, 22, 0x00e5ff, 0x00e5ff);
+            grid.material.opacity = 0.2;
+            grid.material.transparent = true;
+            scene.add(grid);
+
+            const axes = new THREE.AxesHelper(35);
+            scene.add(axes);
+
+            window.addEventListener("resize", onResize);
+
+            if(!animationStarted){
+                animationStarted = true;
+                animate3D();
+            }
+        }
+
+        function onResize(){
+            if(!renderer || !camera) return;
+            const width = container3d.clientWidth;
+            const height = container3d.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function clearObjects(list){
+            list.forEach(obj => {
+                scene.remove(obj);
+                if(obj.geometry) obj.geometry.dispose();
+                if(obj.material){
+                    if(Array.isArray(obj.material)){
+                        obj.material.forEach(m => m.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                }
+            });
+            list.length = 0;
+        }
+
+        function addSourceObjects3D(){
+            const cColor = distribution.sign > 0 ? 0xff3366 : 0x33ccff;
+            const cEmissive = distribution.sign > 0 ? 0x660022 : 0x004466;
+
+            if(distribution.kind === "point"){
+                const sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(4, 28, 28),
+                    new THREE.MeshPhongMaterial({
+                        color: cColor,
+                        emissive: cEmissive
+                    })
+                );
+                scene.add(sphere);
+                sourceObjects.push(sphere);
+                return;
+            }
+
+            if(distribution.kind === "line"){
+                const cylinder = new THREE.Mesh(
+                    new THREE.CylinderGeometry(1.6, 1.6, 110, 28),
+                    new THREE.MeshPhongMaterial({
+                        color: cColor,
+                        emissive: cEmissive
+                    })
+                );
+                cylinder.position.set(0, 20, 0);
+                scene.add(cylinder);
+                sourceObjects.push(cylinder);
+                return;
+            }
+
+            const sheet = new THREE.Mesh(
+                new THREE.PlaneGeometry(120, 120),
+                new THREE.MeshPhongMaterial({
+                    color: cColor,
+                    emissive: cEmissive,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.28
+                })
+            );
+            sheet.rotation.x = -Math.PI / 2;
+            scene.add(sheet);
+            sourceObjects.push(sheet);
+        }
+
+        function makeTransparentMaterial(opacity){
+            return new THREE.MeshPhongMaterial({
+                color: 0xffaa00, // Neon Gold
+                emissive: 0x442200,
+                transparent: true,
+                opacity,
+                side: THREE.DoubleSide,
+                shininess: 55
+            });
+        }
+
+        function addEquipotentialObjects3D(){
+            if(distribution.kind === "point"){
+                const radii = [14, 24, 36, 50];
+                radii.forEach((radius, index) => {
+                    const shell = new THREE.Mesh(
+                        new THREE.SphereGeometry(radius, 36, 30),
+                        makeTransparentMaterial(0.16 - index * 0.02)
+                    );
+                    scene.add(shell);
+                    equipotentialObjects.push(shell);
+                });
+                return;
+            }
+
+            if(distribution.kind === "line"){
+                const radii = [10, 18, 28, 40];
+                radii.forEach((radius, index) => {
+                    const shell = new THREE.Mesh(
+                        new THREE.CylinderGeometry(radius, radius, 110, 48, 1, true),
+                        makeTransparentMaterial(0.16 - index * 0.02)
+                    );
+                    shell.position.set(0, 20, 0);
+                    scene.add(shell);
+                    equipotentialObjects.push(shell);
+                });
+                return;
+            }
+
+            const offsets = [-40, -24, -12, 12, 24, 40];
+            offsets.forEach((offset, index) => {
+                const plane = new THREE.Mesh(
+                    new THREE.PlaneGeometry(120, 120),
+                    makeTransparentMaterial(0.13 - index * 0.008)
+                );
+                plane.rotation.x = -Math.PI / 2;
+                plane.position.y = offset;
+                scene.add(plane);
+                equipotentialObjects.push(plane);
+            });
+        }
+
+        function addArrowHead3D(position, direction){
+            const geometry = new THREE.ConeGeometry(1.4, 4.2, 14);
+            const material = new THREE.MeshBasicMaterial({color: 0x00e5ff});
+            const cone = new THREE.Mesh(geometry, material);
+            const unit = direction.clone().normalize();
+            cone.position.copy(position);
+            cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), unit);
+            cone.position.add(unit.clone().multiplyScalar(2));
+            scene.add(cone);
+            fieldObjects.push(cone);
+        }
+
+        function addFieldLine3D(points, arrowT = 0.55){
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({color: 0x00e5ff});
+            const line = new THREE.Line(geometry, material);
+            scene.add(line);
+            fieldObjects.push(line);
+
+            const idx = Math.max(1, Math.min(points.length - 1, Math.floor((points.length - 1) * arrowT)));
+            const prev = points[idx - 1];
+            const curr = points[idx];
+            const dir = curr.clone().sub(prev);
+            if(dir.lengthSq() > 0){
+                addArrowHead3D(curr, dir);
+            }
+        }
+
+        function addArrowHelper3D(start, end){
+            const dir = end.clone().sub(start);
+            const len = dir.length();
+            if(len === 0) return;
+
+            const helper = new THREE.ArrowHelper(
+                dir.clone().normalize(),
+                start.clone(),
+                len,
+                0x00e5ff,
+                7,
+                3.5
+            );
+            scene.add(helper);
+            fieldObjects.push(helper);
+        }
+
+        function tracePointFieldLine3D(seed){
+            const points = [seed.clone()];
+            const pos = seed.clone();
+
+            for(let i = 0; i < 320; i++){
+                const dir = pos.clone().normalize().multiplyScalar(distribution.sign);
+                pos.add(dir.multiplyScalar(1.5));
+                points.push(pos.clone());
+
+                const r = pos.length();
+                if(distribution.sign > 0 && r > 95) break;
+                if(distribution.sign < 0 && r < 5.5) break;
+            }
+
+            return points;
+        }
+
+        function addFieldObjects3D(){
+            if(distribution.kind === "point"){
+                const seedRadius = distribution.sign > 0 ? 8 : 85;
+                const seeds = 30;
+                const offset = 2 / seeds;
+                const increment = Math.PI * (3 - Math.sqrt(5));
+
+                for(let i = 0; i < seeds; i++){
+                    const y = ((i * offset) - 1) + (offset / 2);
+                    const r = Math.sqrt(1 - y * y);
+                    const phi = i * increment;
+                    const x = Math.cos(phi) * r;
+                    const z = Math.sin(phi) * r;
+                    const seed = new THREE.Vector3(x * seedRadius, y * seedRadius, z * seedRadius);
+                    const points = tracePointFieldLine3D(seed);
+                    if(points.length > 1) addFieldLine3D(points, 0.55);
+                }
+                return;
+            }
+
+            if(distribution.kind === "line"){
+                const innerRadius = 6;
+                const outerRadius = 72;
+
+                for(let y = -30; y <= 70; y += 20){
+                    for(let i = 0; i < 16; i++){
+                        const angle = (i / 16) * 2 * Math.PI;
+                        const dir = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
+
+                        if(distribution.sign > 0){
+                            const start = new THREE.Vector3(dir.x * innerRadius, y, dir.z * innerRadius);
+                            const end = new THREE.Vector3(dir.x * outerRadius, y, dir.z * outerRadius);
+                            addFieldLine3D([start, end], 0.6);
+                        } else {
+                            const start = new THREE.Vector3(dir.x * outerRadius, y, dir.z * outerRadius);
+                            const end = new THREE.Vector3(dir.x * innerRadius, y, dir.z * innerRadius);
+                            const lineGeometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+                            const lineMaterial = new THREE.LineBasicMaterial({color: 0x00e5ff});
+                            const line = new THREE.Line(lineGeometry, lineMaterial);
+                            scene.add(line);
+                            fieldObjects.push(line);
+
+                            const arrowStart = start.clone().lerp(end, 0.28);
+                            const arrowEnd = start.clone().lerp(end, 0.72);
+                            addArrowHelper3D(arrowStart, arrowEnd);
+                        }
+                    }
+                }
+                return;
+            }
+
+            for(let x = -50; x <= 50; x += 16){
+                for(let z = -50; z <= 50; z += 22){
+                    if(distribution.sign > 0){
+                        addFieldLine3D([new THREE.Vector3(x, 2, z), new THREE.Vector3(x, 48, z)], 0.65);
+                        addFieldLine3D([new THREE.Vector3(x, -2, z), new THREE.Vector3(x, -48, z)], 0.65);
+                    } else {
+                        addFieldLine3D([new THREE.Vector3(x, 48, z), new THREE.Vector3(x, 2, z)], 0.35);
+                        addFieldLine3D([new THREE.Vector3(x, -48, z), new THREE.Vector3(x, -2, z)], 0.35);
+                    }
+                }
+            }
+        }
+
+        function rebuild3D(){
+            if(!scene) return;
+
+            setDistribution();
+            clearObjects(sourceObjects);
+            clearObjects(equipotentialObjects);
+            clearObjects(fieldObjects);
+
+            addSourceObjects3D();
+
+            if(shouldDrawEquipotential()){
+                addEquipotentialObjects3D();
+            }
+
+            if(shouldDrawField()){
+                addFieldObjects3D();
+            }
+
+            orbit.target.set(0, 16, 0);
+            orbit.update();
+        }
+
+        function animate3D(){
+            requestAnimationFrame(animate3D);
+            if(renderer && scene && camera){
+                orbit.update();
+                renderer.render(scene, camera);
+            }
+        }
+
+        function updateSceneMode(){
+            is3D = dimension.value === "3d";
+            canvas.style.display = is3D ? "none" : "block";
+            container3d.style.display = is3D ? "block" : "none";
+
+            if(is3D){
+                init3D();
+                rebuild3D();
+            }
+        }
+
+        setDistribution();
+        draw2D();
+        updateSceneMode();
+
+        dimension.addEventListener("change", updateSceneMode);
+        mode.addEventListener("change", () => {
+            setDistribution();
+            if(is3D && scene) rebuild3D();
+        });
+        showMode.addEventListener("change", () => {
+            if(is3D && scene) rebuild3D();
+        });
+    </script>
+</body>
+</html>
