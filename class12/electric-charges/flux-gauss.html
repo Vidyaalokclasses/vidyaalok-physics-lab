@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Flux Simulator | Vidyaalok Lab</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+            --accent: #ffd166;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 1rem 2rem;
+            background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .back-btn {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex-grow: 1;
+            padding: 1.5rem;
+            gap: 1.5rem;
+            height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
+
+        /* Control Panel */
+        .controls {
+            width: 380px;
+            flex-shrink: 0; 
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .controls h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            color: #e6f2ff;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .range-value {
+            min-width: 72px;
+            text-align: right;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            font-family: monospace;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        /* Formula Panel */
+        .formula-panel {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        .formula-line {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1.5;
+        }
+
+        .metric-note {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .results {
+            margin-top: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            text-align: center;
+        }
+
+        .results h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .force-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            font-family: monospace;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+        }
+
+        /* Right Panel Layout */
+        .right-panel {
+            flex-grow: 1;
+            min-width: 0; 
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* Transparent Watermark Logo */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75%; 
+            height: 75%;
+            background-image: url('../../logo.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.12; 
+            pointer-events: none; 
+            z-index: 0;
+        }
+
+        #sim3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @media (max-width: 900px) {
+            .workspace {
+                flex-direction: column;
+                overflow-y: auto;
+                height: auto;
+            }
+            .controls {
+                width: 100%;
+            }
+            .right-panel {
+                height: 600px;
+                flex-grow: 0;
+            }
+            body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Chapter 01</a>
+        <h1>Electric Flux Simulator</h1>
+    </nav>
+
+    <div class="workspace">
+        
+        <!-- Control Panel -->
+        <div class="controls">
+            <h2>Parameters</h2>
+
+            <div class="instructions" id="modeExplanation">
+                When the area vector is parallel to the electric field, the flux is maximum. As you tilt the surface, only the projected area contributes.
+            </div>
+
+            <div class="control-group">
+                <label for="fieldStrength">Electric Field Magnitude (E)</label>
+                <div class="range-row">
+                    <input id="fieldStrength" type="range" min="1" max="10" step="0.1" value="5">
+                    <div class="range-value" id="fieldStrengthValue">5.0 N/C</div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="areaRange">Surface Area (A)</label>
+                <div class="range-row">
+                    <input id="areaRange" type="range" min="1" max="16" step="0.1" value="4">
+                    <div class="range-value" id="areaValue">4.0 m²</div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="angleRange">Angle Between E & A (θ)</label>
+                <div class="range-row">
+                    <input id="angleRange" type="range" min="0" max="85" step="1" value="0">
+                    <div class="range-value" id="angleValue">0°</div>
+                </div>
+            </div>
+
+            <div class="formula-panel">
+                <div class="formula-line" id="formulaLine">
+                    \(\Phi = EA\cos\theta\)
+                </div>
+                <div class="metric-note" id="formulaNote">
+                    At \(\theta = 0^\circ\), the field lines pass normally through the surface.
+                </div>
+            </div>
+
+            <div class="results">
+                <h3>Total Electric Flux (Φ)</h3>
+                <div class="force-value" id="fluxReadout">20.00 N·m²/C</div>
+            </div>
+        </div>
+
+        <!-- Simulation Area -->
+        <div class="right-panel" id="simWrapper">
+            <div class="watermark"></div>
+            <!-- 3D Container -->
+            <div id="sim3d"></div>
+        </div>
+
+    </div>
+
+    <!-- MathJax & Three.js Libraries -->
+    <script>
+        window.MathJax = { tex:{ inlineMath:[['\\(','\\)']] }, svg:{ fontCache:'global' } };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        const fieldStrength = document.getElementById("fieldStrength");
+        const areaRange = document.getElementById("areaRange");
+        const angleRange = document.getElementById("angleRange");
+        
+        const fieldStrengthValue = document.getElementById("fieldStrengthValue");
+        const areaValue = document.getElementById("areaValue");
+        const angleValue = document.getElementById("angleValue");
+        const fluxReadout = document.getElementById("fluxReadout");
+        
+        const formulaLine = document.getElementById("formulaLine");
+        const formulaNote = document.getElementById("formulaNote");
+        const modeExplanation = document.getElementById("modeExplanation");
+        
+        const sim3d = document.getElementById("sim3d");
+
+        let scene, camera, renderer, orbit;
+        let planeMesh, planeOutline, areaVectorArrow;
+        let dynamicFieldArrows = [];
+
+        // --- RESIZE OBSERVER (Responsive 3D) ---
+        const resizeObserver = new ResizeObserver(entries => {
+            window.requestAnimationFrame(() => {
+                for (let entry of entries) {
+                    if (entry.target.id === 'simWrapper') {
+                        if (renderer && camera) {
+                            camera.aspect = entry.contentRect.width / entry.contentRect.height;
+                            camera.updateProjectionMatrix();
+                            renderer.setSize(entry.contentRect.width, entry.contentRect.height);
+                        }
+                    }
+                }
+            });
+        });
+        resizeObserver.observe(document.getElementById('simWrapper'));
+
+        function init3D(){
+            scene = new THREE.Scene();
+            scene.background = null; // Transparent background for watermark
+
+            camera = new THREE.PerspectiveCamera(52, sim3d.clientWidth / sim3d.clientHeight, 0.1, 1000);
+            camera.position.set(18, 13, 28);
+            
+            renderer = new THREE.WebGLRenderer({antialias:true, alpha: true});
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
+            renderer.setSize(sim3d.clientWidth, sim3d.clientHeight);
+            sim3d.appendChild(renderer.domElement);
+            
+            orbit = new THREE.OrbitControls(camera, renderer.domElement);
+            orbit.enableDamping = true;
+            orbit.dampingFactor = 0.08;
+            orbit.minDistance = 14;
+            orbit.maxDistance = 65;
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+            const key = new THREE.DirectionalLight(0xffffff, 0.8);
+            key.position.set(22, 28, 16);
+            scene.add(key);
+            
+            const fill = new THREE.DirectionalLight(0x80dfff, 0.3);
+            fill.position.set(-20, 12, -14);
+            scene.add(fill);
+            
+            const grid = new THREE.GridHelper(40, 20, 0x00e5ff, 0x00e5ff);
+            grid.material.opacity = 0.15;
+            grid.material.transparent = true;
+            grid.position.y = -8;
+            scene.add(grid);
+            scene.add(new THREE.AxesHelper(8));
+
+            planeMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(1, 1),
+                new THREE.MeshPhongMaterial({color:0xffaa00, transparent:true, opacity:0.38, side:THREE.DoubleSide})
+            );
+            scene.add(planeMesh);
+            
+            planeOutline = new THREE.LineSegments(
+                new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1)),
+                new THREE.LineBasicMaterial({color:0xffd166})
+            );
+            scene.add(planeOutline);
+
+            areaVectorArrow = new THREE.ArrowHelper(new THREE.Vector3(0,0,1), new THREE.Vector3(0,0,0), 7, 0xffd166, 0.95, 0.55);
+            scene.add(areaVectorArrow);
+
+            buildFieldLines();
+            animate();
+        }
+
+        function buildFieldLines(){
+            dynamicFieldArrows.forEach(arrow => scene.remove(arrow));
+            dynamicFieldArrows = [];
+            [-6,-2,2,6].forEach(y => {
+                [-8,-3,3,8].forEach(x => {
+                    // Field arrows coming from behind the plane
+                    const arrow = new THREE.ArrowHelper(new THREE.Vector3(0,0,1), new THREE.Vector3(x,y,-15), 30, 0x00e5ff, 1.15, 0.58);
+                    dynamicFieldArrows.push(arrow);
+                    scene.add(arrow);
+                });
+            });
+        }
+
+        function updateScene(){
+            const E = parseFloat(fieldStrength.value);
+            const area = parseFloat(areaRange.value);
+            const theta = parseFloat(angleRange.value);
+            const thetaRad = theta * Math.PI / 180;
+            const side = Math.sqrt(area) * 3.2;
+            const flux = E * area * Math.cos(thetaRad);
+
+            planeMesh.scale.set(side, side, 1);
+            planeOutline.scale.set(side, side, 1);
+            planeMesh.rotation.set(0, thetaRad, 0);
+            planeOutline.rotation.set(0, thetaRad, 0);
+
+            const normal = new THREE.Vector3(0,0,1).applyEuler(planeMesh.rotation).normalize();
+            areaVectorArrow.setDirection(normal);
+            areaVectorArrow.setLength(Math.max(5, side * 0.7), 0.95, 0.55);
+
+            fieldStrengthValue.textContent = `${E.toFixed(1)} N/C`;
+            areaValue.textContent = `${area.toFixed(1)} m²`;
+            angleValue.textContent = `${theta.toFixed(0)}°`;
+            fluxReadout.textContent = `${flux.toFixed(2)} N·m²/C`;
+
+            formulaLine.innerHTML = `\\(\\Phi = EA\\cos\\theta\\)<br>\\(\\Phi = ${E.toFixed(1)} \\times ${area.toFixed(1)} \\times \\cos ${theta.toFixed(0)}^\\circ\\)<br>\\(\\Phi = ${flux.toFixed(2)}\\)`;
+            
+            modeExplanation.textContent = theta === 0
+                ? "When the area vector is parallel to the electric field, the flux is maximum."
+                : "As the surface tilts, only the projected area contributes, so the electric flux decreases with angle.";
+                
+            formulaNote.innerHTML = theta === 0
+                ? "At \\(\\theta = 0^\\circ\\), the field lines pass normally through the surface."
+                : "Tilting the surface changes the effective area seen by the field to \\(A\\cos\\theta\\).";
+
+            if(window.MathJax && window.MathJax.typesetPromise){
+                window.MathJax.typesetPromise([formulaLine, formulaNote]);
+            }
+        }
+
+        function animate(){
+            requestAnimationFrame(animate);
+            if(orbit) orbit.update();
+            if(renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        fieldStrength.addEventListener("input", updateScene);
+        areaRange.addEventListener("input", updateScene);
+        angleRange.addEventListener("input", updateScene);
+        
+        init3D();
+        updateScene();
+    </script>
+</body>
+</html>
