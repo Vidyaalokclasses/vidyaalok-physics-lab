@@ -63,7 +63,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            opacity: 0.06; /* Slightly lower opacity so equations remain perfectly legible */
+            opacity: 0.06; 
             pointer-events: none;
             z-index: 0;
         }
@@ -111,18 +111,6 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .primary-btn {
-            background: rgba(0, 229, 255, 0.1);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-        }
-
-        .primary-btn:hover {
-            background: var(--primary);
-            color: var(--bg-dark);
-            box-shadow: 0 0 15px var(--card-glow);
         }
 
         .ghost-btn {
@@ -380,15 +368,11 @@
             background: var(--panel-bg);
             transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
             animation: rise 0.45s ease both;
-        }
-
-        .node-card.formula {
-            cursor: default;
             display: flex;
             flex-direction: column;
         }
 
-        .node-card.formula:hover {
+        .node-card:hover {
             transform: translateY(-4px);
             border-color: rgba(255, 0, 127, 0.4);
             box-shadow: 0 5px 20px rgba(255, 0, 127, 0.15);
@@ -422,8 +406,15 @@
             font-size: 18px;
             line-height: 1.2;
         }
+        
+        .card-desc {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
 
-        .formula-box {
+        .formula-box, .graph-box {
             margin-top: auto;
             padding: 14px;
             border-radius: 8px;
@@ -431,6 +422,20 @@
             border: 1px solid rgba(255,255,255,0.05);
             overflow-x: auto;
             overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .graph-box {
+            padding: 20px 10px;
+        }
+
+        .inline-graph {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
         }
 
         .formula-main {
@@ -457,6 +462,7 @@
             font-size: 13px;
             line-height: 1.5;
             text-align: center;
+            width: 100%;
         }
 
         .empty-state {
@@ -469,14 +475,8 @@
         }
 
         @keyframes rise {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media(max-width: 640px) {
@@ -498,7 +498,6 @@
         <div class="navbar">
             <h1 class="brand">Chapter 01</h1>
             <div class="nav-actions">
-                <!-- Goes back to the Chapter 1 Index dashboard -->
                 <button class="ghost-btn" onclick="window.location.href='index.html'">← Back To Dashboard</button>
             </div>
         </div>
@@ -506,9 +505,9 @@
         <main class="main">
             <section class="hero">
                 <div class="hero-card">
-                    <h1>Formula Reference</h1>
+                    <h1>Formula & Graph Reference</h1>
                     <p>
-                        Open a topic from the sidebar to view its formulas. This isolated view keeps the screen clean and focused, perfect for rapid JEE and NEET revision.
+                        Open a topic from the sidebar to view its formulas and standard graphs. This isolated view keeps the screen clean and focused, perfect for rapid JEE and NEET revision.
                     </p>
                 </div>
             </section>
@@ -527,11 +526,20 @@
     </div>
 
     <script>
+    // Helper function for inline SVGs
+    function createAxes(yLabel, isVarying = false) {
+        return `
+            <polyline points="20,10 20,130 180,130" stroke="#a0aabf" stroke-width="2" fill="none"/>
+            <text x="185" y="135" fill="#a0aabf" font-size="12">r</text>
+            <text x="5" y="15" fill="#a0aabf" font-size="12">${yLabel}</text>
+        `;
+    }
+
     const flowData = {
         id: "root",
         title: "Electric Charges & Fields",
         type: "root",
-        description: "Open a topic, then a subtopic, then the exact formula card you want.",
+        description: "Open a topic to view standard formulas and graphs.",
         children: [
             {
                 id: "charge",
@@ -545,23 +553,8 @@
                         type: "subtopic",
                         description: "Quantisation, conservation, and additivity.",
                         children: [
-                            { id: "charge-quantisation", title: "Quantisation Of Charge", type: "formula", formula: "q = \\pm ne", note: "Here n is an integer and e = 1.6 × 10^-19 C.", important: true },
-                            { id: "electron-proton-charge", title: "Magnitude Of Fundamental Charge", type: "formula", formula: "e = 1.6 \\times 10^{-19}\\,\\text{C}", note: "Electron has charge -e and proton has charge +e.", important: true },
-                            { id: "charge-conservation", title: "Conservation Of Charge", type: "formula", formula: "q_{\\text{before}} = q_{\\text{after}}", note: "Charge can move from one body to another, but total charge remains conserved." }
-                        ]
-                    },
-                    {
-                        id: "charge-density",
-                        title: "Charge Density",
-                        type: "subtopic",
-                        description: "Linear, surface, and volume distributions.",
-                        children: [
-                            { id: "linear-density", title: "Linear Charge Density", type: "formula", formula: "\\lambda = \\frac{dq}{dl}", note: "Charge per unit length, SI unit C m<sup>-1</sup>." },
-                            { id: "linear-total", title: "Charge On Line Distribution", type: "formula", formula: "q = \\int \\lambda\\, dl", note: "Use integration when &lambda; varies along the length." },
-                            { id: "surface-density", title: "Surface Charge Density", type: "formula", formula: "\\sigma = \\frac{dq}{dA}", note: "Charge per unit area, SI unit C m<sup>-2</sup>." },
-                            { id: "surface-total", title: "Charge On Surface Distribution", type: "formula", formula: "q = \\int \\sigma\\, dA", note: "Use integration when &sigma; varies over the surface." },
-                            { id: "volume-density", title: "Volume Charge Density", type: "formula", formula: "\\rho = \\frac{dq}{dV}", note: "Charge per unit volume, SI unit C m<sup>-3</sup>." },
-                            { id: "volume-total", title: "Charge On Volume Distribution", type: "formula", formula: "q = \\int \\rho\\, dV", note: "Use integration when &rho; varies with position." }
+                            { id: "charge-quantisation", title: "Quantisation", type: "formula", formula: "q = \\pm ne", note: "n is an integer, e = 1.6 × 10^-19 C.", important: true },
+                            { id: "charge-conservation", title: "Conservation", type: "formula", formula: "q_{\\text{before}} = q_{\\text{after}}", note: "Total charge remains conserved in an isolated system." }
                         ]
                     }
                 ]
@@ -579,19 +572,7 @@
                         description: "Vacuum, medium, and dielectric relation.",
                         children: [
                             { id: "coulomb-vacuum", title: "In Vacuum", type: "formula", formula: "F = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{|q_1 q_2|}{r^2}", note: "Acts along the line joining the charges.", important: true },
-                            { id: "coulomb-medium", title: "In Medium", type: "formula", formula: "F = \\frac{1}{4\\pi\\varepsilon} \\cdot \\frac{|q_1 q_2|}{r^2}", note: "Here &epsilon; = K&epsilon;<sub>0</sub>." },
-                            { id: "dielectric-constant", title: "Dielectric Constant Relation", type: "formula", formula: "K = \\frac{\\varepsilon}{\\varepsilon_0}", note: "Also called the relative permittivity of the medium." },
-                            { id: "medium-force-relation", title: "Force In Medium vs Vacuum", type: "formula", formula: "F_{\\text{medium}} = \\frac{F_{\\text{vacuum}}}{K}", note: "Force decreases in a medium with dielectric constant K." }
-                        ]
-                    },
-                    {
-                        id: "coulomb-vector",
-                        title: "Vector Form And Superposition",
-                        type: "subtopic",
-                        description: "Direction-sensitive force and net force due to many charges.",
-                        children: [
-                            { id: "coulomb-vector-form", title: "Vector Form", type: "formula", formula: "\\vec F_{12} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{q_1 q_2}{r^2}\\, \\hat r", note: "r&#770; is the unit vector along the line joining the charges." },
-                            { id: "superposition", title: "Principle Of Superposition", type: "formula", formula: "\\vec F_{\\text{net}} = \\vec F_1 + \\vec F_2 + \\vec F_3 + \\cdots", note: "Net force is the vector sum of all individual electrostatic forces." }
+                            { id: "coulomb-medium", title: "In Medium", type: "formula", formula: "F_{\\text{medium}} = \\frac{F_{\\text{vacuum}}}{K}", note: "K is the dielectric constant (relative permittivity)." }
                         ]
                     }
                 ]
@@ -603,55 +584,24 @@
                 description: "Field intensity and standard electric field results.",
                 children: [
                     {
-                        id: "field-definition",
-                        title: "Definition And Basic Relations",
-                        type: "subtopic",
-                        description: "Field in terms of force and motion.",
-                        children: [
-                            { id: "field-intensity", title: "Electric Field Intensity", type: "formula", formula: "E = \\frac{F}{q_0}", note: "Defined using a small positive test charge q<sub>0</sub>.", important: true },
-                            { id: "force-on-charge", title: "Force On Charge", type: "formula", formula: "F = qE", note: "Direction is along E for positive charge and opposite for negative charge." },
-                            { id: "acceleration-in-field", title: "Acceleration In Uniform Field", type: "formula", formula: "a = \\frac{qE}{m}", note: "Useful for charged particle motion in a uniform electric field." }
-                        ]
-                    },
-                    {
                         id: "field-point-charge",
-                        title: "Field Due To Charges",
+                        title: "Point Charges",
                         type: "subtopic",
-                        description: "Point charge and many-charge systems.",
+                        description: "Field due to discrete point charges.",
                         children: [
-                            { id: "field-point", title: "Field Due To Point Charge", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{q}{r^2}", note: "Directed radially outward for +q and inward for -q.", important: true },
-                            { id: "field-many", title: "Field Due To System Of Charges", type: "formula", formula: "\\vec E = \\vec E_1 + \\vec E_2 + \\vec E_3 + \\cdots", note: "Electric field obeys vector superposition." }
-                        ]
-                    },
-                    {
-                        id: "symmetric-results",
-                        title: "Symmetric Results",
-                        type: "subtopic",
-                        description: "Important quick results for common arrangements.",
-                        children: [
-                            { id: "polygon-centre", title: "Equal Charges On Regular Polygon", type: "formula", formula: "E_{\\text{centre}} = 0", note: "For identical charges symmetrically placed at corners of a regular polygon, net field at centre is zero." },
-                            { id: "full-ring-centre", title: "Field At Centre Of Complete Ring", type: "formula", formula: "E_{\\text{centre}} = 0", note: "By symmetry, the field at the centre of a uniformly charged complete ring is zero." }
+                            { id: "field-intensity", title: "Electric Field Intensity", type: "formula", formula: "E = \\frac{F}{q_0}", note: "Defined using a small positive test charge." },
+                            { id: "field-point", title: "Field Due To Point Charge", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{q}{r^2}", note: "Directed radially outward for +q.", important: true }
                         ]
                     },
                     {
                         id: "continuous-distributions",
-                        title: "Continuous Charge Distributions",
+                        title: "Continuous Distributions",
                         type: "subtopic",
-                        description: "Wire, line, arc, ring, disc, and sheet formulas.",
+                        description: "Wire, ring, disc, and sheet formulas.",
                         children: [
-                            { id: "finite-wire-general", title: "Finite Line Charge", type: "formula", formula: "E = \\frac{k\\lambda}{r}(\\sin\\theta_1 + \\sin\\theta_2)", note: "Field at perpendicular distance r from a finite uniformly charged wire." },
-                            { id: "finite-wire-symmetric", title: "Finite Wire Symmetric Case", type: "formula", formula: "E = \\frac{2k\\lambda \\sin\\theta}{r}", note: "Used when the point lies on the perpendicular bisector of the wire." },
-                            { id: "semi-infinite-wire", title: "Semi-Infinite Wire", type: "formula", formula: "E = \\frac{k\\lambda}{r}", note: "Special case of the finite-wire result." },
                             { id: "line-field", title: "Infinite Line Charge", type: "formula", formula: "E = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}", note: "Field is radial and perpendicular to the line.", important: true },
-                            { id: "arc-centre", title: "Uniformly Charged Arc At Centre", type: "formula", formula: "E = \\frac{2k\\lambda \\sin(\\theta/2)}{r}", note: "&theta; is the angular width of the arc in radians." },
-                            { id: "semicircle-centre", title: "Semicircular Arc At Centre", type: "formula", formula: "E = \\frac{2k\\lambda}{r}", note: "Special case of the charged arc formula for &theta; = &pi;." },
-                            { id: "ring-axis", title: "Ring On Its Axis", type: "formula", formula: "E = \\frac{kQx}{(R^2 + x^2)^{3/2}}", note: "Field at a point on the axis of a uniformly charged ring." },
-                            { id: "ring-axis-maximum-position", title: "Position Of Maximum Field", type: "formula", formula: "x = \\frac{R}{\\sqrt{2}}", note: "The field due to a uniformly charged ring is maximum at this axial position." },
-                            { id: "ring-axis-maximum", title: "Maximum Field On Ring Axis", type: "formula", formula: "E_{\\max} = \\frac{2kQ}{3\\sqrt{3}R^2}", note: "Maximum value of field on the ring axis." },
-                            { id: "disc-axis", title: "Disc On Its Axis", type: "formula", formula: "E = \\frac{\\sigma}{2\\varepsilon_0} \\left[1 - \\frac{x}{\\sqrt{x^2 + R^2}}\\right]", note: "Field at a point on the axis of a uniformly charged disc." },
-                            { id: "sheet-field", title: "Infinite Plane Sheet", type: "formula", formula: "E = \\frac{\\sigma}{2\\varepsilon_0}", note: "Uniform field on each side of the sheet.", important: true },
-                            { id: "conductor-surface-field", title: "Just Outside Conductor", type: "formula", formula: "E = \\frac{\\sigma}{\\varepsilon_0}", note: "Normal to the conductor surface." },
-                            { id: "inside-conductor-field", title: "Inside A Conductor", type: "formula", formula: "E = 0", note: "Electrostatic field inside a conductor is zero." }
+                            { id: "ring-axis", title: "Ring On Its Axis", type: "formula", formula: "E = \\frac{kQx}{(R^2 + x^2)^{3/2}}", note: "Maximum at x = R/√2." },
+                            { id: "sheet-field", title: "Infinite Plane Sheet", type: "formula", formula: "E = \\frac{\\sigma}{2\\varepsilon_0}", note: "Uniform field, independent of distance.", important: true }
                         ]
                     }
                 ]
@@ -663,96 +613,161 @@
                 description: "Dipole moment, field, torque, and energy.",
                 children: [
                     {
-                        id: "dipole-basic",
-                        title: "Basic Dipole Quantities",
-                        type: "subtopic",
-                        description: "Dipole moment and charge separation.",
-                        children: [
-                            { id: "dipole-moment", title: "Dipole Moment", type: "formula", formula: "p = q \\cdot 2a", note: "Direction is from negative to positive charge.", important: true },
-                            { id: "dipole-short", title: "Short Dipole Condition", type: "formula", formula: "r \\gg a", note: "Used for far-point approximations in dipole field formulas." }
-                        ]
-                    },
-                    {
                         id: "dipole-field-axial",
-                        title: "Field On Axial Line",
+                        title: "Field on Axes",
                         type: "subtopic",
-                        description: "Exact and short-dipole formulas on the axial line.",
+                        description: "Formulas for a short dipole (r >> a).",
                         children: [
-                            { id: "dipole-axial-exact", title: "Exact Axial Field", type: "formula", formula: "E_{\\text{axial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{2pr}{(r^2 - a^2)^2}", note: "Direction is along the dipole axis." },
-                            { id: "dipole-axial-short", title: "Short Dipole Axial Field", type: "formula", formula: "E_{\\text{axial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{2p}{r^3}", note: "Valid for r >> a.", important: true }
-                        ]
-                    },
-                    {
-                        id: "dipole-field-equitorial",
-                        title: "Field On Equatorial Line",
-                        type: "subtopic",
-                        description: "Exact and short-dipole formulas on the equatorial line.",
-                        children: [
-                            { id: "dipole-equitorial-exact", title: "Exact Equatorial Field", type: "formula", formula: "E_{\\text{equitorial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{p}{(r^2 + a^2)^{3/2}}", note: "Direction is opposite to the dipole moment." },
-                            { id: "dipole-equitorial-short", title: "Short Dipole Equatorial Field", type: "formula", formula: "E_{\\text{equitorial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{p}{r^3}", note: "Valid for r >> a.", important: true }
-                        ]
-                    },
-                    {
-                        id: "dipole-general",
-                        title: "Field At General Position",
-                        type: "subtopic",
-                        description: "Useful short-dipole general-point results.",
-                        children: [
-                            { id: "dipole-general-magnitude", title: "Magnitude Of Field", type: "formula", formula: "E = \\frac{kp}{r^3}\\sqrt{1 + 3\\cos^2\\theta}", note: "Standard short-dipole result at a general position." },
-                            { id: "dipole-general-angle", title: "Direction Formula", type: "formula", formula: "\\tan\\alpha = \\frac{1}{2}\\tan\\theta", note: "α is the angle between electric field and radial direction." }
+                            { id: "dipole-axial-short", title: "Axial Field", type: "formula", formula: "E_{\\text{axial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{2p}{r^3}", note: "Direction is same as dipole moment." },
+                            { id: "dipole-equitorial-short", title: "Equatorial Field", type: "formula", formula: "E_{\\text{equi}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{p}{r^3}", note: "Direction is opposite to dipole moment.", important: true }
                         ]
                     },
                     {
                         id: "dipole-torque-energy",
-                        title: "Torque And Potential Energy",
+                        title: "Torque & Energy",
                         type: "subtopic",
-                        description: "Dipole placed in a uniform electric field.",
+                        description: "Dipole in a uniform electric field.",
                         children: [
-                            { id: "dipole-torque-vector", title: "Torque Vector Form", type: "formula", formula: "\\vec\\tau = \\vec p \\times \\vec E", note: "Torque tends to align the dipole with the field." },
                             { id: "dipole-torque", title: "Torque Magnitude", type: "formula", formula: "\\tau = pE\\sin\\theta", note: "Maximum when θ = 90°.", important: true },
-                            { id: "dipole-energy", title: "Potential Energy", type: "formula", formula: "U = -pE\\cos\\theta", note: "Minimum when dipole is aligned with the field.", important: true }
+                            { id: "dipole-energy", title: "Potential Energy", type: "formula", formula: "U = -pE\\cos\\theta", note: "Minimum (stable) when aligned with field." }
                         ]
                     }
                 ]
             },
             {
                 id: "flux-gauss",
-                title: "Electric Flux And Gauss's Law",
+                title: "Flux & Gauss's Law",
                 type: "topic",
-                description: "Flux and direct Gauss law results.",
+                description: "Gauss's law and its applications.",
                 children: [
                     {
                         id: "flux",
-                        title: "Electric Flux",
-                        type: "subtopic",
-                        description: "Flux through plane and closed surfaces.",
-                        children: [
-                            { id: "flux-plane", title: "Flux Through Plane Surface", type: "formula", formula: "\\Phi = EA\\cos\\theta", note: "θ is the angle between E and the area vector.", important: true },
-                            { id: "flux-closed", title: "Flux Through Closed Surface", type: "formula", formula: "\\Phi = \\oint \\vec E \\cdot d\\vec A", note: "For a closed surface the area vector is always outward." }
-                        ]
-                    },
-                    {
-                        id: "gauss-law",
                         title: "Gauss's Law",
                         type: "subtopic",
                         description: "Core law and enclosed charge form.",
                         children: [
-                            { id: "gauss-law-formula", title: "Integral Form", type: "formula", formula: "\\oint \\vec E \\cdot d\\vec A = \\frac{q_{\\text{enc}}}{\\varepsilon_0}", note: "Gauss's law relates flux through a closed surface to charge enclosed.", important: true }
+                            { id: "flux-plane", title: "Electric Flux", type: "formula", formula: "\\Phi = EA\\cos\\theta", note: "θ is the angle between E and the area vector." },
+                            { id: "gauss-law-formula", title: "Integral Form", type: "formula", formula: "\\oint \\vec E \\cdot d\\vec A = \\frac{q_{\\text{enc}}}{\\varepsilon_0}", note: "Relates flux through a closed surface to charge enclosed.", important: true }
                         ]
                     },
                     {
                         id: "gauss-applications",
-                        title: "Applications Of Gauss's Law",
+                        title: "Spheres & Shells",
                         type: "subtopic",
-                        description: "High-yield symmetry-based results.",
+                        description: "Results derived from spherical symmetry.",
                         children: [
-                            { id: "gauss-line", title: "Infinite Line Charge", type: "formula", formula: "E = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}", note: "Obtained using a cylindrical Gaussian surface." },
-                            { id: "gauss-sheet", title: "Infinite Plane Sheet", type: "formula", formula: "E = \\frac{\\sigma}{2\\varepsilon_0}", note: "Obtained using a pillbox Gaussian surface." },
-                            { id: "gauss-conductor", title: "Conductor Surface", type: "formula", formula: "E = \\frac{\\sigma}{\\varepsilon_0}", note: "Applies just outside a conductor surface." },
-                            { id: "shell-outside", title: "Thin Spherical Shell Outside", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Q}{r^2}", note: "Outside the shell it behaves like a point charge." },
-                            { id: "shell-inside", title: "Thin Spherical Shell Inside", type: "formula", formula: "E = 0", note: "Inside a thin charged spherical shell the field is zero." },
-                            { id: "solid-sphere-outside", title: "Solid Sphere Outside", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Q}{r^2}", note: "Outside a uniformly charged non-conducting sphere." },
-                            { id: "solid-sphere-inside", title: "Solid Sphere Inside", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Qr}{R^3}", note: "Inside a uniformly charged non-conducting sphere, E varies linearly with r." }
+                            { id: "shell-outside", title: "Shell Outside (r > R)", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Q}{r^2}", note: "Behaves like a point charge." },
+                            { id: "shell-inside", title: "Shell Inside (r < R)", type: "formula", formula: "E = 0", note: "No enclosed charge.", important: true },
+                            { id: "solid-sphere-inside", title: "Solid Non-Conducting Inside", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Qr}{R^3}", note: "Field varies linearly with distance r." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "graphs",
+                title: "Important Graphs",
+                type: "topic",
+                description: "Visual representation of key electrostatic relationships.",
+                children: [
+                    {
+                        id: "graphs-point-charge",
+                        title: "Point Charge",
+                        type: "subtopic",
+                        description: "Field and Potential variation with distance.",
+                        children: [
+                            { 
+                                id: "graph-e-point", 
+                                title: "Electric Field vs r", 
+                                type: "graph", 
+                                desc: "E ∝ 1/r²",
+                                graph: `
+                                <svg viewBox="0 0 200 150" class="inline-graph">
+                                    ${createAxes('E')}
+                                    <path d="M 30,20 Q 40,110 170,120" stroke="#00e5ff" stroke-width="3" fill="none"/>
+                                </svg>
+                                `,
+                                note: "Field drops off rapidly following inverse square law." 
+                            },
+                            { 
+                                id: "graph-v-point", 
+                                title: "Potential vs r", 
+                                type: "graph", 
+                                desc: "V ∝ 1/r",
+                                graph: `
+                                <svg viewBox="0 0 200 150" class="inline-graph">
+                                    ${createAxes('V')}
+                                    <path d="M 30,40 Q 60,90 170,110" stroke="#ff007f" stroke-width="3" fill="none"/>
+                                </svg>
+                                `,
+                                note: "Potential drops off slower than the electric field." 
+                            }
+                        ]
+                    },
+                    {
+                        id: "graphs-conducting-sphere",
+                        title: "Conducting Sphere / Shell",
+                        type: "subtopic",
+                        description: "Charge resides entirely on the outer surface.",
+                        children: [
+                            { 
+                                id: "graph-e-shell", 
+                                title: "Electric Field vs r", 
+                                type: "graph", 
+                                desc: "E = 0 (Inside), E ∝ 1/r² (Outside)",
+                                important: true,
+                                graph: `
+                                <svg viewBox="0 0 200 150" class="inline-graph">
+                                    ${createAxes('E')}
+                                    <line x1="80" y1="130" x2="80" y2="20" stroke="#ffaa00" stroke-width="1" stroke-dasharray="4"/>
+                                    <text x="75" y="145" fill="#ffaa00" font-size="10">R</text>
+                                    <line x1="20" y1="128" x2="80" y2="128" stroke="#00e5ff" stroke-width="3"/>
+                                    <line x1="80" y1="128" x2="80" y2="30" stroke="#00e5ff" stroke-width="2" stroke-dasharray="2"/>
+                                    <path d="M 80,30 Q 100,110 170,120" stroke="#00e5ff" stroke-width="3" fill="none"/>
+                                </svg>
+                                `,
+                                note: "Discontinuous jump at surface r = R." 
+                            },
+                            { 
+                                id: "graph-v-shell", 
+                                title: "Potential vs r", 
+                                type: "graph", 
+                                desc: "V = Constant (Inside), V ∝ 1/r (Outside)",
+                                graph: `
+                                <svg viewBox="0 0 200 150" class="inline-graph">
+                                    ${createAxes('V')}
+                                    <line x1="80" y1="130" x2="80" y2="20" stroke="#ffaa00" stroke-width="1" stroke-dasharray="4"/>
+                                    <text x="75" y="145" fill="#ffaa00" font-size="10">R</text>
+                                    <line x1="20" y1="50" x2="80" y2="50" stroke="#ff007f" stroke-width="3"/>
+                                    <path d="M 80,50 Q 110,90 170,110" stroke="#ff007f" stroke-width="3" fill="none"/>
+                                </svg>
+                                `,
+                                note: "Potential is continuous. Inside potential equals surface potential." 
+                            }
+                        ]
+                    },
+                    {
+                        id: "graphs-non-conducting-sphere",
+                        title: "Solid Non-Conducting Sphere",
+                        type: "subtopic",
+                        description: "Charge is distributed uniformly throughout the volume.",
+                        children: [
+                            { 
+                                id: "graph-e-solid", 
+                                title: "Electric Field vs r", 
+                                type: "graph", 
+                                desc: "E ∝ r (Inside), E ∝ 1/r² (Outside)",
+                                important: true,
+                                graph: `
+                                <svg viewBox="0 0 200 150" class="inline-graph">
+                                    ${createAxes('E')}
+                                    <line x1="80" y1="130" x2="80" y2="20" stroke="#ffaa00" stroke-width="1" stroke-dasharray="4"/>
+                                    <text x="75" y="145" fill="#ffaa00" font-size="10">R</text>
+                                    <line x1="20" y1="130" x2="80" y2="30" stroke="#00e5ff" stroke-width="3"/>
+                                    <path d="M 80,30 Q 100,110 170,120" stroke="#00e5ff" stroke-width="3" fill="none"/>
+                                </svg>
+                                `,
+                                note: "Field is maximum at the surface r = R." 
+                            }
                         ]
                     }
                 ]
@@ -765,12 +780,10 @@
     function findNodeById(node, id){
         if(node.id === id) return node;
         if(!node.children) return null;
-
         for(const child of node.children){
             const found = findNodeById(child, id);
             if(found) return found;
         }
-
         return null;
     }
 
@@ -792,10 +805,6 @@
 
     function formatFormulaText(text){
         return `\\[${text}\\]`;
-    }
-
-    function formatNoteText(text){
-        return text;
     }
 
     function renderBreadcrumbs(){
@@ -822,13 +831,13 @@
         backOneBtn.disabled = nodes.length <= 1;
     }
 
-    function createNodeCard(node, extraClass = ""){
+    function createNodeCard(node){
         const card = document.createElement("div");
-        card.className = `node-card ${node.type} ${extraClass}`.trim();
+        card.className = `node-card ${node.type}`;
 
         const kicker = document.createElement("div");
         kicker.className = "card-kicker";
-        kicker.textContent = "Formula";
+        kicker.textContent = node.type === "graph" ? "Standard Graph" : "Formula";
 
         if(node.important){
             const tag = document.createElement("span");
@@ -843,6 +852,13 @@
         title.textContent = node.title;
         card.appendChild(title);
 
+        if(node.desc) {
+            const desc = document.createElement("p");
+            desc.className = "card-desc";
+            desc.textContent = node.desc;
+            card.appendChild(desc);
+        }
+
         if(node.formula){
             const formulaBox = document.createElement("div");
             formulaBox.className = "formula-box";
@@ -855,11 +871,22 @@
             if(node.note){
                 const formulaNote = document.createElement("div");
                 formulaNote.className = "formula-note";
-                formulaNote.innerHTML = formatNoteText(node.note);
+                formulaNote.textContent = node.note;
                 formulaBox.appendChild(formulaNote);
             }
-
             card.appendChild(formulaBox);
+        } else if (node.graph) {
+            const graphBox = document.createElement("div");
+            graphBox.className = "graph-box";
+            graphBox.innerHTML = node.graph;
+
+            if(node.note){
+                const graphNote = document.createElement("div");
+                graphNote.className = "formula-note";
+                graphNote.textContent = node.note;
+                graphBox.appendChild(graphNote);
+            }
+            card.appendChild(graphBox);
         }
 
         return card;
@@ -869,7 +896,7 @@
         return (topic.children || []).map(subtopic => ({
             title: subtopic.title,
             description: subtopic.description,
-            formulas: subtopic.children || []
+            items: subtopic.children || []
         }));
     }
 
@@ -930,12 +957,12 @@
                 `;
                 panel.appendChild(panelHeader);
 
-                const formulaList = document.createElement("div");
-                formulaList.className = "formula-list";
-                group.formulas.forEach(formulaNode => {
-                    formulaList.appendChild(createNodeCard(formulaNode, "formula"));
+                const list = document.createElement("div");
+                list.className = "formula-list";
+                group.items.forEach(node => {
+                    list.appendChild(createNodeCard(node));
                 });
-                panel.appendChild(formulaList);
+                panel.appendChild(list);
                 stack.appendChild(panel);
             });
 
@@ -943,7 +970,7 @@
         } else {
             const empty = document.createElement("div");
             empty.className = "empty-state";
-            empty.textContent = "Select any topic from the left to show its formulas here. Opening another topic will replace the current one.";
+            empty.textContent = "Select any topic from the left to show its formulas and graphs here.";
             display.appendChild(empty);
         }
 
