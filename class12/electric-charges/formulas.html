@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Charges Formulas | Vidyaalok Lab</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+    
+    <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+            --card-glow: rgba(0, 229, 255, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+        }
+
+        /* Transparent Watermark Logo */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75vw;
+            height: 75vh;
+            background-image: url('../../logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.06; /* Slightly lower opacity so equations remain perfectly legible */
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-shell {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 1.5rem 3rem;
+            background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .primary-btn {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .primary-btn:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--card-glow);
+        }
+
+        .ghost-btn {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .ghost-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .main {
+            flex: 1;
+            width: min(1200px, 94vw);
+            margin: 0 auto;
+            padding: 28px 0 36px;
+        }
+
+        .hero {
+            display: block;
+            margin-bottom: 24px;
+        }
+
+        .hero-card, .viewer-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .hero-card {
+            padding: 28px;
+        }
+
+        .hero-card h1 {
+            margin: 0 0 12px;
+            font-size: clamp(28px, 4vw, 44px);
+            line-height: 1.02;
+            color: var(--primary);
+        }
+
+        .hero-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.65;
+        }
+
+        .viewer-card {
+            padding: 24px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+
+        .breadcrumbs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .crumb {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main);
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .crumb:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .crumb.active {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: rgba(0, 229, 255, 0.4);
+            color: var(--primary);
+        }
+
+        .level-tag {
+            color: var(--secondary);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .mini-btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main);
+            font-size: 13px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .mini-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .flow-stage {
+            min-height: 440px;
+        }
+
+        .formula-browser {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .topic-rail {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .topic-button {
+            width: 100%;
+            text-align: left;
+            padding: 16px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            color: var(--text-main);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .topic-button:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .topic-button.active {
+            border-color: rgba(0, 229, 255, 0.5);
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        .topic-button-title {
+            display: block;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .topic-button.active .topic-button-title {
+            color: var(--primary);
+        }
+
+        .topic-button-desc {
+            display: block;
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .formula-display {
+            min-width: 0;
+        }
+
+        .display-header {
+            margin-bottom: 20px;
+        }
+
+        .display-kicker {
+            color: var(--secondary);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .display-title {
+            margin: 6px 0 8px;
+            font-size: 30px;
+            line-height: 1.1;
+        }
+
+        .display-desc {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .subtopic-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .subtopic-panel {
+            padding: 18px;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        .subtopic-header {
+            margin-bottom: 14px;
+        }
+
+        .subtopic-title {
+            margin: 0 0 6px;
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        .subtopic-desc {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .formula-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+        }
+
+        .node-card {
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            padding: 18px 18px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--panel-bg);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+            animation: rise 0.45s ease both;
+        }
+
+        .node-card.formula {
+            cursor: default;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .node-card.formula:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 0, 127, 0.4);
+            box-shadow: 0 5px 20px rgba(255, 0, 127, 0.15);
+        }
+
+        .card-kicker {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .importance-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(255, 0, 127, 0.15);
+            border: 1px solid rgba(255, 0, 127, 0.3);
+            color: var(--secondary);
+            font-size: 10px;
+        }
+
+        .card-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            line-height: 1.2;
+        }
+
+        .formula-box {
+            margin-top: auto;
+            padding: 14px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .formula-main {
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.45;
+            word-break: break-word;
+            text-align: center;
+        }
+
+        .formula-main mjx-container {
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding-bottom: 4px;
+        }
+
+        .formula-note {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .empty-state {
+            padding: 40px 18px;
+            text-align: center;
+            color: var(--text-muted);
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media(max-width: 640px) {
+            .viewer-card { padding: 18px; }
+            .navbar { padding: 1rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+        }
+
+        @media(max-width: 900px) {
+            .formula-browser { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Transparent Background Watermark -->
+    <div class="watermark"></div>
+
+    <div class="page-shell">
+        <div class="navbar">
+            <h1 class="brand">Chapter 01</h1>
+            <div class="nav-actions">
+                <!-- Goes back to the Chapter 1 Index dashboard -->
+                <button class="ghost-btn" onclick="window.location.href='index.html'">← Back To Dashboard</button>
+            </div>
+        </div>
+
+        <main class="main">
+            <section class="hero">
+                <div class="hero-card">
+                    <h1>Formula Reference</h1>
+                    <p>
+                        Open a topic from the sidebar to view its formulas. This isolated view keeps the screen clean and focused, perfect for rapid JEE and NEET revision.
+                    </p>
+                </div>
+            </section>
+
+            <section class="viewer-card">
+                <div class="toolbar">
+                    <div class="breadcrumbs" id="breadcrumbs"></div>
+                    <div class="toolbar-actions">
+                        <button class="mini-btn" id="backOneBtn" type="button">← Back</button>
+                        <div class="level-tag" id="levelTag">Level 0 · Root</div>
+                    </div>
+                </div>
+                <div class="flow-stage" id="flowStage"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+    const flowData = {
+        id: "root",
+        title: "Electric Charges & Fields",
+        type: "root",
+        description: "Open a topic, then a subtopic, then the exact formula card you want.",
+        children: [
+            {
+                id: "charge",
+                title: "Electric Charge",
+                type: "topic",
+                description: "Basic properties of charge and charge distributions.",
+                children: [
+                    {
+                        id: "charge-properties",
+                        title: "Properties Of Charge",
+                        type: "subtopic",
+                        description: "Quantisation, conservation, and additivity.",
+                        children: [
+                            { id: "charge-quantisation", title: "Quantisation Of Charge", type: "formula", formula: "q = \\pm ne", note: "Here n is an integer and e = 1.6 × 10^-19 C.", important: true },
+                            { id: "electron-proton-charge", title: "Magnitude Of Fundamental Charge", type: "formula", formula: "e = 1.6 \\times 10^{-19}\\,\\text{C}", note: "Electron has charge -e and proton has charge +e.", important: true },
+                            { id: "charge-conservation", title: "Conservation Of Charge", type: "formula", formula: "q_{\\text{before}} = q_{\\text{after}}", note: "Charge can move from one body to another, but total charge remains conserved." }
+                        ]
+                    },
+                    {
+                        id: "charge-density",
+                        title: "Charge Density",
+                        type: "subtopic",
+                        description: "Linear, surface, and volume distributions.",
+                        children: [
+                            { id: "linear-density", title: "Linear Charge Density", type: "formula", formula: "\\lambda = \\frac{dq}{dl}", note: "Charge per unit length, SI unit C m<sup>-1</sup>." },
+                            { id: "linear-total", title: "Charge On Line Distribution", type: "formula", formula: "q = \\int \\lambda\\, dl", note: "Use integration when &lambda; varies along the length." },
+                            { id: "surface-density", title: "Surface Charge Density", type: "formula", formula: "\\sigma = \\frac{dq}{dA}", note: "Charge per unit area, SI unit C m<sup>-2</sup>." },
+                            { id: "surface-total", title: "Charge On Surface Distribution", type: "formula", formula: "q = \\int \\sigma\\, dA", note: "Use integration when &sigma; varies over the surface." },
+                            { id: "volume-density", title: "Volume Charge Density", type: "formula", formula: "\\rho = \\frac{dq}{dV}", note: "Charge per unit volume, SI unit C m<sup>-3</sup>." },
+                            { id: "volume-total", title: "Charge On Volume Distribution", type: "formula", formula: "q = \\int \\rho\\, dV", note: "Use integration when &rho; varies with position." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "coulomb",
+                title: "Coulomb's Law",
+                type: "topic",
+                description: "Electrostatic force between point charges.",
+                children: [
+                    {
+                        id: "coulomb-force",
+                        title: "Force Magnitude",
+                        type: "subtopic",
+                        description: "Vacuum, medium, and dielectric relation.",
+                        children: [
+                            { id: "coulomb-vacuum", title: "In Vacuum", type: "formula", formula: "F = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{|q_1 q_2|}{r^2}", note: "Acts along the line joining the charges.", important: true },
+                            { id: "coulomb-medium", title: "In Medium", type: "formula", formula: "F = \\frac{1}{4\\pi\\varepsilon} \\cdot \\frac{|q_1 q_2|}{r^2}", note: "Here &epsilon; = K&epsilon;<sub>0</sub>." },
+                            { id: "dielectric-constant", title: "Dielectric Constant Relation", type: "formula", formula: "K = \\frac{\\varepsilon}{\\varepsilon_0}", note: "Also called the relative permittivity of the medium." },
+                            { id: "medium-force-relation", title: "Force In Medium vs Vacuum", type: "formula", formula: "F_{\\text{medium}} = \\frac{F_{\\text{vacuum}}}{K}", note: "Force decreases in a medium with dielectric constant K." }
+                        ]
+                    },
+                    {
+                        id: "coulomb-vector",
+                        title: "Vector Form And Superposition",
+                        type: "subtopic",
+                        description: "Direction-sensitive force and net force due to many charges.",
+                        children: [
+                            { id: "coulomb-vector-form", title: "Vector Form", type: "formula", formula: "\\vec F_{12} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{q_1 q_2}{r^2}\\, \\hat r", note: "r&#770; is the unit vector along the line joining the charges." },
+                            { id: "superposition", title: "Principle Of Superposition", type: "formula", formula: "\\vec F_{\\text{net}} = \\vec F_1 + \\vec F_2 + \\vec F_3 + \\cdots", note: "Net force is the vector sum of all individual electrostatic forces." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "field",
+                title: "Electric Field",
+                type: "topic",
+                description: "Field intensity and standard electric field results.",
+                children: [
+                    {
+                        id: "field-definition",
+                        title: "Definition And Basic Relations",
+                        type: "subtopic",
+                        description: "Field in terms of force and motion.",
+                        children: [
+                            { id: "field-intensity", title: "Electric Field Intensity", type: "formula", formula: "E = \\frac{F}{q_0}", note: "Defined using a small positive test charge q<sub>0</sub>.", important: true },
+                            { id: "force-on-charge", title: "Force On Charge", type: "formula", formula: "F = qE", note: "Direction is along E for positive charge and opposite for negative charge." },
+                            { id: "acceleration-in-field", title: "Acceleration In Uniform Field", type: "formula", formula: "a = \\frac{qE}{m}", note: "Useful for charged particle motion in a uniform electric field." }
+                        ]
+                    },
+                    {
+                        id: "field-point-charge",
+                        title: "Field Due To Charges",
+                        type: "subtopic",
+                        description: "Point charge and many-charge systems.",
+                        children: [
+                            { id: "field-point", title: "Field Due To Point Charge", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{q}{r^2}", note: "Directed radially outward for +q and inward for -q.", important: true },
+                            { id: "field-many", title: "Field Due To System Of Charges", type: "formula", formula: "\\vec E = \\vec E_1 + \\vec E_2 + \\vec E_3 + \\cdots", note: "Electric field obeys vector superposition." }
+                        ]
+                    },
+                    {
+                        id: "symmetric-results",
+                        title: "Symmetric Results",
+                        type: "subtopic",
+                        description: "Important quick results for common arrangements.",
+                        children: [
+                            { id: "polygon-centre", title: "Equal Charges On Regular Polygon", type: "formula", formula: "E_{\\text{centre}} = 0", note: "For identical charges symmetrically placed at corners of a regular polygon, net field at centre is zero." },
+                            { id: "full-ring-centre", title: "Field At Centre Of Complete Ring", type: "formula", formula: "E_{\\text{centre}} = 0", note: "By symmetry, the field at the centre of a uniformly charged complete ring is zero." }
+                        ]
+                    },
+                    {
+                        id: "continuous-distributions",
+                        title: "Continuous Charge Distributions",
+                        type: "subtopic",
+                        description: "Wire, line, arc, ring, disc, and sheet formulas.",
+                        children: [
+                            { id: "finite-wire-general", title: "Finite Line Charge", type: "formula", formula: "E = \\frac{k\\lambda}{r}(\\sin\\theta_1 + \\sin\\theta_2)", note: "Field at perpendicular distance r from a finite uniformly charged wire." },
+                            { id: "finite-wire-symmetric", title: "Finite Wire Symmetric Case", type: "formula", formula: "E = \\frac{2k\\lambda \\sin\\theta}{r}", note: "Used when the point lies on the perpendicular bisector of the wire." },
+                            { id: "semi-infinite-wire", title: "Semi-Infinite Wire", type: "formula", formula: "E = \\frac{k\\lambda}{r}", note: "Special case of the finite-wire result." },
+                            { id: "line-field", title: "Infinite Line Charge", type: "formula", formula: "E = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}", note: "Field is radial and perpendicular to the line.", important: true },
+                            { id: "arc-centre", title: "Uniformly Charged Arc At Centre", type: "formula", formula: "E = \\frac{2k\\lambda \\sin(\\theta/2)}{r}", note: "&theta; is the angular width of the arc in radians." },
+                            { id: "semicircle-centre", title: "Semicircular Arc At Centre", type: "formula", formula: "E = \\frac{2k\\lambda}{r}", note: "Special case of the charged arc formula for &theta; = &pi;." },
+                            { id: "ring-axis", title: "Ring On Its Axis", type: "formula", formula: "E = \\frac{kQx}{(R^2 + x^2)^{3/2}}", note: "Field at a point on the axis of a uniformly charged ring." },
+                            { id: "ring-axis-maximum-position", title: "Position Of Maximum Field", type: "formula", formula: "x = \\frac{R}{\\sqrt{2}}", note: "The field due to a uniformly charged ring is maximum at this axial position." },
+                            { id: "ring-axis-maximum", title: "Maximum Field On Ring Axis", type: "formula", formula: "E_{\\max} = \\frac{2kQ}{3\\sqrt{3}R^2}", note: "Maximum value of field on the ring axis." },
+                            { id: "disc-axis", title: "Disc On Its Axis", type: "formula", formula: "E = \\frac{\\sigma}{2\\varepsilon_0} \\left[1 - \\frac{x}{\\sqrt{x^2 + R^2}}\\right]", note: "Field at a point on the axis of a uniformly charged disc." },
+                            { id: "sheet-field", title: "Infinite Plane Sheet", type: "formula", formula: "E = \\frac{\\sigma}{2\\varepsilon_0}", note: "Uniform field on each side of the sheet.", important: true },
+                            { id: "conductor-surface-field", title: "Just Outside Conductor", type: "formula", formula: "E = \\frac{\\sigma}{\\varepsilon_0}", note: "Normal to the conductor surface." },
+                            { id: "inside-conductor-field", title: "Inside A Conductor", type: "formula", formula: "E = 0", note: "Electrostatic field inside a conductor is zero." }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "dipole",
+                title: "Electric Dipole",
+                type: "topic",
+                description: "Dipole moment, field, torque, and energy.",
+                children: [
+                    {
+                        id: "dipole-basic",
+                        title: "Basic Dipole Quantities",
+                        type: "subtopic",
+                        description: "Dipole moment and charge separation.",
+                        children: [
+                            { id: "dipole-moment", title: "Dipole Moment", type: "formula", formula: "p = q \\cdot 2a", note: "Direction is from negative to positive charge.", important: true },
+                            { id: "dipole-short", title: "Short Dipole Condition", type: "formula", formula: "r \\gg a", note: "Used for far-point approximations in dipole field formulas." }
+                        ]
+                    },
+                    {
+                        id: "dipole-field-axial",
+                        title: "Field On Axial Line",
+                        type: "subtopic",
+                        description: "Exact and short-dipole formulas on the axial line.",
+                        children: [
+                            { id: "dipole-axial-exact", title: "Exact Axial Field", type: "formula", formula: "E_{\\text{axial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{2pr}{(r^2 - a^2)^2}", note: "Direction is along the dipole axis." },
+                            { id: "dipole-axial-short", title: "Short Dipole Axial Field", type: "formula", formula: "E_{\\text{axial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{2p}{r^3}", note: "Valid for r >> a.", important: true }
+                        ]
+                    },
+                    {
+                        id: "dipole-field-equitorial",
+                        title: "Field On Equatorial Line",
+                        type: "subtopic",
+                        description: "Exact and short-dipole formulas on the equatorial line.",
+                        children: [
+                            { id: "dipole-equitorial-exact", title: "Exact Equatorial Field", type: "formula", formula: "E_{\\text{equitorial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{p}{(r^2 + a^2)^{3/2}}", note: "Direction is opposite to the dipole moment." },
+                            { id: "dipole-equitorial-short", title: "Short Dipole Equatorial Field", type: "formula", formula: "E_{\\text{equitorial}} = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{p}{r^3}", note: "Valid for r >> a.", important: true }
+                        ]
+                    },
+                    {
+                        id: "dipole-general",
+                        title: "Field At General Position",
+                        type: "subtopic",
+                        description: "Useful short-dipole general-point results.",
+                        children: [
+                            { id: "dipole-general-magnitude", title: "Magnitude Of Field", type: "formula", formula: "E = \\frac{kp}{r^3}\\sqrt{1 + 3\\cos^2\\theta}", note: "Standard short-dipole result at a general position." },
+                            { id: "dipole-general-angle", title: "Direction Formula", type: "formula", formula: "\\tan\\alpha = \\frac{1}{2}\\tan\\theta", note: "α is the angle between electric field and radial direction." }
+                        ]
+                    },
+                    {
+                        id: "dipole-torque-energy",
+                        title: "Torque And Potential Energy",
+                        type: "subtopic",
+                        description: "Dipole placed in a uniform electric field.",
+                        children: [
+                            { id: "dipole-torque-vector", title: "Torque Vector Form", type: "formula", formula: "\\vec\\tau = \\vec p \\times \\vec E", note: "Torque tends to align the dipole with the field." },
+                            { id: "dipole-torque", title: "Torque Magnitude", type: "formula", formula: "\\tau = pE\\sin\\theta", note: "Maximum when θ = 90°.", important: true },
+                            { id: "dipole-energy", title: "Potential Energy", type: "formula", formula: "U = -pE\\cos\\theta", note: "Minimum when dipole is aligned with the field.", important: true }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "flux-gauss",
+                title: "Electric Flux And Gauss's Law",
+                type: "topic",
+                description: "Flux and direct Gauss law results.",
+                children: [
+                    {
+                        id: "flux",
+                        title: "Electric Flux",
+                        type: "subtopic",
+                        description: "Flux through plane and closed surfaces.",
+                        children: [
+                            { id: "flux-plane", title: "Flux Through Plane Surface", type: "formula", formula: "\\Phi = EA\\cos\\theta", note: "θ is the angle between E and the area vector.", important: true },
+                            { id: "flux-closed", title: "Flux Through Closed Surface", type: "formula", formula: "\\Phi = \\oint \\vec E \\cdot d\\vec A", note: "For a closed surface the area vector is always outward." }
+                        ]
+                    },
+                    {
+                        id: "gauss-law",
+                        title: "Gauss's Law",
+                        type: "subtopic",
+                        description: "Core law and enclosed charge form.",
+                        children: [
+                            { id: "gauss-law-formula", title: "Integral Form", type: "formula", formula: "\\oint \\vec E \\cdot d\\vec A = \\frac{q_{\\text{enc}}}{\\varepsilon_0}", note: "Gauss's law relates flux through a closed surface to charge enclosed.", important: true }
+                        ]
+                    },
+                    {
+                        id: "gauss-applications",
+                        title: "Applications Of Gauss's Law",
+                        type: "subtopic",
+                        description: "High-yield symmetry-based results.",
+                        children: [
+                            { id: "gauss-line", title: "Infinite Line Charge", type: "formula", formula: "E = \\frac{\\lambda}{2\\pi\\varepsilon_0 r}", note: "Obtained using a cylindrical Gaussian surface." },
+                            { id: "gauss-sheet", title: "Infinite Plane Sheet", type: "formula", formula: "E = \\frac{\\sigma}{2\\varepsilon_0}", note: "Obtained using a pillbox Gaussian surface." },
+                            { id: "gauss-conductor", title: "Conductor Surface", type: "formula", formula: "E = \\frac{\\sigma}{\\varepsilon_0}", note: "Applies just outside a conductor surface." },
+                            { id: "shell-outside", title: "Thin Spherical Shell Outside", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Q}{r^2}", note: "Outside the shell it behaves like a point charge." },
+                            { id: "shell-inside", title: "Thin Spherical Shell Inside", type: "formula", formula: "E = 0", note: "Inside a thin charged spherical shell the field is zero." },
+                            { id: "solid-sphere-outside", title: "Solid Sphere Outside", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Q}{r^2}", note: "Outside a uniformly charged non-conducting sphere." },
+                            { id: "solid-sphere-inside", title: "Solid Sphere Inside", type: "formula", formula: "E = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{Qr}{R^3}", note: "Inside a uniformly charged non-conducting sphere, E varies linearly with r." }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+
+    const pathIds = ["root"];
+
+    function findNodeById(node, id){
+        if(node.id === id) return node;
+        if(!node.children) return null;
+
+        for(const child of node.children){
+            const found = findNodeById(child, id);
+            if(found) return found;
+        }
+
+        return null;
+    }
+
+    function getPathNodes(){
+        return pathIds.map(id => findNodeById(flowData, id)).filter(Boolean);
+    }
+
+    function currentNode(){
+        return findNodeById(flowData, pathIds[pathIds.length - 1]);
+    }
+
+    function getTopicNodes(){
+        return flowData.children || [];
+    }
+
+    function getSelectedTopic(){
+        return pathIds.length > 1 ? currentNode() : null;
+    }
+
+    function formatFormulaText(text){
+        return `\\[${text}\\]`;
+    }
+
+    function formatNoteText(text){
+        return text;
+    }
+
+    function renderBreadcrumbs(){
+        const breadcrumbs = document.getElementById("breadcrumbs");
+        const nodes = getPathNodes();
+        breadcrumbs.innerHTML = "";
+
+        nodes.forEach((node, index) => {
+            const crumb = document.createElement("button");
+            crumb.className = "crumb" + (index === nodes.length - 1 ? " active" : "");
+            crumb.textContent = node.title;
+            crumb.onclick = () => {
+                pathIds.splice(index + 1);
+                renderFlow();
+            };
+            breadcrumbs.appendChild(crumb);
+        });
+
+        const current = nodes[nodes.length - 1];
+        const levelTag = document.getElementById("levelTag");
+        const backOneBtn = document.getElementById("backOneBtn");
+        
+        levelTag.textContent = current.type === "topic" ? `Showing · ${current.title}` : `Select A Topic`;
+        backOneBtn.disabled = nodes.length <= 1;
+    }
+
+    function createNodeCard(node, extraClass = ""){
+        const card = document.createElement("div");
+        card.className = `node-card ${node.type} ${extraClass}`.trim();
+
+        const kicker = document.createElement("div");
+        kicker.className = "card-kicker";
+        kicker.textContent = "Formula";
+
+        if(node.important){
+            const tag = document.createElement("span");
+            tag.className = "importance-tag";
+            tag.textContent = "★ Most Asked";
+            kicker.appendChild(tag);
+        }
+        card.appendChild(kicker);
+
+        const title = document.createElement("h3");
+        title.className = "card-title";
+        title.textContent = node.title;
+        card.appendChild(title);
+
+        if(node.formula){
+            const formulaBox = document.createElement("div");
+            formulaBox.className = "formula-box";
+
+            const formulaMain = document.createElement("div");
+            formulaMain.className = "formula-main";
+            formulaMain.innerHTML = formatFormulaText(node.formula);
+            formulaBox.appendChild(formulaMain);
+
+            if(node.note){
+                const formulaNote = document.createElement("div");
+                formulaNote.className = "formula-note";
+                formulaNote.innerHTML = formatNoteText(node.note);
+                formulaBox.appendChild(formulaNote);
+            }
+
+            card.appendChild(formulaBox);
+        }
+
+        return card;
+    }
+
+    function getFormulaGroups(topic){
+        return (topic.children || []).map(subtopic => ({
+            title: subtopic.title,
+            description: subtopic.description,
+            formulas: subtopic.children || []
+        }));
+    }
+
+    function renderFlow(){
+        renderBreadcrumbs();
+
+        const stage = document.getElementById("flowStage");
+        stage.innerHTML = "";
+
+        const browser = document.createElement("div");
+        browser.className = "formula-browser";
+
+        const topicRail = document.createElement("div");
+        topicRail.className = "topic-rail";
+
+        const selectedTopic = getSelectedTopic();
+        getTopicNodes().forEach(topic => {
+            const button = document.createElement("button");
+            button.className = "topic-button" + (selectedTopic && selectedTopic.id === topic.id ? " active" : "");
+            button.type = "button";
+            button.innerHTML = `
+              <span class="topic-button-title">${topic.title}</span>
+              <span class="topic-button-desc">${topic.description || ""}</span>
+            `;
+            button.addEventListener("click", () => {
+                pathIds.length = 0;
+                pathIds.push("root", topic.id);
+                renderFlow();
+            });
+            topicRail.appendChild(button);
+        });
+
+        const display = document.createElement("div");
+        display.className = "formula-display";
+
+        if(selectedTopic){
+            const header = document.createElement("div");
+            header.className = "display-header";
+            header.innerHTML = `
+              <div class="display-kicker">Current Topic</div>
+              <h2 class="display-title">${selectedTopic.title}</h2>
+              <p class="display-desc">${selectedTopic.description || ""}</p>
+            `;
+            display.appendChild(header);
+
+            const stack = document.createElement("div");
+            stack.className = "subtopic-stack";
+
+            getFormulaGroups(selectedTopic).forEach(group => {
+                const panel = document.createElement("section");
+                panel.className = "subtopic-panel";
+
+                const panelHeader = document.createElement("div");
+                panelHeader.className = "subtopic-header";
+                panelHeader.innerHTML = `
+                  <h3 class="subtopic-title">${group.title}</h3>
+                  <p class="subtopic-desc">${group.description || ""}</p>
+                `;
+                panel.appendChild(panelHeader);
+
+                const formulaList = document.createElement("div");
+                formulaList.className = "formula-list";
+                group.formulas.forEach(formulaNode => {
+                    formulaList.appendChild(createNodeCard(formulaNode, "formula"));
+                });
+                panel.appendChild(formulaList);
+                stack.appendChild(panel);
+            });
+
+            display.appendChild(stack);
+        } else {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.textContent = "Select any topic from the left to show its formulas here. Opening another topic will replace the current one.";
+            display.appendChild(empty);
+        }
+
+        browser.appendChild(topicRail);
+        browser.appendChild(display);
+        stage.appendChild(browser);
+
+        if(window.MathJax && window.MathJax.typesetPromise){
+            window.MathJax.typesetPromise([stage]);
+        }
+    }
+
+    renderFlow();
+
+    document.getElementById("backOneBtn").addEventListener("click", () => {
+        if(pathIds.length > 1){
+            pathIds.pop();
+            renderFlow();
+        }
+    });
+    </script>
+</body>
+</html>
