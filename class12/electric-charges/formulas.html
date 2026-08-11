@@ -64,9 +64,9 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            opacity: 0.06; 
-            pointer-events: none;
-            z-index: 0;
+            opacity: 0.15; /* Increased opacity so it is clearly visible */
+            pointer-events: none; /* Ensures you can still click the buttons under it */
+            z-index: 10; /* Brings it in front of the blurred glass panels */
         }
 
         .page-shell {
@@ -371,6 +371,7 @@
             animation: rise 0.45s ease both;
             display: flex;
             flex-direction: column;
+            z-index: 20; /* Ensures the cards themselves are above the watermark */
         }
 
         .node-card:hover {
@@ -584,7 +585,7 @@
                         description: "Vacuum, medium, and dielectric relation.",
                         children: [
                             { id: "coulomb-vacuum", title: "In Vacuum", type: "formula", formula: "F = \\frac{1}{4\\pi\\varepsilon_0} \\cdot \\frac{q_1 q_2}{r^2}", note: "Acts along the line joining the charges.", important: true },
-                            { id: "coulomb-medium", title: "In Medium", type: "formula", formula: "F_{\\text{medium}} = \\frac{F_{\\text{vacuum}}}{k}", note: "k is the dielectric constant of the medium." }
+                            { id: "coulomb-medium", title: "In Medium", type: "formula", formula: "F_{\\text{medium}} = \\frac{F_{\\text{vacuum}}}{K}", note: "K is the dielectric constant (relative permittivity)." }
                         ]
                     },
                     {
