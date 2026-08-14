@@ -22,8 +22,14 @@
             --panel-bg: rgba(255, 255, 255, 0.03);
             --text-main: #ffffff;
             --text-muted: #a0aabf;
-            --incident: #ffffff;
-            --reflected: #ffd166;
+            
+            /* Legend Colors */
+            --bounce-0: #ffffff;
+            --bounce-1: #ffd166;
+            --bounce-2: #ff3366;
+            --bounce-3: #00ffaa;
+            --bounce-4: #c7a6ff;
+            
             --real-img: #00ffaa;
             --virtual-img: #00e5ff;
             --selected: #c7a6ff;
@@ -184,10 +190,6 @@
         .mirror-item.active {
             border-color: var(--selected);
             background: rgba(199, 166, 255, 0.15);
-        }
-
-        .mirror-item small {
-            color: var(--text-muted);
         }
 
         /* Dropdown & Sliders */
@@ -468,8 +470,10 @@
             </div>
 
             <div class="legend">
-                <div class="leg"><div class="leg-line" style="background: var(--incident);"></div> Incident Ray</div>
-                <div class="leg"><div class="leg-line" style="background: var(--reflected);"></div> Reflected Ray</div>
+                <div class="leg"><div class="leg-line" style="background: var(--bounce-0);"></div> Incident</div>
+                <div class="leg"><div class="leg-line" style="background: var(--bounce-1);"></div> 1st Bounce</div>
+                <div class="leg"><div class="leg-line" style="background: var(--bounce-2);"></div> 2nd Bounce</div>
+                <div class="leg"><div class="leg-line" style="background: var(--bounce-3);"></div> 3rd Bounce</div>
                 <div class="leg"><div class="leg-line" style="background: var(--real-img);"></div> Real Image</div>
                 <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Ext.</div>
             </div>
@@ -505,13 +509,19 @@
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
         
-        // 9 Fixed rays for better visibility and clear intersection logic
-        const rayAngles = [-16, -12, -8, -4, 0, 4, 8, 12, 16].map(a => a * Math.PI / 180);
+        // Fixed rays firing from the object (Paraxial setup)
+        const rayAngles = [-12, -6, 0, 6, 12].map(a => a * Math.PI / 180);
         let initialized = false;
 
-        // Hardcoded Colors
-        const cIncident = '#ffffff'; 
-        const cReflected = '#ffd166';
+        // Hardcoded Reflection Colors for Bounce Tracking
+        const bounceColors = [
+            '#ffffff', // 0: Incident (White)
+            '#ffd166', // 1: First Bounce (Gold)
+            '#ff3366', // 2: Second Bounce (Pink)
+            '#00ffaa', // 3: Third Bounce (Green)
+            '#c7a6ff'  // 4+: Fourth+ Bounce (Purple)
+        ];
+        
         const cReal = '#00ffaa';
         const cVirtual = '#00e5ff';
         const cSelected = '#c7a6ff';
@@ -665,59 +675,41 @@
             return add({ x: m.x, y: m.y }, mul(axis, sign * 2 * m.focal));
         }
 
-        // --- Core Intersection Logic fixes premature reflections ---
         function intersectPlane(ray, m){
             const { axis, tangent } = mirrorBasis(m);
-            
-            // Ray must be pointing generally towards the reflective face (opposing the normal)
-            // If dot product is > 0, it's hitting the non-reflective back.
             if (dot(ray.d, axis) > 0) return null; 
 
             const p = { x: m.x, y: m.y };
             const denom = ray.d.x * tangent.y - ray.d.y * tangent.x;
             if(Math.abs(denom) < 0.0001) return null;
-            
             const q = sub(p, ray.p);
             const t = (q.x * tangent.y - q.y * tangent.x) / denom;
             const s = (q.x * ray.d.y - q.y * ray.d.x) / denom;
-            
-            // t > 1.0 prevents rays from immediately self-intersecting after a bounce
-            if(t < 1.0 || Math.abs(s) > m.size / 2) return null;
+            if(t < 0.5 || Math.abs(s) > m.size / 2) return null;
             return { t, point: add(ray.p, mul(ray.d, t)), normal: axis, mirror: m };
         }
 
         function intersectCurved(ray, m){
             const { axis, tangent } = mirrorBasis(m);
+            if (dot(ray.d, axis) > 0) return null;
+
             const c = curvedCenter(m);
             const R = 2 * m.focal;
-            
             const oc = sub(ray.p, c);
             const b = 2 * dot(ray.d, oc);
             const cc = dot(oc, oc) - R * R;
             const disc = b * b - 4 * cc;
             if(disc < 0) return null;
             
-            const roots = [(-b - Math.sqrt(disc)) / 2, (-b + Math.sqrt(disc)) / 2].filter(t => t > 1.0);
+            const roots = [(-b - Math.sqrt(disc)) / 2, (-b + Math.sqrt(disc)) / 2].filter(t => t > 0.5);
             let best = null;
-            
             roots.forEach(t => {
                 const point = add(ray.p, mul(ray.d, t));
                 const rel = sub(point, { x: m.x, y: m.y });
-                
-                // 1. Is it within the vertical aperture size?
                 if(Math.abs(dot(rel, tangent)) > m.size / 2) return;
                 
-                // 2. Is it on the correct half of the sphere? (Fixes premature reflection from the ghost half)
-                const toPoint = norm(sub(point, c));
-                const toVertex = norm(sub({ x: m.x, y: m.y }, c));
-                if(dot(toPoint, toVertex) < 0.1) return; 
-                
-                // 3. Normal calculation
                 let exactNormal = norm(sub(point, c));
-                if (m.type === 'concave') exactNormal = mul(exactNormal, -1); // Normal points out into air
-                
-                // 4. Ensure it hits the reflective front
-                if (dot(ray.d, exactNormal) > 0) return;
+                if (m.type === 'concave') exactNormal = mul(exactNormal, -1);
                 
                 const hit = { t, point, normal: exactNormal, mirror: m };
                 if(!best || t < best.t) best = hit;
@@ -741,7 +733,6 @@
             rayAngles.forEach(angle => {
                 let dir = dirFromAngle(angle);
                 
-                // If virtual, we spawn the ray far off-screen so it traverses the scene
                 let startP = { ...object };
                 if (isVirtualObj) {
                     const distBack = (object.x + Math.max(W, H)) / Math.cos(angle);
@@ -757,7 +748,9 @@
 
                 for(let bounce = 0; bounce < 7; bounce++){
                     const hit = firstHit(ray);
-                    const rayColor = bounce === 0 ? cIncident : cReflected;
+                    
+                    // Choose color based on bounce count
+                    const rayColor = bounceColors[Math.min(bounce, bounceColors.length - 1)];
                     
                     if(!hit){
                         let endP = add(ray.p, mul(ray.d, Math.max(W, H) * 2));
@@ -776,11 +769,9 @@
 
                     if (bounce === 0 && isVirtualObj) {
                         if (distToHit < distToObj - 1.0) {
-                            // Hit mirror BEFORE converging at object
                             lines.push({ a: ray.p, b: hit.point, color: rayColor, dashed: false, head: true });
                             lines.push({ a: hit.point, b: object, color: cVirtual, dashed: true, head: false, alpha: 0.6 });
                         } else {
-                            // Passes through object point first
                             lines.push({ a: ray.p, b: object, color: rayColor, dashed: false, head: true });
                             lines.push({ a: object, b: hit.point, color: rayColor, dashed: false, head: true });
                         }
@@ -790,7 +781,7 @@
 
                     const out = reflect(ray.d, hit.normal);
                     reflections.push({ point: hit.point, dir: out, seq: seqStr });
-                    ray = { p: add(hit.point, mul(out, 0.5)), d: out }; // step slightly away to avoid self-hit
+                    ray = { p: add(hit.point, mul(out, 0.5)), d: out };
                 }
                 traces.push({ lines, reflections });
             });
@@ -812,7 +803,6 @@
 
         function estimateImages(traces){
             const groups = {};
-            // Group reflections by the exact sequence of mirrors they hit (I1, I2, etc.)
             traces.forEach(t => {
                 t.reflections.forEach(ref => {
                     if (!groups[ref.seq]) groups[ref.seq] = [];
@@ -823,7 +813,6 @@
             const images = [];
             for (let seq in groups) {
                 const refs = groups[seq];
-                // Requires at least 2 intersecting rays to form a valid image point
                 if (refs.length >= 2) {
                     const r1 = refs[0];
                     const r2 = refs[refs.length - 1];
@@ -853,7 +842,6 @@
             
             const dist = len(sub(b,a));
             
-            // Draw head fixed at 60px from the start, or halfway if segment is very short
             if (drawHead && dist > 20) {
                 const angle = Math.atan2(b.y - a.y, b.x - a.x);
                 let headDist = Math.min(dist * 0.55, 60); 
@@ -888,7 +876,6 @@
                 ctx.lineTo(b.x, b.y);
                 ctx.stroke();
                 
-                // Draw hash marks on back (facing opposite to axis)
                 ctx.lineWidth = 1;
                 for(let i = -m.size / 2; i <= m.size / 2; i += 18){
                     const p = add({ x: m.x, y: m.y }, mul(tangent, i));
@@ -935,15 +922,15 @@
             const isVirtual = objTypeSelect.value === 'virtual';
             
             if (isVirtual) {
-                ctx.strokeStyle = '#ff3366';
+                ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([4,3]);
                 ctx.beginPath();
                 ctx.arc(object.x, object.y, 6, 0, Math.PI * 2);
                 ctx.stroke();
             } else {
-                ctx.fillStyle = '#ff3366';
-                ctx.shadowColor = '#ff3366';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#ffffff';
                 ctx.shadowBlur = 15;
                 ctx.beginPath();
                 ctx.arc(object.x, object.y, 6, 0, Math.PI * 2);
@@ -985,15 +972,21 @@
             const images = estimateImages(traces);
             
             images.forEach((img, index) => {
-                const color = img.nature === 'Real' ? cReal : cVirtual;
+                const isVirtualImg = img.nature === 'Virtual';
                 
-                if (img.nature === 'Virtual') {
+                // Color virtual extension lines based on the bounce that formed them
+                if (isVirtualImg) {
                     traces.forEach(t => {
                         const ref = t.reflections.find(r => r.seq === img.seq);
-                        if (ref) drawArrow(ref.point, img, cVirtual, true, false, 0.5);
+                        if (ref) {
+                            const bounceNum = ref.seq.split(',').length;
+                            const vColor = bounceColors[Math.min(bounceNum, bounceColors.length - 1)];
+                            drawArrow(ref.point, img, vColor, true, false, 0.5);
+                        }
                     });
                 }
                 
+                const color = isVirtualImg ? cVirtual : cReal;
                 ctx.save();
                 ctx.fillStyle = color;
                 ctx.strokeStyle = color;
