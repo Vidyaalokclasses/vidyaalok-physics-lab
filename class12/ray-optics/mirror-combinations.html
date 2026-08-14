@@ -458,7 +458,7 @@
         <!-- Simulation Area -->
         <div class="right-panel">
             <div class="canvas-head">
-                <span>Drag object (O) or mirrors to interact. Rays hit FRONT only.</span>
+                <span>Object is fixed. Drag mirrors into the light path. Rays hit FRONT only.</span>
                 <span id="selectedLabel">Selected: none</span>
             </div>
             
@@ -471,7 +471,7 @@
                 <div class="leg"><div class="leg-line" style="background: var(--incident);"></div> Incident</div>
                 <div class="leg"><div class="leg-line" style="background: var(--reflected);"></div> Reflected</div>
                 <div class="leg"><div class="leg-line" style="background: var(--real-img);"></div> Real Image</div>
-                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Lines</div>
+                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Ext.</div>
             </div>
         </div>
 
@@ -505,6 +505,8 @@
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
         
+        // Fixed rays firing from the object
+        const rayAngles = [-12, -6, 0, 6, 12].map(a => a * Math.PI / 180);
         let initialized = false;
 
         // Hardcoded Colors
@@ -528,6 +530,9 @@
                         initialized = true;
                         resetScene();
                     } else if (initialized) {
+                        // Keep object fixed horizontally relative to screen
+                        object.x = Math.floor(W * 0.15);
+                        object.y = Math.floor(H * 0.5);
                         draw();
                     }
                 }
@@ -710,43 +715,21 @@
             return best;
         }
 
-        // Generate Rays that dynamically target the first mirror to prevent shifting/missing
-        function getInitialRays() {
-            const m = mirrors[0];
-            const isVirtual = objTypeSelect.value === 'virtual';
-            const rays = [];
-
-            if (!m) {
-                // Default fallback if no mirrors
-                [-20, -10, 0, 10, 20].forEach(deg => {
-                    const dir = dirFromAngle(deg * Math.PI/180);
-                    const p = isVirtual ? sub(object, mul(dir, Math.max(W, H)*2)) : { ...object };
-                    rays.push({ p, d: dir });
-                });
-                return rays;
-            }
-
-            const { tangent } = mirrorBasis(m);
-            // 5 rays spread evenly across the aperture of the first mirror
-            const offsets = [-0.4, -0.2, 0, 0.2, 0.4]; 
-            
-            offsets.forEach(offset => {
-                const targetPoint = add({ x: m.x, y: m.y }, mul(tangent, m.size * offset));
-                const dir = norm(sub(targetPoint, object));
-                const startP = isVirtual ? sub(object, mul(dir, Math.max(W,H)*2)) : { ...object };
-                rays.push({ p: startP, d: dir });
-            });
-
-            return rays;
-        }
-
         function traceRaysEngine() {
-            const initialRays = getInitialRays();
             const traces = [];
             const isVirtualObj = objTypeSelect.value === 'virtual';
-            
-            initialRays.forEach(initRay => {
-                let ray = { ...initRay };
+
+            rayAngles.forEach(angle => {
+                let dir = dirFromAngle(angle);
+                
+                // For virtual objects, trace backward to find a start point offscreen
+                let startP = { ...object };
+                if (isVirtualObj) {
+                    const distBack = (object.x + 100) / Math.cos(angle);
+                    startP = sub(object, mul(dir, distBack));
+                }
+
+                let ray = { p: startP, d: dir };
                 const lines = [];
                 const reflections = [];
                 const hitSeq = [];
@@ -769,11 +752,9 @@
 
                     if (bounce === 0 && isVirtualObj) {
                         if (distToHit < distToObj) {
-                            // Hit mirror BEFORE virtual object
                             lines.push({ a: ray.p, b: hit.point, color: rayColor, dashed: false, head: true });
                             lines.push({ a: hit.point, b: object, color: cVirtual, dashed: true, head: false, alpha: 0.6 });
                         } else {
-                            // Passed through object, then hit mirror
                             lines.push({ a: ray.p, b: object, color: rayColor, dashed: false, head: true });
                             lines.push({ a: object, b: hit.point, color: rayColor, dashed: false, head: true });
                         }
@@ -816,7 +797,6 @@
             for (let seq in groups) {
                 const refs = groups[seq];
                 if (refs.length >= 2) {
-                    // Intersect the outermost rays of the sequence bundle to form the image
                     const r1 = refs[0];
                     const r2 = refs[refs.length - 1];
                     const inter = lineIntersection(r1, r2);
@@ -846,10 +826,10 @@
             const dist = len(sub(b,a));
             
             // Draw arrowhead explicitly when requested
-            if (drawHead && dist > 15) {
+            if (drawHead && dist > 20) {
                 const angle = Math.atan2(b.y - a.y, b.x - a.x);
-                let hx = a.x + (b.x - a.x) * 0.75; 
-                let hy = a.y + (b.y - a.y) * 0.75;
+                let hx = a.x + (b.x - a.x) * 0.55; 
+                let hy = a.y + (b.y - a.y) * 0.55;
                 
                 ctx.beginPath();
                 ctx.moveTo(hx, hy);
@@ -878,7 +858,6 @@
                 ctx.lineTo(b.x, b.y);
                 ctx.stroke();
                 
-                // Draw hash marks on back (facing opposite to axis)
                 ctx.lineWidth = 1;
                 for(let i = -m.size / 2; i <= m.size / 2; i += 18){
                     const p = add({ x: m.x, y: m.y }, mul(tangent, i));
@@ -898,7 +877,6 @@
                 ctx.arc(c.x, c.y, R, baseAngle - halfAngle, baseAngle + halfAngle);
                 ctx.stroke();
 
-                // Draw hash marks on back of curved mirrors
                 ctx.lineWidth = 1;
                 for(let a = baseAngle - halfAngle; a <= baseAngle + halfAngle; a += 0.15) {
                     const p = { x: c.x + R * Math.cos(a), y: c.y + R * Math.sin(a) };
@@ -953,7 +931,6 @@
             
             ctx.clearRect(0, 0, W, H);
             
-            // Faint Grid
             ctx.strokeStyle = 'rgba(255,255,255,0.05)';
             ctx.lineWidth = 1;
             for(let x = 40; x < W; x += 80){
@@ -968,20 +945,17 @@
 
             const traces = traceRaysEngine();
             
-            // Draw all ray lines
             traces.forEach(trace => {
                 trace.lines.forEach(line => {
                     drawArrow(line.a, line.b, line.color, line.dashed, line.head, line.alpha || 1.0);
                 });
             });
 
-            // Draw Images
             const images = estimateImages(traces);
             
             images.forEach((img, index) => {
                 const color = img.nature === 'Real' ? cReal : cVirtual;
                 
-                // Draw virtual extensions if needed
                 if (img.nature === 'Virtual') {
                     traces.forEach(t => {
                         const ref = t.reflections.find(r => r.seq === img.seq);
@@ -1005,7 +979,6 @@
                 ctx.restore();
             });
             
-            // Update Stat Panel
             if (images.length === 1) {
                 imageNature.textContent = images[0].nature;
                 imageNature.style.color = images[0].nature === 'Real' ? cReal : cVirtual;
@@ -1025,7 +998,6 @@
             rayCount.textContent = `${traces.filter(t => t.reflections.length > 0).length}/${traces.length}`;
         }
 
-        // Mouse & Touch Interaction logic
         function getEventPos(e){
             const rect = canvas.getBoundingClientRect();
             let clientX = e.clientX;
@@ -1046,7 +1018,7 @@
         }
 
         function pickTarget(p){
-            if(len(sub(p, object)) < 30) return { type: 'object' };
+            // Removed object picking to keep it strictly fixed
             for(let i = mirrors.length - 1; i >= 0; i--){
                 const m = mirrors[i];
                 const rel = sub(p, { x: m.x, y: m.y });
@@ -1065,15 +1037,11 @@
             if(e.type === 'touchstart' && e.cancelable) e.preventDefault(); 
 
             dragTarget = picked;
-            if(picked.type === 'object'){
-                dragOffset = sub(object, p);
-            } else {
-                selectedId = picked.mirror.id;
-                dragOffset = sub({ x: picked.mirror.x, y: picked.mirror.y }, p);
-                syncControls();
-                renderMirrorList();
-                draw();
-            }
+            selectedId = picked.mirror.id;
+            dragOffset = sub({ x: picked.mirror.x, y: picked.mirror.y }, p);
+            syncControls();
+            renderMirrorList();
+            draw();
         }
 
         function handleInputMove(e) {
@@ -1081,14 +1049,10 @@
             if(e.type === 'touchmove' && e.cancelable) e.preventDefault();
             
             const p = getEventPos(e);
-            if(dragTarget.type === 'object'){
-                object = add(p, dragOffset);
-            } else {
-                const m = dragTarget.mirror;
-                const next = add(p, dragOffset);
-                m.x = next.x;
-                m.y = next.y;
-            }
+            const m = dragTarget.mirror;
+            const next = add(p, dragOffset);
+            m.x = next.x;
+            m.y = next.y;
             draw();
         }
 
@@ -1106,7 +1070,6 @@
         canvas.addEventListener('touchend', handleInputEnd);
         canvas.addEventListener('touchcancel', handleInputEnd);
 
-        // Control listeners
         objTypeSelect.addEventListener('change', draw);
 
         angleSlider.addEventListener('input', () => {
