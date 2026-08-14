@@ -276,6 +276,7 @@
             backdrop-filter: blur(10px);
             box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
             overflow: hidden;
+            position: relative;
         }
 
         .canvas-head {
@@ -295,12 +296,12 @@
             color: var(--primary);
         }
 
-        /* Canvas Wrapper constraints */
         .canvas-wrapper {
             position: relative;
             flex-grow: 1;
             width: 100%;
             overflow: hidden;
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
         }
 
         /* Transparent Watermark Logo */
@@ -329,7 +330,7 @@
             height: 100%;
             cursor: crosshair;
             z-index: 1;
-            touch-action: none; /* Prevents scrolling while dragging on mobile */
+            touch-action: none;
         }
 
         .legend {
@@ -366,9 +367,10 @@
                 width: 100%;
             }
             .right-panel {
-                height: 500px;
+                height: 550px;
                 flex-grow: 0;
             }
+            body { overflow: auto; }
         }
     </style>
 </head>
@@ -411,11 +413,11 @@
                 </div>
                 <div class="control-group">
                     <label>Size <span id="sizeVal">150 px</span></label>
-                    <input id="sizeSlider" type="range" min="80" max="240" step="1" value="150">
+                    <input id="sizeSlider" type="range" min="80" max="300" step="1" value="150">
                 </div>
                 <div class="control-group">
                     <label>Focal Length <span id="focalVal">90 px</span></label>
-                    <input id="focalSlider" type="range" min="55" max="150" step="1" value="90">
+                    <input id="focalSlider" type="range" min="55" max="250" step="1" value="90">
                 </div>
             </div>
 
@@ -434,7 +436,7 @@
         <div class="right-panel">
             <div class="canvas-head">
                 <span>Drag object (O) or mirrors to interact.</span>
-                <span id="selectedLabel">Selected: Mirror 1</span>
+                <span id="selectedLabel">Selected: none</span>
             </div>
             
             <div class="canvas-wrapper" id="simWrapper">
@@ -471,8 +473,7 @@
         const rayCount = document.getElementById('rayCount');
         const selectedLabel = document.getElementById('selectedLabel');
 
-        let W = canvas.clientWidth || 800;
-        let H = canvas.clientHeight || 500;
+        let W = 0, H = 0;
         let object = { x: 0, y: 0 };
         let mirrors = [];
         let selectedId = 1;
@@ -480,25 +481,32 @@
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
         
-        // Ray Angles coming out of the point object
-        const rayAngles = [-18, -9, 0, 9, 18].map(a => a * Math.PI / 180);
-
+        // Ensure rays are spread wide enough to hit the mirrors
+        const rayAngles = [-20, -10, 0, 10, 20].map(a => a * Math.PI / 180);
         let initialized = false;
+
+        // Colors hardcoded in JS to ensure Safari/Canvas compatibility
+        const cRay = '#ffd166';
+        const cReal = '#00ffaa';
+        const cVirtual = '#00e5ff';
+        const cSelected = '#c7a6ff';
+        const cPlane = '#00e5ff';
 
         // --- RESIZE OBSERVER (Responsive Canvas) ---
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 if (entry.target.id === 'simWrapper') {
+                    // Extract exact dimensions of the wrapper, ignoring header/legend interference
                     W = Math.floor(entry.contentRect.width);
                     H = Math.floor(entry.contentRect.height);
                     
                     canvas.width = W;
                     canvas.height = H;
                     
-                    if (!initialized && W > 0 && H > 0) {
+                    if (!initialized && W > 10 && H > 10) {
                         initialized = true;
-                        resetScene(); // Initialize mirrors now that we know actual screen size
-                    } else {
+                        resetScene();
+                    } else if (initialized) {
                         draw();
                     }
                 }
@@ -506,17 +514,28 @@
         });
         resizeObserver.observe(document.getElementById('simWrapper'));
 
+        // Fallback in case ResizeObserver is delayed
+        setTimeout(() => {
+            if (!initialized && canvas.parentElement.clientWidth > 10) {
+                W = canvas.parentElement.clientWidth;
+                H = canvas.parentElement.clientHeight;
+                canvas.width = W;
+                canvas.height = H;
+                initialized = true;
+                resetScene();
+            }
+        }, 300);
+
         function resetScene(){
             if(W === 0 || H === 0) return;
             
-            // Set object relative to screen width (Responsive)
-            object = { x: W * 0.15, y: H * 0.5 };
+            // Set object relative to screen width (Responsive layout)
+            object = { x: Math.floor(W * 0.15), y: Math.floor(H * 0.5) };
             nextId = 1;
             
-            // Set initial mirrors relative to screen width
             mirrors = [
-                createMirror('plane', W * 0.45, H * 0.5, 0),
-                createMirror('concave', W * 0.8, H * 0.5, 0)
+                createMirror('plane', Math.floor(W * 0.45), Math.floor(H * 0.5), 0),
+                createMirror('concave', Math.floor(W * 0.8), Math.floor(H * 0.5), 0)
             ];
             
             selectedId = mirrors[0].id;
@@ -538,8 +557,7 @@
         }
 
         function addMirror(type){
-            // Place new mirror roughly in center
-            mirrors.push(createMirror(type, W * 0.5, H * 0.5, 0));
+            mirrors.push(createMirror(type, Math.floor(W * 0.5), Math.floor(H * 0.5), 0));
             selectedId = mirrors[mirrors.length - 1].id;
             syncControls();
             renderMirrorList();
@@ -547,7 +565,7 @@
         }
 
         function selectedMirror(){
-            return mirrors.find(m => m.id === selectedId) || mirrors[0] || null;
+            return mirrors.find(m => m.id === selectedId) || null;
         }
 
         function typeName(type){
@@ -561,6 +579,9 @@
             
             if(!m){
                 selectedLabel.textContent = 'Selected: none';
+                angleVal.textContent = `-`;
+                sizeVal.textContent = `-`;
+                focalVal.textContent = `-`;
                 return;
             }
             
@@ -664,7 +685,7 @@
             for(let bounce = 0; bounce < 7; bounce++){
                 const hit = firstHit(ray);
                 if(!hit){
-                    segments.push({ a: ray.p, b: add(ray.p, mul(ray.d, W * 1.5)), final: true });
+                    segments.push({ a: ray.p, b: add(ray.p, mul(ray.d, Math.max(W, H) * 2)), final: true });
                     break;
                 }
                 segments.push({ a: ray.p, b: hit.point });
@@ -753,7 +774,7 @@
             const { tangent, axis } = mirrorBasis(m);
             ctx.save();
             
-            ctx.strokeStyle = selected ? 'var(--selected)' : '#00e5ff';
+            ctx.strokeStyle = selected ? cSelected : cPlane;
             ctx.lineWidth = selected ? 4 : 2;
             ctx.lineCap = 'round';
             
@@ -792,7 +813,7 @@
                 ctx.fillText('F', f.x - 4, f.y - 4);
             }
             
-            ctx.fillStyle = selected ? 'var(--selected)' : '#ffffff';
+            ctx.fillStyle = selected ? cSelected : '#ffffff';
             ctx.font = 'bold 13px system-ui';
             ctx.fillText(`${typeName(m.type)} ${m.id}`, m.x + 15, m.y - 15);
             ctx.restore();
@@ -835,7 +856,7 @@
             const traces = rayAngles.map(traceRay);
             
             traces.forEach(trace => {
-                trace.segments.forEach(segment => drawArrow(segment.a, segment.b, 'var(--ray-color)', false));
+                trace.segments.forEach(segment => drawArrow(segment.a, segment.b, cRay, false));
             });
 
             const image = estimateImage(traces);
@@ -847,12 +868,12 @@
                     traces.forEach(trace => {
                         const lastRef = trace.reflections[trace.reflections.length - 1];
                         if (lastRef) {
-                           drawArrow(lastRef.point, image, 'var(--virtual-img)', true);
+                           drawArrow(lastRef.point, image, cVirtual, true);
                         }
                     });
                 }
                 
-                const color = image.nature === 'Real' ? 'var(--real-img)' : 'var(--virtual-img)';
+                const color = image.nature === 'Real' ? cReal : cVirtual;
                 ctx.fillStyle = color;
                 ctx.strokeStyle = color;
                 
@@ -882,11 +903,20 @@
             rayCount.textContent = `${traces.filter(t => t.reflections.length > 0).length}/${traces.length}`;
         }
 
-        // Mouse & Touch Interaction logic
+        // Mobile & Desktop Event Coordinates
         function getEventPos(e){
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            }
+
             return {
                 x: (clientX - rect.left) * (canvas.width / rect.width),
                 y: (clientY - rect.top) * (canvas.height / rect.height)
@@ -894,12 +924,12 @@
         }
 
         function pickTarget(p){
-            if(len(sub(p, object)) < 25) return { type: 'object' };
+            if(len(sub(p, object)) < 30) return { type: 'object' };
             for(let i = mirrors.length - 1; i >= 0; i--){
                 const m = mirrors[i];
                 const rel = sub(p, { x: m.x, y: m.y });
-                // Expanded hitbox for easier mobile tapping
-                if(len(rel) < 40 || Math.abs(dot(rel, mirrorBasis(m).tangent)) < (m.size / 2) + 15 && Math.abs(dot(rel, mirrorBasis(m).axis)) < 40){
+                // Hitbox expanded for touch screens
+                if(len(rel) < 40 || Math.abs(dot(rel, mirrorBasis(m).tangent)) < (m.size / 2) + 20 && Math.abs(dot(rel, mirrorBasis(m).axis)) < 40){
                     return { type: 'mirror', mirror: m };
                 }
             }
@@ -911,7 +941,8 @@
             const picked = pickTarget(p);
             if(!picked) return;
             
-            if(e.type === 'touchstart') e.preventDefault(); // Prevent scrolling while dragging
+            // Prevent page scrolling on mobile when dragging
+            if(e.type === 'touchstart') e.preventDefault(); 
 
             dragTarget = picked;
             if(picked.type === 'object'){
@@ -951,7 +982,7 @@
         canvas.addEventListener('mouseup', handleInputEnd);
         canvas.addEventListener('mouseleave', handleInputEnd);
 
-        // Touch Events for Mobile/Tablets
+        // Touch Events
         canvas.addEventListener('touchstart', handleInputStart, {passive: false});
         canvas.addEventListener('touchmove', handleInputMove, {passive: false});
         canvas.addEventListener('touchend', handleInputEnd);
@@ -986,7 +1017,9 @@
         document.getElementById('addPlane').addEventListener('click', () => addMirror('plane'));
         document.getElementById('addConcave').addEventListener('click', () => addMirror('concave'));
         document.getElementById('addConvex').addEventListener('click', () => addMirror('convex'));
+        
         document.getElementById('resetScene').addEventListener('click', resetScene);
+        
         document.getElementById('deleteMirror').addEventListener('click', () => {
             mirrors = mirrors.filter(m => m.id !== selectedId);
             selectedId = mirrors[0]?.id || null;
