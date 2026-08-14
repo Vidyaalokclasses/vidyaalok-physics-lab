@@ -273,7 +273,6 @@
             background: var(--panel-bg);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
-            position: relative;
             backdrop-filter: blur(10px);
             box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
             overflow: hidden;
@@ -296,6 +295,14 @@
             color: var(--primary);
         }
 
+        /* Canvas Wrapper constraints */
+        .canvas-wrapper {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
         /* Transparent Watermark Logo */
         .watermark {
             position: absolute;
@@ -314,12 +321,15 @@
         }
 
         canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
             display: block;
             width: 100%;
-            flex-grow: 1;
+            height: 100%;
             cursor: crosshair;
-            position: relative;
             z-index: 1;
+            touch-action: none; /* Prevents scrolling while dragging on mobile */
         }
 
         .legend {
@@ -349,17 +359,16 @@
         @media (max-width: 900px) {
             .workspace {
                 flex-direction: column;
-                overflow-y: auto;
+                overflow-y: visible;
                 height: auto;
             }
             .controls {
                 width: 100%;
             }
             .right-panel {
-                height: 600px;
+                height: 500px;
                 flex-grow: 0;
             }
-            body { overflow: auto; }
         }
     </style>
 </head>
@@ -422,20 +431,22 @@
         </aside>
 
         <!-- Simulation Area -->
-        <div class="right-panel" id="simWrapper">
+        <div class="right-panel">
             <div class="canvas-head">
-                <span>Drag object (O) or mirrors into the light path.</span>
+                <span>Drag object (O) or mirrors to interact.</span>
                 <span id="selectedLabel">Selected: Mirror 1</span>
             </div>
             
-            <div class="watermark"></div>
-            <canvas id="comboCanvas"></canvas>
+            <div class="canvas-wrapper" id="simWrapper">
+                <div class="watermark"></div>
+                <canvas id="comboCanvas"></canvas>
+            </div>
 
             <div class="legend">
-                <div class="leg"><div class="leg-line" style="background: var(--ray-color);"></div> Incident/Reflected Rays</div>
-                <div class="leg"><div class="leg-line" style="background: var(--real-img);"></div> Real Image (I)</div>
-                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Extension</div>
-                <div class="leg"><div class="leg-line" style="background: var(--selected);"></div> Selected Mirror</div>
+                <div class="leg"><div class="leg-line" style="background: var(--ray-color);"></div> Rays</div>
+                <div class="leg"><div class="leg-line" style="background: var(--real-img);"></div> Real Image</div>
+                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Ext.</div>
+                <div class="leg"><div class="leg-line" style="background: var(--selected);"></div> Selected</div>
             </div>
         </div>
 
@@ -460,48 +471,58 @@
         const rayCount = document.getElementById('rayCount');
         const selectedLabel = document.getElementById('selectedLabel');
 
-        let W, H;
-        let object = { x: 100, y: 200 };
+        let W = canvas.clientWidth || 800;
+        let H = canvas.clientHeight || 500;
+        let object = { x: 0, y: 0 };
         let mirrors = [];
         let selectedId = 1;
         let dragTarget = null;
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
+        
+        // Ray Angles coming out of the point object
         const rayAngles = [-18, -9, 0, 9, 18].map(a => a * Math.PI / 180);
 
-        // --- RESIZE OBSERVER ---
+        let initialized = false;
+
+        // --- RESIZE OBSERVER (Responsive Canvas) ---
         const resizeObserver = new ResizeObserver(entries => {
-            window.requestAnimationFrame(() => {
-                for (let entry of entries) {
-                    if (entry.target.id === 'simWrapper') {
-                        // The canvas takes the remaining height after header and legend
-                        const headerH = document.querySelector('.canvas-head').offsetHeight;
-                        const legendH = document.querySelector('.legend').offsetHeight;
-                        
-                        W = Math.floor(entry.contentRect.width);
-                        H = Math.floor(entry.contentRect.height) - headerH - legendH;
-                        
-                        canvas.width = W;
-                        canvas.height = H;
+            for (let entry of entries) {
+                if (entry.target.id === 'simWrapper') {
+                    W = Math.floor(entry.contentRect.width);
+                    H = Math.floor(entry.contentRect.height);
+                    
+                    canvas.width = W;
+                    canvas.height = H;
+                    
+                    if (!initialized && W > 0 && H > 0) {
+                        initialized = true;
+                        resetScene(); // Initialize mirrors now that we know actual screen size
+                    } else {
                         draw();
                     }
                 }
-            });
+            }
         });
         resizeObserver.observe(document.getElementById('simWrapper'));
 
         function resetScene(){
-            object = { x: 100, y: 250 };
+            if(W === 0 || H === 0) return;
+            
+            // Set object relative to screen width (Responsive)
+            object = { x: W * 0.15, y: H * 0.5 };
             nextId = 1;
+            
+            // Set initial mirrors relative to screen width
             mirrors = [
-                createMirror('plane', 400, 250, 0),
-                createMirror('concave', 700, 250, 0)
+                createMirror('plane', W * 0.45, H * 0.5, 0),
+                createMirror('concave', W * 0.8, H * 0.5, 0)
             ];
+            
             selectedId = mirrors[0].id;
             syncControls();
             renderMirrorList();
-            
-            if (canvas.width > 0) draw();
+            draw();
         }
 
         function createMirror(type, x, y, angleDeg){
@@ -517,9 +538,8 @@
         }
 
         function addMirror(type){
-            const index = mirrors.length;
             // Place new mirror roughly in center
-            mirrors.push(createMirror(type, (W/2) || 400, (H/2) || 250, 0));
+            mirrors.push(createMirror(type, W * 0.5, H * 0.5, 0));
             selectedId = mirrors[mirrors.length - 1].id;
             syncControls();
             renderMirrorList();
@@ -553,7 +573,6 @@
             focalVal.textContent = `${focalSlider.value} px`;
             selectedLabel.textContent = `Selected: ${typeName(m.type)} ${m.id}`;
             
-            // visually disable focal slider if plane mirror
             focalSlider.style.opacity = m.type === 'plane' ? '0.3' : '1';
         }
 
@@ -651,7 +670,6 @@
                 segments.push({ a: ray.p, b: hit.point });
                 const out = reflect(ray.d, hit.normal);
                 reflections.push({ point: hit.point, dir: out });
-                // step slightly off surface to prevent self-intersection
                 ray = { p: add(hit.point, mul(out, 0.8)), d: out };
             }
             return { segments, reflections };
@@ -704,7 +722,7 @@
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
             ctx.lineWidth = 2;
-            if(dashed) ctx.setLineDash([6,5]);
+            if(dashed) ctx.setLineDash([5,5]);
             
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -713,18 +731,17 @@
             ctx.setLineDash([]);
             
             const angle = Math.atan2(b.y - a.y, b.x - a.x);
-            // Draw head midway if it's a long segment
             const dist = len(sub(b,a));
-            let hx = b.x, hy = b.y;
             
-            if (!dashed && dist > 40) {
-                hx = a.x + (b.x - a.x) * 0.5;
-                hy = a.y + (b.y - a.y) * 0.5;
-                
+            // Draw arrowhead slightly past the middle for better visibility
+            let hx = a.x + (b.x - a.x) * 0.6;
+            let hy = a.y + (b.y - a.y) * 0.6;
+            
+            if (!dashed && dist > 30) {
                 ctx.beginPath();
                 ctx.moveTo(hx, hy);
-                ctx.lineTo(hx - 12 * Math.cos(angle - 0.35), hy - 12 * Math.sin(angle - 0.35));
-                ctx.lineTo(hx - 12 * Math.cos(angle + 0.35), hy - 12 * Math.sin(angle + 0.35));
+                ctx.lineTo(hx - 12 * Math.cos(angle - 0.4), hy - 12 * Math.sin(angle - 0.4));
+                ctx.lineTo(hx - 12 * Math.cos(angle + 0.4), hy - 12 * Math.sin(angle + 0.4));
                 ctx.closePath();
                 ctx.fill();
             }
@@ -768,11 +785,9 @@
                 ctx.arc(c.x, c.y, 2 * m.focal, a0, a1, m.type === 'concave');
                 ctx.stroke();
                 
-                // Optional: draw small crosses for C and F
                 ctx.fillStyle = ctx.strokeStyle;
                 ctx.font = '10px system-ui';
                 ctx.fillText('C', c.x - 4, c.y - 4);
-                
                 const f = add({ x: m.x, y: m.y }, mul(axis, (m.type === 'concave' ? -1 : 1) * m.focal));
                 ctx.fillText('F', f.x - 4, f.y - 4);
             }
@@ -785,9 +800,9 @@
 
         function drawObject(){
             ctx.save();
-            ctx.fillStyle = '#ff3366'; // Glowing Pink
+            ctx.fillStyle = '#ff3366';
             ctx.shadowColor = '#ff3366';
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 15;
             ctx.beginPath();
             ctx.arc(object.x, object.y, 6, 0, Math.PI * 2);
             ctx.fill();
@@ -795,12 +810,12 @@
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 16px system-ui';
-            ctx.fillText('O', object.x - 6, object.y - 12);
+            ctx.fillText('O', object.x - 6, object.y - 15);
             ctx.restore();
         }
 
         function draw(){
-            if(W === 0 || H === 0) return;
+            if(W === 0 || H === 0 || !initialized) return;
             
             ctx.clearRect(0, 0, W, H);
             
@@ -829,7 +844,6 @@
                 ctx.save();
                 
                 if (image.nature === 'Virtual') {
-                    // Draw virtual extensions back to the image
                     traces.forEach(trace => {
                         const lastRef = trace.reflections[trace.reflections.length - 1];
                         if (lastRef) {
@@ -868,31 +882,37 @@
             rayCount.textContent = `${traces.filter(t => t.reflections.length > 0).length}/${traces.length}`;
         }
 
-        // Interaction logic
-        function canvasPoint(e){
+        // Mouse & Touch Interaction logic
+        function getEventPos(e){
             const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return {
-                x: (e.clientX - rect.left) * (canvas.width / rect.width),
-                y: (e.clientY - rect.top) * (canvas.height / rect.height)
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
             };
         }
 
         function pickTarget(p){
-            if(len(sub(p, object)) < 20) return { type: 'object' };
+            if(len(sub(p, object)) < 25) return { type: 'object' };
             for(let i = mirrors.length - 1; i >= 0; i--){
                 const m = mirrors[i];
                 const rel = sub(p, { x: m.x, y: m.y });
-                if(len(rel) < 32 || Math.abs(dot(rel, mirrorBasis(m).tangent)) < m.size / 2 && Math.abs(dot(rel, mirrorBasis(m).axis)) < 28){
+                // Expanded hitbox for easier mobile tapping
+                if(len(rel) < 40 || Math.abs(dot(rel, mirrorBasis(m).tangent)) < (m.size / 2) + 15 && Math.abs(dot(rel, mirrorBasis(m).axis)) < 40){
                     return { type: 'mirror', mirror: m };
                 }
             }
             return null;
         }
 
-        canvas.addEventListener('mousedown', e => {
-            const p = canvasPoint(e);
+        function handleInputStart(e) {
+            const p = getEventPos(e);
             const picked = pickTarget(p);
             if(!picked) return;
+            
+            if(e.type === 'touchstart') e.preventDefault(); // Prevent scrolling while dragging
+
             dragTarget = picked;
             if(picked.type === 'object'){
                 dragOffset = sub(object, p);
@@ -903,11 +923,13 @@
                 renderMirrorList();
                 draw();
             }
-        });
-        
-        canvas.addEventListener('mousemove', e => {
+        }
+
+        function handleInputMove(e) {
             if(!dragTarget) return;
-            const p = canvasPoint(e);
+            if(e.type === 'touchmove') e.preventDefault();
+            
+            const p = getEventPos(e);
             if(dragTarget.type === 'object'){
                 object = add(p, dragOffset);
             } else {
@@ -917,10 +939,23 @@
                 m.y = next.y;
             }
             draw();
-        });
-        
-        canvas.addEventListener('mouseup', () => dragTarget = null);
-        canvas.addEventListener('mouseleave', () => dragTarget = null);
+        }
+
+        function handleInputEnd() {
+            dragTarget = null;
+        }
+
+        // Mouse Events
+        canvas.addEventListener('mousedown', handleInputStart);
+        canvas.addEventListener('mousemove', handleInputMove);
+        canvas.addEventListener('mouseup', handleInputEnd);
+        canvas.addEventListener('mouseleave', handleInputEnd);
+
+        // Touch Events for Mobile/Tablets
+        canvas.addEventListener('touchstart', handleInputStart, {passive: false});
+        canvas.addEventListener('touchmove', handleInputMove, {passive: false});
+        canvas.addEventListener('touchend', handleInputEnd);
+        canvas.addEventListener('touchcancel', handleInputEnd);
 
         // Control listeners
         angleSlider.addEventListener('input', () => {
