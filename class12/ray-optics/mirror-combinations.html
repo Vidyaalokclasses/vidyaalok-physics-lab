@@ -185,10 +185,6 @@
             background: rgba(199, 166, 255, 0.15);
         }
 
-        .mirror-item small {
-            color: var(--text-muted);
-        }
-
         /* Dropdown & Sliders */
         select {
             width: 100%;
@@ -457,7 +453,7 @@
         <!-- Simulation Area -->
         <div class="right-panel">
             <div class="canvas-head">
-                <span>Drag object (O) or mirrors to interact. Rays hit FRONT only.</span>
+                <span>Drag object (O) or mirrors. Rays hit FRONT only.</span>
                 <span id="selectedLabel">Selected: none</span>
             </div>
             
@@ -469,7 +465,7 @@
             <div class="legend">
                 <div class="leg"><div class="leg-line" style="background: var(--ray-color);"></div> Active Rays</div>
                 <div class="leg"><div class="leg-line" style="background: var(--real-img);"></div> Real Image</div>
-                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Lines</div>
+                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Ext.</div>
                 <div class="leg"><div class="leg-line" style="background: var(--selected);"></div> Selected Mirror</div>
             </div>
         </div>
@@ -504,11 +500,10 @@
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
         
-        // Spread rays
         const rayAngles = [-20, -10, 0, 10, 20].map(a => a * Math.PI / 180);
         let initialized = false;
 
-        // Hardcoded colors for Canvas to prevent Safari variable rendering bugs
+        // Colors mapped to Canvas (Safari compatibility fix)
         const cRay = '#ffd166';
         const cReal = '#00ffaa';
         const cVirtual = '#00e5ff';
@@ -553,7 +548,7 @@
             object = { x: Math.floor(W * 0.15), y: Math.floor(H * 0.5) };
             nextId = 1;
             
-            // Mirrors face 180 degrees (leftwards) by default so rays from object hit the front
+            // Mirrors face 180 degrees (leftwards) by default
             mirrors = [
                 createMirror('plane', Math.floor(W * 0.45), Math.floor(H * 0.5), 180),
                 createMirror('concave', Math.floor(W * 0.8), Math.floor(H * 0.5), 180)
@@ -566,7 +561,7 @@
         }
 
         function createMirror(type, x, y, angleDeg){
-            // Enforce small aperture for curved mirrors
+            // Small aperture constraint
             let defaultSize = type === 'plane' ? 150 : 120;
             return {
                 id: nextId++,
@@ -629,7 +624,8 @@
             mirrors.forEach(m => {
                 const button = document.createElement('div');
                 button.className = 'mirror-item' + (m.id === selectedId ? ' active' : '');
-                button.innerHTML = `<span>${typeName(m.type)} ${m.id}</span><small>${Math.round(m.angle * 180 / Math.PI)}°</small>`;
+                // Removing angle from list innerHTML to prevent heavy DOM thrashing when dragging sliders
+                button.innerHTML = `<span>${typeName(m.type)} ${m.id}</span>`;
                 button.onclick = () => {
                     selectedId = m.id;
                     syncControls();
@@ -700,7 +696,7 @@
                 const rel = sub(point, { x: m.x, y: m.y });
                 if(Math.abs(dot(rel, tangent)) > m.size / 2) return;
                 
-                // Normal depends on inner or outer surface
+                // Normal direction calculation
                 let exactNormal = norm(sub(point, c));
                 if (m.type === 'concave') exactNormal = mul(exactNormal, -1);
                 
@@ -723,43 +719,47 @@
             const isVirtual = objTypeSelect.value === 'virtual';
             let dir = dirFromAngle(angle);
             
-            // If virtual, rays converge TO the object point, coming from far away
-            let ray = { 
-                p: isVirtual ? sub(object, mul(dir, Math.max(W, H) * 2)) : { ...object }, 
-                d: dir 
-            };
+            // Set up initial ray geometry based on Real vs Virtual object
+            let startPoint = isVirtual ? sub(object, mul(dir, Math.max(W, H) * 2)) : { ...object };
+            let ray = { p: startPoint, d: dir };
+            let distToObj = isVirtual ? len(sub(object, startPoint)) : 0;
             
-            const segments = [];
-            const virtualSegments = [];
+            const linesToDraw = []; 
             const reflections = [];
-            let distToObj = isVirtual ? len(sub(object, ray.p)) : Infinity;
 
             for(let bounce = 0; bounce < 7; bounce++){
                 const hit = firstHit(ray);
                 
                 if(!hit){
-                    let endPoint = add(ray.p, mul(ray.d, Math.max(W, H) * 2));
-                    segments.push({ a: ray.p, b: endPoint, final: true });
+                    let endP = add(ray.p, mul(ray.d, Math.max(W, H) * 2));
+                    if (bounce === 0 && isVirtual) {
+                        linesToDraw.push({ a: ray.p, b: object, color: cRay, dashed: false, arrow: true });
+                        linesToDraw.push({ a: object, b: endP, color: cRay, dashed: false, arrow: true });
+                    } else {
+                        linesToDraw.push({ a: ray.p, b: endP, color: cRay, dashed: false, arrow: true });
+                    }
                     break;
                 }
-                
-                let distToHit = len(sub(hit.point, ray.p));
-                
-                // Check if virtual converging rays hit the object BEFORE the mirror
-                if (bounce === 0 && isVirtual && distToHit > distToObj) {
-                    segments.push({ a: ray.p, b: hit.point }); 
-                } else {
-                    segments.push({ a: ray.p, b: hit.point });
-                    if (bounce === 0 && isVirtual) {
-                        virtualSegments.push({ a: hit.point, b: object }); // Draw where it would have gone
+
+                if (bounce === 0 && isVirtual) {
+                    if (hit.t < distToObj) {
+                        // Mirror intercepted converging rays BEFORE they reached virtual object
+                        linesToDraw.push({ a: ray.p, b: hit.point, color: cRay, dashed: false, arrow: true });
+                        linesToDraw.push({ a: hit.point, b: object, color: cVirtual, dashed: true, arrow: false, alpha: 0.6 });
+                    } else {
+                        // Rays passed through the point and hit mirror later
+                        linesToDraw.push({ a: ray.p, b: object, color: cRay, dashed: false, arrow: true });
+                        linesToDraw.push({ a: object, b: hit.point, color: cRay, dashed: false, arrow: true });
                     }
+                } else {
+                    linesToDraw.push({ a: ray.p, b: hit.point, color: cRay, dashed: false, arrow: true });
                 }
 
                 const out = reflect(ray.d, hit.normal);
                 reflections.push({ point: hit.point, dir: out });
-                ray = { p: add(hit.point, mul(out, 0.8)), d: out };
+                ray = { p: add(hit.point, mul(out, 0.5)), d: out };
             }
-            return { segments, virtualSegments, reflections };
+            return { lines: linesToDraw, reflections };
         }
 
         function lineIntersection(l1, l2){
@@ -804,7 +804,7 @@
             return { x: mx, y: my, nature: realHits.length >= 2 ? 'Real' : 'Virtual' };
         }
 
-        function drawArrow(a, b, color, dashed=false, alpha=1){
+        function drawArrow(a, b, color, dashed=false, alpha=1.0){
             ctx.save();
             ctx.globalAlpha = alpha;
             ctx.strokeStyle = color;
@@ -858,20 +858,31 @@
                     const p = add({ x: m.x, y: m.y }, mul(tangent, i));
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x - axis.x * 12, p.y - axis.y * 12); // hash points BACKWARDS
+                    ctx.lineTo(p.x - axis.x * 10, p.y - axis.y * 10);
                     ctx.stroke();
                 }
             } else {
                 const c = curvedCenter(m);
-                const start = add({ x: m.x, y: m.y }, mul(tangent, -m.size / 2));
-                const end = add({ x: m.x, y: m.y }, mul(tangent, m.size / 2));
-                let a0 = Math.atan2(start.y - c.y, start.x - c.x);
-                let a1 = Math.atan2(end.y - c.y, end.x - c.x);
+                const R = 2 * m.focal;
+                const mc = sub({ x: m.x, y: m.y }, c);
+                const baseAngle = Math.atan2(mc.y, mc.x);
+                const halfAngle = Math.asin(Math.min(1, (m.size / 2) / R));
                 
                 ctx.beginPath();
-                // Arc draws correctly based on orientation
-                ctx.arc(c.x, c.y, 2 * m.focal, a0, a1, m.type === 'concave');
+                ctx.arc(c.x, c.y, R, baseAngle - halfAngle, baseAngle + halfAngle);
                 ctx.stroke();
+
+                // Draw hash marks on back of curved mirrors
+                ctx.lineWidth = 1;
+                for(let a = baseAngle - halfAngle; a <= baseAngle + halfAngle; a += 0.15) {
+                    const p = { x: c.x + R * Math.cos(a), y: c.y + R * Math.sin(a) };
+                    const n = norm(sub(p, c));
+                    const hashDir = m.type === 'concave' ? n : mul(n, -1);
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x + hashDir.x * 8, p.y + hashDir.y * 8);
+                    ctx.stroke();
+                }
                 
                 ctx.fillStyle = ctx.strokeStyle;
                 ctx.font = '10px system-ui';
@@ -932,12 +943,9 @@
             const traces = rayAngles.map(traceRay);
             
             traces.forEach(trace => {
-                // Draw real rays
-                trace.segments.forEach(segment => drawArrow(segment.a, segment.b, cRay, false));
-                // Draw virtual projection of converging rays
-                if(trace.virtualSegments) {
-                    trace.virtualSegments.forEach(vseg => drawArrow(vseg.a, vseg.b, cVirtual, true, 0.5));
-                }
+                trace.lines.forEach(line => {
+                    drawArrow(line.a, line.b, line.color, line.dashed, line.alpha || 1.0);
+                });
             });
 
             const image = estimateImage(traces);
@@ -982,11 +990,20 @@
             rayCount.textContent = `${traces.filter(t => t.reflections.length > 0).length}/${traces.length}`;
         }
 
-        // Mouse & Touch Interaction logic
+        // Mobile & Desktop Event Coordinates
         function getEventPos(e){
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            }
+
             return {
                 x: (clientX - rect.left) * (canvas.width / rect.width),
                 y: (clientY - rect.top) * (canvas.height / rect.height)
@@ -1010,7 +1027,8 @@
             const picked = pickTarget(p);
             if(!picked) return;
             
-            if(e.type === 'touchstart') e.preventDefault();
+            // Prevent page scrolling on mobile ONLY if dragging an object
+            if(e.type === 'touchstart' && e.cancelable) e.preventDefault(); 
 
             dragTarget = picked;
             if(picked.type === 'object'){
@@ -1019,14 +1037,13 @@
                 selectedId = picked.mirror.id;
                 dragOffset = sub({ x: picked.mirror.x, y: picked.mirror.y }, p);
                 syncControls();
-                renderMirrorList();
                 draw();
             }
         }
 
         function handleInputMove(e) {
             if(!dragTarget) return;
-            if(e.type === 'touchmove') e.preventDefault();
+            if(e.type === 'touchmove' && e.cancelable) e.preventDefault();
             
             const p = getEventPos(e);
             if(dragTarget.type === 'object'){
@@ -1044,11 +1061,13 @@
             dragTarget = null;
         }
 
+        // Mouse Events
         canvas.addEventListener('mousedown', handleInputStart);
         canvas.addEventListener('mousemove', handleInputMove);
         canvas.addEventListener('mouseup', handleInputEnd);
         canvas.addEventListener('mouseleave', handleInputEnd);
 
+        // Touch Events
         canvas.addEventListener('touchstart', handleInputStart, {passive: false});
         canvas.addEventListener('touchmove', handleInputMove, {passive: false});
         canvas.addEventListener('touchend', handleInputEnd);
@@ -1062,7 +1081,6 @@
             if(!m) return;
             m.angle = parseFloat(angleSlider.value) * Math.PI / 180;
             syncControls();
-            renderMirrorList();
             draw();
         });
         
