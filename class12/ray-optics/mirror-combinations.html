@@ -22,14 +22,8 @@
             --panel-bg: rgba(255, 255, 255, 0.03);
             --text-main: #ffffff;
             --text-muted: #a0aabf;
-            
-            /* Legend Colors */
-            --bounce-0: #ffffff;
-            --bounce-1: #ffd166;
-            --bounce-2: #ff3366;
-            --bounce-3: #00ffaa;
-            --bounce-4: #c7a6ff;
-            
+            --incident: #ffffff;
+            --reflected: #ffd166;
             --real-img: #00ffaa;
             --virtual-img: #00e5ff;
             --selected: #c7a6ff;
@@ -509,8 +503,8 @@
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
         
-        // Fixed rays firing from the object (Paraxial setup)
-        const rayAngles = [-12, -6, 0, 6, 12].map(a => a * Math.PI / 180);
+        // 11 Fixed rays for denser tracing and reliable intersection points
+        const rayAngles = [-15, -12, -9, -6, -3, 0, 3, 6, 9, 12, 15].map(a => a * Math.PI / 180);
         let initialized = false;
 
         // Hardcoded Reflection Colors for Bounce Tracking
@@ -675,38 +669,52 @@
             return add({ x: m.x, y: m.y }, mul(axis, sign * 2 * m.focal));
         }
 
+        // CORE FIX: Proper Hemisphere constraint prevents "Invisible Wall" reflection
         function intersectPlane(ray, m){
             const { axis, tangent } = mirrorBasis(m);
+            // Ray must be pointing generally opposite to normal (dot < 0)
             if (dot(ray.d, axis) > 0) return null; 
 
             const p = { x: m.x, y: m.y };
             const denom = ray.d.x * tangent.y - ray.d.y * tangent.x;
             if(Math.abs(denom) < 0.0001) return null;
+            
             const q = sub(p, ray.p);
             const t = (q.x * tangent.y - q.y * tangent.x) / denom;
             const s = (q.x * ray.d.y - q.y * ray.d.x) / denom;
-            if(t < 0.5 || Math.abs(s) > m.size / 2) return null;
+            
+            if(t < 1.0 || Math.abs(s) > m.size / 2) return null;
             return { t, point: add(ray.p, mul(ray.d, t)), normal: axis, mirror: m };
         }
 
         function intersectCurved(ray, m){
             const { axis, tangent } = mirrorBasis(m);
+            // Ray must be pointing generally opposite to normal
             if (dot(ray.d, axis) > 0) return null;
 
             const c = curvedCenter(m);
             const R = 2 * m.focal;
+            
             const oc = sub(ray.p, c);
             const b = 2 * dot(ray.d, oc);
             const cc = dot(oc, oc) - R * R;
             const disc = b * b - 4 * cc;
             if(disc < 0) return null;
             
-            const roots = [(-b - Math.sqrt(disc)) / 2, (-b + Math.sqrt(disc)) / 2].filter(t => t > 0.5);
+            const roots = [(-b - Math.sqrt(disc)) / 2, (-b + Math.sqrt(disc)) / 2].filter(t => t > 1.0);
             let best = null;
+            
             roots.forEach(t => {
                 const point = add(ray.p, mul(ray.d, t));
                 const rel = sub(point, { x: m.x, y: m.y });
+                
+                // 1. Must be within aperture limits
                 if(Math.abs(dot(rel, tangent)) > m.size / 2) return;
+                
+                // 2. CRITICAL FIX: Ensure the intersection is on the FRONT hemisphere of the mirror!
+                const toPoint = norm(sub(point, c));
+                const toVertex = norm(sub({ x: m.x, y: m.y }, c));
+                if (dot(toPoint, toVertex) < 0.0) return; // Ignores the ghost back-half
                 
                 let exactNormal = norm(sub(point, c));
                 if (m.type === 'concave') exactNormal = mul(exactNormal, -1);
@@ -733,6 +741,7 @@
             rayAngles.forEach(angle => {
                 let dir = dirFromAngle(angle);
                 
+                // For virtual objects, trace backward to find a start point offscreen (left side)
                 let startP = { ...object };
                 if (isVirtualObj) {
                     const distBack = (object.x + Math.max(W, H)) / Math.cos(angle);
@@ -974,7 +983,6 @@
             images.forEach((img, index) => {
                 const isVirtualImg = img.nature === 'Virtual';
                 
-                // Color virtual extension lines based on the bounce that formed them
                 if (isVirtualImg) {
                     traces.forEach(t => {
                         const ref = t.reflections.find(r => r.seq === img.seq);
@@ -1042,7 +1050,6 @@
         }
 
         function pickTarget(p){
-            // Only mirrors are movable
             for(let i = mirrors.length - 1; i >= 0; i--){
                 const m = mirrors[i];
                 const rel = sub(p, { x: m.x, y: m.y });
