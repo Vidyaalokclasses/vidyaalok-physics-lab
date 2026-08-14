@@ -160,7 +160,7 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
-            max-height: 120px;
+            max-height: 100px;
             overflow-y: auto;
         }
 
@@ -189,7 +189,20 @@
             color: var(--text-muted);
         }
 
-        /* Sliders */
+        /* Dropdown & Sliders */
+        select {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        select option { background: var(--bg-dark); }
+
         .control-group {
             margin-top: 10px;
         }
@@ -198,7 +211,7 @@
             display: flex;
             justify-content: space-between;
             color: var(--text-muted);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -208,6 +221,7 @@
         .control-group span {
             color: var(--text-main);
             font-family: monospace;
+            font-size: 0.9rem;
         }
 
         input[type=range] {
@@ -388,7 +402,15 @@
             <h2>System Controls</h2>
 
             <div class="panel-section">
-                <div class="panel-title">1. Add Mirrors</div>
+                <div class="panel-title">1. Object Settings</div>
+                <select id="objType">
+                    <option value="real">Real Object (Diverging Rays)</option>
+                    <option value="virtual">Virtual Object (Converging Rays)</option>
+                </select>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">2. Add Mirrors</div>
                 <div class="tool-row">
                     <button class="tool-btn" id="addPlane" type="button">▭ Plane</button>
                     <button class="tool-btn" id="addConcave" type="button">◖ Concave</button>
@@ -401,19 +423,19 @@
             </div>
 
             <div class="panel-section">
-                <div class="panel-title">2. Mirrors in Path</div>
+                <div class="panel-title">3. Mirrors in Path</div>
                 <div class="mirror-list" id="mirrorList"></div>
             </div>
 
             <div class="panel-section">
-                <div class="panel-title">3. Modify Selected Mirror</div>
+                <div class="panel-title">4. Modify Selected Mirror</div>
                 <div class="control-group">
-                    <label>Angle <span id="angleVal">0°</span></label>
-                    <input id="angleSlider" type="range" min="-80" max="80" step="1" value="0">
+                    <label>Face Angle <span id="angleVal">180°</span></label>
+                    <input id="angleSlider" type="range" min="-180" max="180" step="1" value="180">
                 </div>
                 <div class="control-group">
-                    <label>Size <span id="sizeVal">150 px</span></label>
-                    <input id="sizeSlider" type="range" min="80" max="300" step="1" value="150">
+                    <label>Aperture Size <span id="sizeVal">120 px</span></label>
+                    <input id="sizeSlider" type="range" min="60" max="300" step="1" value="120">
                 </div>
                 <div class="control-group">
                     <label>Focal Length <span id="focalVal">90 px</span></label>
@@ -435,7 +457,7 @@
         <!-- Simulation Area -->
         <div class="right-panel">
             <div class="canvas-head">
-                <span>Drag object (O) or mirrors to interact.</span>
+                <span>Drag object (O) or mirrors to interact. Rays hit FRONT only.</span>
                 <span id="selectedLabel">Selected: none</span>
             </div>
             
@@ -445,10 +467,10 @@
             </div>
 
             <div class="legend">
-                <div class="leg"><div class="leg-line" style="background: var(--ray-color);"></div> Rays</div>
+                <div class="leg"><div class="leg-line" style="background: var(--ray-color);"></div> Active Rays</div>
                 <div class="leg"><div class="leg-line" style="background: var(--real-img);"></div> Real Image</div>
-                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Ext.</div>
-                <div class="leg"><div class="leg-line" style="background: var(--selected);"></div> Selected</div>
+                <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Lines</div>
+                <div class="leg"><div class="leg-line" style="background: var(--selected);"></div> Selected Mirror</div>
             </div>
         </div>
 
@@ -459,6 +481,7 @@
         const ctx = canvas.getContext('2d');
         const mirrorList = document.getElementById('mirrorList');
         
+        const objTypeSelect = document.getElementById('objType');
         const angleSlider = document.getElementById('angleSlider');
         const sizeSlider = document.getElementById('sizeSlider');
         const focalSlider = document.getElementById('focalSlider');
@@ -481,25 +504,23 @@
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
         
-        // Ensure rays are spread wide enough to hit the mirrors
+        // Spread rays
         const rayAngles = [-20, -10, 0, 10, 20].map(a => a * Math.PI / 180);
         let initialized = false;
 
-        // Colors hardcoded in JS to ensure Safari/Canvas compatibility
+        // Hardcoded colors for Canvas to prevent Safari variable rendering bugs
         const cRay = '#ffd166';
         const cReal = '#00ffaa';
         const cVirtual = '#00e5ff';
         const cSelected = '#c7a6ff';
         const cPlane = '#00e5ff';
 
-        // --- RESIZE OBSERVER (Responsive Canvas) ---
+        // --- RESIZE OBSERVER ---
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 if (entry.target.id === 'simWrapper') {
-                    // Extract exact dimensions of the wrapper, ignoring header/legend interference
                     W = Math.floor(entry.contentRect.width);
                     H = Math.floor(entry.contentRect.height);
-                    
                     canvas.width = W;
                     canvas.height = H;
                     
@@ -514,7 +535,6 @@
         });
         resizeObserver.observe(document.getElementById('simWrapper'));
 
-        // Fallback in case ResizeObserver is delayed
         setTimeout(() => {
             if (!initialized && canvas.parentElement.clientWidth > 10) {
                 W = canvas.parentElement.clientWidth;
@@ -529,13 +549,14 @@
         function resetScene(){
             if(W === 0 || H === 0) return;
             
-            // Set object relative to screen width (Responsive layout)
+            // Set object on the left
             object = { x: Math.floor(W * 0.15), y: Math.floor(H * 0.5) };
             nextId = 1;
             
+            // Mirrors face 180 degrees (leftwards) by default so rays from object hit the front
             mirrors = [
-                createMirror('plane', Math.floor(W * 0.45), Math.floor(H * 0.5), 0),
-                createMirror('concave', Math.floor(W * 0.8), Math.floor(H * 0.5), 0)
+                createMirror('plane', Math.floor(W * 0.45), Math.floor(H * 0.5), 180),
+                createMirror('concave', Math.floor(W * 0.8), Math.floor(H * 0.5), 180)
             ];
             
             selectedId = mirrors[0].id;
@@ -545,19 +566,21 @@
         }
 
         function createMirror(type, x, y, angleDeg){
+            // Enforce small aperture for curved mirrors
+            let defaultSize = type === 'plane' ? 150 : 120;
             return {
                 id: nextId++,
                 type,
                 x,
                 y,
                 angle: angleDeg * Math.PI / 180,
-                size: 150,
+                size: defaultSize,
                 focal: 90
             };
         }
 
         function addMirror(type){
-            mirrors.push(createMirror(type, Math.floor(W * 0.5), Math.floor(H * 0.5), 0));
+            mirrors.push(createMirror(type, Math.floor(W * 0.5), Math.floor(H * 0.5), 180));
             selectedId = mirrors[mirrors.length - 1].id;
             syncControls();
             renderMirrorList();
@@ -584,6 +607,10 @@
                 focalVal.textContent = `-`;
                 return;
             }
+
+            // Cap size slider for curved mirrors (small aperture)
+            sizeSlider.max = m.type === 'plane' ? 300 : 160;
+            if(m.size > sizeSlider.max) m.size = sizeSlider.max;
             
             angleSlider.value = Math.round(m.angle * 180 / Math.PI);
             sizeSlider.value = Math.round(m.size);
@@ -630,14 +657,19 @@
             return { axis, tangent };
         }
 
+        // Center calculation based on face normal pointing towards `axis`
         function curvedCenter(m){
             const { axis } = mirrorBasis(m);
-            const sign = m.type === 'concave' ? -1 : 1;
+            // Concave cups around `axis`, so center is ahead of it. Convex bulges, so center is behind.
+            const sign = m.type === 'concave' ? 1 : -1;
             return add({ x: m.x, y: m.y }, mul(axis, sign * 2 * m.focal));
         }
 
         function intersectPlane(ray, m){
-            const { tangent } = mirrorBasis(m);
+            const { axis, tangent } = mirrorBasis(m);
+            // Ensure ray hits the front reflective face
+            if (dot(ray.d, axis) > 0) return null; 
+
             const p = { x: m.x, y: m.y };
             const denom = ray.d.x * tangent.y - ray.d.y * tangent.x;
             if(Math.abs(denom) < 0.0001) return null;
@@ -645,10 +677,14 @@
             const t = (q.x * tangent.y - q.y * tangent.x) / denom;
             const s = (q.x * ray.d.y - q.y * ray.d.x) / denom;
             if(t < 0.5 || Math.abs(s) > m.size / 2) return null;
-            return { t, point: add(ray.p, mul(ray.d, t)), normal: mirrorBasis(m).axis, mirror: m };
+            return { t, point: add(ray.p, mul(ray.d, t)), normal: axis, mirror: m };
         }
 
         function intersectCurved(ray, m){
+            const { axis, tangent } = mirrorBasis(m);
+            // Ensure ray hits the front reflective face
+            if (dot(ray.d, axis) > 0) return null;
+
             const c = curvedCenter(m);
             const R = 2 * m.focal;
             const oc = sub(ray.p, c);
@@ -656,14 +692,19 @@
             const cc = dot(oc, oc) - R * R;
             const disc = b * b - 4 * cc;
             if(disc < 0) return null;
+            
             const roots = [(-b - Math.sqrt(disc)) / 2, (-b + Math.sqrt(disc)) / 2].filter(t => t > 0.5);
             let best = null;
-            const { tangent } = mirrorBasis(m);
             roots.forEach(t => {
                 const point = add(ray.p, mul(ray.d, t));
                 const rel = sub(point, { x: m.x, y: m.y });
                 if(Math.abs(dot(rel, tangent)) > m.size / 2) return;
-                const hit = { t, point, normal: sub(point, c), mirror: m };
+                
+                // Normal depends on inner or outer surface
+                let exactNormal = norm(sub(point, c));
+                if (m.type === 'concave') exactNormal = mul(exactNormal, -1);
+                
+                const hit = { t, point, normal: exactNormal, mirror: m };
                 if(!best || t < best.t) best = hit;
             });
             return best;
@@ -679,21 +720,46 @@
         }
 
         function traceRay(angle){
-            let ray = { p: { ...object }, d: dirFromAngle(angle) };
+            const isVirtual = objTypeSelect.value === 'virtual';
+            let dir = dirFromAngle(angle);
+            
+            // If virtual, rays converge TO the object point, coming from far away
+            let ray = { 
+                p: isVirtual ? sub(object, mul(dir, Math.max(W, H) * 2)) : { ...object }, 
+                d: dir 
+            };
+            
             const segments = [];
+            const virtualSegments = [];
             const reflections = [];
+            let distToObj = isVirtual ? len(sub(object, ray.p)) : Infinity;
+
             for(let bounce = 0; bounce < 7; bounce++){
                 const hit = firstHit(ray);
+                
                 if(!hit){
-                    segments.push({ a: ray.p, b: add(ray.p, mul(ray.d, Math.max(W, H) * 2)), final: true });
+                    let endPoint = add(ray.p, mul(ray.d, Math.max(W, H) * 2));
+                    segments.push({ a: ray.p, b: endPoint, final: true });
                     break;
                 }
-                segments.push({ a: ray.p, b: hit.point });
+                
+                let distToHit = len(sub(hit.point, ray.p));
+                
+                // Check if virtual converging rays hit the object BEFORE the mirror
+                if (bounce === 0 && isVirtual && distToHit > distToObj) {
+                    segments.push({ a: ray.p, b: hit.point }); 
+                } else {
+                    segments.push({ a: ray.p, b: hit.point });
+                    if (bounce === 0 && isVirtual) {
+                        virtualSegments.push({ a: hit.point, b: object }); // Draw where it would have gone
+                    }
+                }
+
                 const out = reflect(ray.d, hit.normal);
                 reflections.push({ point: hit.point, dir: out });
                 ray = { p: add(hit.point, mul(out, 0.8)), d: out };
             }
-            return { segments, reflections };
+            return { segments, virtualSegments, reflections };
         }
 
         function lineIntersection(l1, l2){
@@ -738,8 +804,9 @@
             return { x: mx, y: my, nature: realHits.length >= 2 ? 'Real' : 'Virtual' };
         }
 
-        function drawArrow(a, b, color, dashed=false){
+        function drawArrow(a, b, color, dashed=false, alpha=1){
             ctx.save();
+            ctx.globalAlpha = alpha;
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
             ctx.lineWidth = 2;
@@ -754,11 +821,10 @@
             const angle = Math.atan2(b.y - a.y, b.x - a.x);
             const dist = len(sub(b,a));
             
-            // Draw arrowhead slightly past the middle for better visibility
             let hx = a.x + (b.x - a.x) * 0.6;
             let hy = a.y + (b.y - a.y) * 0.6;
             
-            if (!dashed && dist > 30) {
+            if (!dashed && dist > 40) {
                 ctx.beginPath();
                 ctx.moveTo(hx, hy);
                 ctx.lineTo(hx - 12 * Math.cos(angle - 0.4), hy - 12 * Math.sin(angle - 0.4));
@@ -786,31 +852,30 @@
                 ctx.lineTo(b.x, b.y);
                 ctx.stroke();
                 
-                // Draw hash marks on back
+                // Draw hash marks on back (facing opposite to axis)
                 ctx.lineWidth = 1;
                 for(let i = -m.size / 2; i <= m.size / 2; i += 18){
                     const p = add({ x: m.x, y: m.y }, mul(tangent, i));
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x + axis.x * 12, p.y + axis.y * 12);
+                    ctx.lineTo(p.x - axis.x * 12, p.y - axis.y * 12); // hash points BACKWARDS
                     ctx.stroke();
                 }
             } else {
                 const c = curvedCenter(m);
                 const start = add({ x: m.x, y: m.y }, mul(tangent, -m.size / 2));
                 const end = add({ x: m.x, y: m.y }, mul(tangent, m.size / 2));
-                const a0 = Math.atan2(start.y - c.y, start.x - c.x);
-                const a1 = Math.atan2(end.y - c.y, end.x - c.x);
+                let a0 = Math.atan2(start.y - c.y, start.x - c.x);
+                let a1 = Math.atan2(end.y - c.y, end.x - c.x);
                 
                 ctx.beginPath();
+                // Arc draws correctly based on orientation
                 ctx.arc(c.x, c.y, 2 * m.focal, a0, a1, m.type === 'concave');
                 ctx.stroke();
                 
                 ctx.fillStyle = ctx.strokeStyle;
                 ctx.font = '10px system-ui';
                 ctx.fillText('C', c.x - 4, c.y - 4);
-                const f = add({ x: m.x, y: m.y }, mul(axis, (m.type === 'concave' ? -1 : 1) * m.focal));
-                ctx.fillText('F', f.x - 4, f.y - 4);
             }
             
             ctx.fillStyle = selected ? cSelected : '#ffffff';
@@ -821,12 +886,23 @@
 
         function drawObject(){
             ctx.save();
-            ctx.fillStyle = '#ff3366';
-            ctx.shadowColor = '#ff3366';
-            ctx.shadowBlur = 15;
-            ctx.beginPath();
-            ctx.arc(object.x, object.y, 6, 0, Math.PI * 2);
-            ctx.fill();
+            const isVirtual = objTypeSelect.value === 'virtual';
+            
+            if (isVirtual) {
+                ctx.strokeStyle = '#ff3366';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4,3]);
+                ctx.beginPath();
+                ctx.arc(object.x, object.y, 6, 0, Math.PI * 2);
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = '#ff3366';
+                ctx.shadowColor = '#ff3366';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(object.x, object.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#ffffff';
@@ -856,7 +932,12 @@
             const traces = rayAngles.map(traceRay);
             
             traces.forEach(trace => {
+                // Draw real rays
                 trace.segments.forEach(segment => drawArrow(segment.a, segment.b, cRay, false));
+                // Draw virtual projection of converging rays
+                if(trace.virtualSegments) {
+                    trace.virtualSegments.forEach(vseg => drawArrow(vseg.a, vseg.b, cVirtual, true, 0.5));
+                }
             });
 
             const image = estimateImage(traces);
@@ -867,9 +948,7 @@
                 if (image.nature === 'Virtual') {
                     traces.forEach(trace => {
                         const lastRef = trace.reflections[trace.reflections.length - 1];
-                        if (lastRef) {
-                           drawArrow(lastRef.point, image, cVirtual, true);
-                        }
+                        if (lastRef) drawArrow(lastRef.point, image, cVirtual, true, 0.7);
                     });
                 }
                 
@@ -903,20 +982,11 @@
             rayCount.textContent = `${traces.filter(t => t.reflections.length > 0).length}/${traces.length}`;
         }
 
-        // Mobile & Desktop Event Coordinates
+        // Mouse & Touch Interaction logic
         function getEventPos(e){
             const rect = canvas.getBoundingClientRect();
-            let clientX = e.clientX;
-            let clientY = e.clientY;
-
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else if (e.changedTouches && e.changedTouches.length > 0) {
-                clientX = e.changedTouches[0].clientX;
-                clientY = e.changedTouches[0].clientY;
-            }
-
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return {
                 x: (clientX - rect.left) * (canvas.width / rect.width),
                 y: (clientY - rect.top) * (canvas.height / rect.height)
@@ -928,7 +998,6 @@
             for(let i = mirrors.length - 1; i >= 0; i--){
                 const m = mirrors[i];
                 const rel = sub(p, { x: m.x, y: m.y });
-                // Hitbox expanded for touch screens
                 if(len(rel) < 40 || Math.abs(dot(rel, mirrorBasis(m).tangent)) < (m.size / 2) + 20 && Math.abs(dot(rel, mirrorBasis(m).axis)) < 40){
                     return { type: 'mirror', mirror: m };
                 }
@@ -941,8 +1010,7 @@
             const picked = pickTarget(p);
             if(!picked) return;
             
-            // Prevent page scrolling on mobile when dragging
-            if(e.type === 'touchstart') e.preventDefault(); 
+            if(e.type === 'touchstart') e.preventDefault();
 
             dragTarget = picked;
             if(picked.type === 'object'){
@@ -976,19 +1044,19 @@
             dragTarget = null;
         }
 
-        // Mouse Events
         canvas.addEventListener('mousedown', handleInputStart);
         canvas.addEventListener('mousemove', handleInputMove);
         canvas.addEventListener('mouseup', handleInputEnd);
         canvas.addEventListener('mouseleave', handleInputEnd);
 
-        // Touch Events
         canvas.addEventListener('touchstart', handleInputStart, {passive: false});
         canvas.addEventListener('touchmove', handleInputMove, {passive: false});
         canvas.addEventListener('touchend', handleInputEnd);
         canvas.addEventListener('touchcancel', handleInputEnd);
 
         // Control listeners
+        objTypeSelect.addEventListener('change', draw);
+
         angleSlider.addEventListener('input', () => {
             const m = selectedMirror();
             if(!m) return;
