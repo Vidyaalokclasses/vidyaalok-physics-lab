@@ -468,8 +468,8 @@
             </div>
 
             <div class="legend">
-                <div class="leg"><div class="leg-line" style="background: var(--incident);"></div> Incident</div>
-                <div class="leg"><div class="leg-line" style="background: var(--reflected);"></div> Reflected</div>
+                <div class="leg"><div class="leg-line" style="background: var(--incident);"></div> Incident Ray</div>
+                <div class="leg"><div class="leg-line" style="background: var(--reflected);"></div> Reflected Ray</div>
                 <div class="leg"><div class="leg-line" style="background: var(--real-img);"></div> Real Image</div>
                 <div class="leg"><div class="leg-line" style="background: transparent; border-top: 3px dashed var(--virtual-img);"></div> Virtual Ext.</div>
             </div>
@@ -505,8 +505,8 @@
         let dragOffset = { x: 0, y: 0 };
         let nextId = 1;
         
-        // Fixed rays firing from the object
-        const rayAngles = [-12, -6, 0, 6, 12].map(a => a * Math.PI / 180);
+        // Fixed rays firing from the object (Paraxial setup to minimize spherical aberration)
+        const rayAngles = [-8, -4, 0, 4, 8].map(a => a * Math.PI / 180);
         let initialized = false;
 
         // Hardcoded Colors
@@ -752,9 +752,11 @@
 
                     if (bounce === 0 && isVirtualObj) {
                         if (distToHit < distToObj) {
+                            // Mirror hit BEFORE object
                             lines.push({ a: ray.p, b: hit.point, color: rayColor, dashed: false, head: true });
                             lines.push({ a: hit.point, b: object, color: cVirtual, dashed: true, head: false, alpha: 0.6 });
                         } else {
+                            // Ray passes through object then hits mirror
                             lines.push({ a: ray.p, b: object, color: rayColor, dashed: false, head: true });
                             lines.push({ a: object, b: hit.point, color: rayColor, dashed: false, head: true });
                         }
@@ -825,11 +827,13 @@
             
             const dist = len(sub(b,a));
             
-            // Draw arrowhead explicitly when requested
-            if (drawHead && dist > 20) {
+            // Draw arrowhead at a guaranteed visible distance
+            if (drawHead && dist > 30) {
                 const angle = Math.atan2(b.y - a.y, b.x - a.x);
-                let hx = a.x + (b.x - a.x) * 0.55; 
-                let hy = a.y + (b.y - a.y) * 0.55;
+                let headDist = Math.min(dist * 0.5, 60); 
+
+                let hx = a.x + Math.cos(angle) * headDist;
+                let hy = a.y + Math.sin(angle) * headDist;
                 
                 ctx.beginPath();
                 ctx.moveTo(hx, hy);
@@ -1018,7 +1022,7 @@
         }
 
         function pickTarget(p){
-            // Removed object picking to keep it strictly fixed
+            // Object is fixed, only pick mirrors
             for(let i = mirrors.length - 1; i >= 0; i--){
                 const m = mirrors[i];
                 const rel = sub(p, { x: m.x, y: m.y });
