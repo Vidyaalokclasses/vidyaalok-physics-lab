@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Laws of Reflection | Vidyaalok Lab</title>
 
     <!-- Google Analytics -->
@@ -22,9 +22,9 @@
             --panel-bg: rgba(255, 255, 255, 0.03);
             --text-main: #ffffff;
             --text-muted: #a0aabf;
-            --incident: #ff3366; /* Neon Pink */
-            --reflected: #00e5ff; /* Neon Cyan */
-            --deviated: #ffaa00; /* Neon Gold */
+            --incident: #ff3366; 
+            --reflected: #00e5ff; 
+            --deviated: #ffaa00; 
             --normal: #ffffff; 
         }
 
@@ -81,6 +81,7 @@
             gap: 1.5rem;
             height: calc(100vh - 70px);
             box-sizing: border-box;
+            overflow: hidden;
         }
 
         /* Control Panel */
@@ -250,6 +251,15 @@
             backdrop-filter: blur(10px);
             box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
         }
 
         /* Transparent Watermark Logo */
@@ -270,26 +280,31 @@
         }
 
         #sim3d {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            position: relative;
             z-index: 1;
+            touch-action: none;
         }
         
         @media (max-width: 900px) {
+            body { overflow: auto; height: auto; }
             .workspace {
                 flex-direction: column;
-                overflow-y: auto;
+                overflow-y: visible;
                 height: auto;
+                padding: 1rem;
             }
             .controls {
                 width: 100%;
             }
             .right-panel {
-                height: 500px;
+                min-height: 50vh;
                 flex-grow: 0;
             }
-            body { overflow: auto; }
+            .navbar { padding: 1rem; }
         }
     </style>
 </head>
@@ -346,9 +361,11 @@
         </div>
 
         <!-- Simulation Area -->
-        <div class="right-panel" id="simWrapper">
-            <div class="watermark"></div>
-            <div id="sim3d"></div>
+        <div class="right-panel">
+            <div class="canvas-wrapper" id="simWrapper">
+                <div class="watermark"></div>
+                <div id="sim3d"></div>
+            </div>
         </div>
 
     </div>
@@ -393,7 +410,6 @@
         function makeArc(radius, start, end, color){
             const pts = [];
             const steps = 48;
-            // Prevent drawing errors if start == end
             if (start === end) {
                 pts.push(new THREE.Vector3(radius * Math.cos(start), 0, radius * Math.sin(start)));
                 pts.push(new THREE.Vector3(radius * Math.cos(start), 0, radius * Math.sin(start)));
@@ -410,7 +426,7 @@
 
         function initScene(){
             scene = new THREE.Scene();
-            scene.background = null; // Transparent for watermark
+            scene.background = null; 
 
             camera = new THREE.PerspectiveCamera(50, sim3d.clientWidth / sim3d.clientHeight, 0.1, 1000);
             camera.position.set(18, 11, 22);
@@ -437,7 +453,6 @@
             grid.position.y = -6;
             scene.add(grid);
 
-            // Plane Mirror Base
             mirrorPlane = new THREE.Mesh(
                 new THREE.PlaneGeometry(18, 12),
                 new THREE.MeshPhongMaterial({
@@ -457,7 +472,6 @@
             mirrorEdges.rotation.y = Math.PI / 2;
             scene.add(mirrorEdges);
 
-            // Dashed Normal Line
             normalLine = new THREE.Line(
                 new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-8, 0, 0), new THREE.Vector3(8, 0, 0)]),
                 new THREE.LineDashedMaterial({color:0xffffff, dashSize:0.8, gapSize:0.45})
@@ -465,7 +479,6 @@
             normalLine.computeLineDistances();
             scene.add(normalLine);
 
-            // Ray Arrows
             incidentArrow = new THREE.ArrowHelper(new THREE.Vector3(-1,0,0), new THREE.Vector3(8,0,0), 10, 0xff3366, 0.8, 0.45);
             reflectedArrow = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,0), 10, 0x00e5ff, 0.8, 0.45);
             deviatedArrow = new THREE.ArrowHelper(new THREE.Vector3(-1,0,0), new THREE.Vector3(0,0,0), 12, 0xffaa00, 1.1, 0.55);
@@ -481,7 +494,6 @@
             scene.add(deviationLine);
             scene.add(deviatedArrow);
 
-            // Placeholder Arcs
             incidenceArc = makeArc(3.1, 0, 0, 0xff3366);
             reflectionArc = makeArc(3.9, 0, 0, 0x00e5ff);
             deviationArc = makeArc(5.0, 0, 0, 0xffaa00);
@@ -504,14 +516,12 @@
             const iRad = i * Math.PI / 180;
             const deviation = 180 - 2 * i;
 
-            // Geometry calculations
             const source = new THREE.Vector3(10 * Math.cos(iRad), 0, 10 * Math.sin(iRad));
             const inDir = source.clone().multiplyScalar(-1).normalize();
             const reflDir = new THREE.Vector3(Math.cos(iRad), 0, -Math.sin(iRad)).normalize();
             const contAngle = iRad - Math.PI;
             const reflAngle = -iRad;
 
-            // Update Arrows
             incidentArrow.position.copy(source);
             incidentArrow.setDirection(inDir);
             incidentArrow.setLength(source.length(), 0.8, 0.45);
@@ -524,14 +534,12 @@
             deviatedArrow.setDirection(inDir);
             deviatedArrow.setLength(12, 1.1, 0.55);
 
-            // Update deviation dotted line
             const devPts = deviationLine.geometry.attributes.position.array;
             devPts[0] = 0; devPts[1] = 0; devPts[2] = 0;
             devPts[3] = inDir.x * 12; devPts[4] = 0; devPts[5] = inDir.z * 12;
             deviationLine.geometry.attributes.position.needsUpdate = true;
             deviationLine.computeLineDistances();
 
-            // Update Arcs
             incidenceArc = replaceArc(incidenceArc, 3.0, 0, iRad, 0xff3366);
             reflectionArc = replaceArc(reflectionArc, 3.8, -iRad, 0, 0x00e5ff);
             deviationArc = replaceArc(deviationArc, 4.9, contAngle, reflAngle, 0xffaa00);
@@ -539,7 +547,6 @@
             scene.add(reflectionArc);
             scene.add(deviationArc);
 
-            // Update UI Text
             incidenceValue.textContent = `${i.toFixed(0)}°`;
             iReadout.textContent = `${i.toFixed(0)}°`;
             rReadout.textContent = `${i.toFixed(0)}°`;
