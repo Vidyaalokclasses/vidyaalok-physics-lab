@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Electric Charges Formulas | Vidyaalok Lab</title>
     
     <!-- Google Analytics -->
@@ -481,13 +481,37 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Mobile & Tablet Responsive Layout */
         @media(max-width: 640px) {
             .viewer-card { padding: 18px; }
             .navbar { padding: 1rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
         }
 
-        @media(max-width: 900px) {
-            .formula-browser { grid-template-columns: 1fr; }
+        @media (max-width: 900px) {
+            * { 
+                box-sizing: border-box !important; 
+            }
+            body, html { 
+                overflow-x: hidden !important; 
+                overflow-y: auto !important; 
+                height: auto !important; 
+                width: 100vw !important; 
+            }
+            .page-shell {
+                width: 100%;
+                overflow-x: hidden;
+            }
+            .main {
+                width: 100%;
+                padding: 1rem;
+            }
+            .formula-browser { 
+                grid-template-columns: 1fr; 
+                gap: 1rem;
+            }
+            .formula-list {
+                grid-template-columns: 1fr; /* Stacks cards into single column on mobile */
+            }
         }
     </style>
 </head>
