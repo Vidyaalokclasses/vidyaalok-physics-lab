@@ -282,22 +282,36 @@
             touch-action: none;
         }
         
+        /* Mobile & Tablet Responsive Layout */
         @media (max-width: 900px) {
-            body { overflow: auto; height: auto; }
+            * { 
+                box-sizing: border-box !important; 
+            }
+            body, html { 
+                overflow-x: hidden !important; 
+                overflow-y: auto !important; 
+                height: auto !important; 
+                width: 100vw !important; 
+            }
             .workspace {
                 flex-direction: column;
                 overflow-y: visible;
                 height: auto;
                 padding: 1rem;
+                width: 100%;
             }
             .controls {
                 width: 100%;
             }
             .right-panel {
-                min-height: 50vh;
+                min-height: 60vh; 
+                height: 500px;
                 flex-grow: 0;
+                margin-top: 1rem;
             }
-            .navbar { padding: 1rem; }
+            .navbar { 
+                padding: 1rem; 
+            }
         }
     </style>
 </head>
