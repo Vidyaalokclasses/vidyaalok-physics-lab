@@ -179,6 +179,45 @@
         .card:hover .btn-text::after {
             transform: translateX(5px);
         }
+
+        /* Mobile Layout Lock for Dashboards */
+        @media (max-width: 900px) {
+            * {
+                box-sizing: border-box !important;
+            }
+            body, html {
+                overflow-x: hidden !important;
+                width: 100vw !important;
+            }
+            .wrapper {
+                width: 100%;
+                overflow-x: hidden;
+            }
+            .navbar {
+                padding: 1.5rem 1rem;
+            }
+            .navbar h1 {
+                font-size: 1.2rem;
+            }
+            .header {
+                padding: 2rem 1rem 1rem 1rem;
+            }
+            .header h2 {
+                font-size: 2rem;
+            }
+            .container {
+                padding: 1rem; 
+                width: 100%;
+            }
+            .grid {
+                gap: 1.5rem;
+                grid-template-columns: 1fr; /* Stacks cards in one column on mobile */
+            }
+            .card {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
