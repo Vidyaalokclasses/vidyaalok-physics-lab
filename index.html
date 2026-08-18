@@ -172,6 +172,36 @@
             font-size: 0.85rem;
             text-align: center;
         }
+
+        /* Mobile Layout Lock for Dashboards */
+        @media (max-width: 900px) {
+            * {
+                box-sizing: border-box !important;
+            }
+            body, html {
+                overflow-x: hidden !important;
+                width: 100vw !important;
+            }
+            .wrapper {
+                width: 100%;
+                overflow-x: hidden;
+            }
+            .hero {
+                padding: 3rem 1rem 1rem 1rem;
+            }
+            .hero h1 {
+                font-size: 2.5rem; /* Scales text down slightly for small screens */
+            }
+            .grid {
+                padding: 1rem; 
+                width: 100%;
+                gap: 1.5rem; /* Reduces gap so cards fit properly without stretching */
+            }
+            .card {
+                max-width: 100%; /* Ensures card doesn't push past viewport */
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
