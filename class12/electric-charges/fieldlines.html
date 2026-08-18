@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Electric Field Lines | Vidyaalok Lab</title>
 
-    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -120,6 +119,12 @@
             display: flex; align-items: center; gap: 10px; font-size: 0.9rem;
         }
         .toggle-row input { width: auto; }
+        .toggle-row.disabled { opacity: 0.45; pointer-events: none; }
+
+        .note {
+            font-size: 0.78rem; color: #ffaa00; margin-top: -6px;
+            display: none;
+        }
 
         .legend {
             margin-top: auto; background: rgba(0, 0, 0, 0.3);
@@ -180,8 +185,9 @@
             <h2>Parameters</h2>
 
             <div class="instructions">
-                Drag charges in 2D. Field lines leave <b>+</b> charges and enter <b>−</b> charges.
-                Density slider works in both 2D &amp; 3D. Toggle equipotentials for constant-V curves.
+                Field lines <b>always start on +</b> and <b>end on −</b>.<br>
+                Drag charges in 2D. Equipotentials work only in 2D.<br>
+                <b>Reset Positions</b> returns charges to default locations.
             </div>
 
             <div class="control-group">
@@ -214,12 +220,13 @@
                 <input type="range" id="density" min="8" max="36" step="2" value="16">
             </div>
 
-            <div class="toggle-row">
+            <div class="toggle-row" id="equipotentialRow">
                 <input type="checkbox" id="showEquipotential">
                 <label for="showEquipotential" style="text-transform:none; letter-spacing:0; font-weight:500;">
                     Show Equipotential Contours
                 </label>
             </div>
+            <div class="note" id="equipNote">Equipotentials available only in 2D view</div>
 
             <div class="btn-row">
                 <button class="btn" id="resetBtn">Reset Positions</button>
@@ -229,8 +236,8 @@
             <div class="legend">
                 <span style="color:#ff5555;">● Positive Charge</span>
                 <span style="color:#33ff88;">● Negative Charge</span>
-                <span style="color:#00e5ff;">— Field Lines (+ arrows)</span>
-                <span style="color:#ffaa00;">⋯ Equipotentials</span>
+                <span style="color:#00e5ff;">— Field Lines (start on +, end on −)</span>
+                <span style="color:#ffaa00;">⋯ Equipotentials (2D only)</span>
             </div>
         </div>
 
@@ -256,6 +263,8 @@
         const densitySlider = document.getElementById("density");
         const densityVal = document.getElementById("densityVal");
         const showEquipotential = document.getElementById("showEquipotential");
+        const equipotentialRow = document.getElementById("equipotentialRow");
+        const equipNote = document.getElementById("equipNote");
         const resetBtn = document.getElementById("resetBtn");
         const rebuildBtn = document.getElementById("rebuildBtn");
 
@@ -267,7 +276,6 @@
         let fieldLineObjects = [];
         let animationStarted = false;
 
-        // ---------- RESIZE ----------
         const resizeObserver = new ResizeObserver(entries => {
             window.requestAnimationFrame(() => {
                 for (let entry of entries) {
@@ -282,7 +290,6 @@
         });
         resizeObserver.observe(document.getElementById('simWrapper'));
 
-        // ---------- CHARGE SETUP ----------
         function setCharges(resetPositions = true) {
             const cx = canvas.width / 2 || 300;
             const cy = canvas.height / 2 || 200;
@@ -320,13 +327,22 @@
             is3D = (dimension.value === "3d");
             canvas.style.display = is3D ? "none" : "block";
             container3d.style.display = is3D ? "block" : "none";
+
+            if (is3D) {
+                showEquipotential.checked = false;
+                equipotentialRow.classList.add("disabled");
+                equipNote.style.display = "block";
+            } else {
+                equipotentialRow.classList.remove("disabled");
+                equipNote.style.display = "none";
+            }
+
             if (is3D) {
                 init3D();
                 rebuild3D();
             }
         }
 
-        // ---------- 2D PHYSICS ----------
         function field2D(x, y) {
             let Ex = 0, Ey = 0;
             charges.forEach(c => {
@@ -350,38 +366,31 @@
             return V;
         }
 
-        // Trace: start near charge surface and follow the field correctly
-        // + charge → outward, − charge → inward
-        function trace2D(sx, sy, q) {
+        // Trace following the true electric field direction
+        function trace2D(sx, sy) {
             const path = [{ x: sx, y: sy }];
             let x = sx, y = sy;
-            const steps = 500;
-            const stepSize = 2.4;
+            const steps = 550;
+            const stepSize = 2.5;
 
             for (let i = 0; i < steps; i++) {
                 const { Ex, Ey } = field2D(x, y);
                 const mag = Math.hypot(Ex, Ey);
                 if (mag < 1e-5) break;
 
-                // Direction of the electric field
-                let ux = Ex / mag;
-                let uy = Ey / mag;
-
-                // For negative charge we reverse so the line goes INTO the charge
-                if (q < 0) {
-                    ux = -ux;
-                    uy = -uy;
-                }
+                // Always follow the field direction (from + toward −)
+                const ux = Ex / mag;
+                const uy = Ey / mag;
 
                 x += ux * stepSize;
                 y += uy * stepSize;
                 path.push({ x, y });
 
-                // Stop if we hit any charge
+                // Stop if we reach any charge
                 for (const c of charges) {
-                    if (Math.hypot(x - c.x, y - c.y) < 12) return path;
+                    if (Math.hypot(x - c.x, y - c.y) < 13) return path;
                 }
-                if (x < -80 || x > canvas.width + 80 || y < -80 || y > canvas.height + 80) break;
+                if (x < -100 || x > canvas.width + 100 || y < -100 || y > canvas.height + 100) break;
             }
             return path;
         }
@@ -397,16 +406,15 @@
             ctx.fill();
         }
 
-        // Improved equipotential drawing
         function drawEquipotentials() {
             if (!showEquipotential.checked || canvas.width === 0) return;
 
             const levels = [-1.2, -0.7, -0.35, -0.15, 0.15, 0.35, 0.7, 1.2];
-            const step = 14;
+            const step = 12;
 
-            ctx.lineWidth = 1.3;
+            ctx.lineWidth = 1.4;
             ctx.setLineDash([5, 4]);
-            ctx.strokeStyle = "rgba(255, 170, 0, 0.65)";
+            ctx.strokeStyle = "rgba(255, 170, 0, 0.7)";
 
             for (const level of levels) {
                 for (let y = 0; y < canvas.height; y += step) {
@@ -415,22 +423,20 @@
                         const v10 = potential2D(x + step, y);
                         const v01 = potential2D(x, y + step);
 
-                        // Horizontal edge
                         if ((v00 - level) * (v10 - level) < 0) {
                             const t = (level - v00) / (v10 - v00 || 1e-6);
                             const px = x + t * step;
                             ctx.beginPath();
                             ctx.moveTo(px, y);
-                            ctx.lineTo(px, y + 3);
+                            ctx.lineTo(px, y + 4);
                             ctx.stroke();
                         }
-                        // Vertical edge
                         if ((v00 - level) * (v01 - level) < 0) {
                             const t = (level - v00) / (v01 - v00 || 1e-6);
                             const py = y + t * step;
                             ctx.beginPath();
                             ctx.moveTo(x, py);
-                            ctx.lineTo(x + 3, py);
+                            ctx.lineTo(x + 4, py);
                             ctx.stroke();
                         }
                     }
@@ -450,16 +456,21 @@
 
             const lines = parseInt(densitySlider.value, 10);
 
+            // ★ IMPORTANT: launch lines ONLY from positive charges
+            // (for a pure negative charge we still launch and the field direction makes them point inward)
             charges.forEach(c => {
+                // Skip negative charges when there is at least one positive charge
+                const hasPositive = charges.some(ch => ch.q > 0);
+                if (c.q < 0 && hasPositive) return;
+
                 for (let i = 0; i < lines; i++) {
-                    const angle = (i / lines) * Math.PI * 2 + 0.05;
+                    const angle = (i / lines) * Math.PI * 2 + 0.07;
                     const sx = c.x + Math.cos(angle) * 16;
                     const sy = c.y + Math.sin(angle) * 16;
 
-                    const path = trace2D(sx, sy, c.q);
+                    const path = trace2D(sx, sy);
                     if (path.length < 4) continue;
 
-                    // Draw the line
                     ctx.beginPath();
                     ctx.moveTo(path[0].x, path[0].y);
                     for (let k = 1; k < path.length; k++) {
@@ -469,8 +480,8 @@
                     ctx.lineWidth = 1.5;
                     ctx.stroke();
 
-                    // Draw arrows along the path (every ~45 points)
-                    for (let j = 30; j < path.length - 5; j += 45) {
+                    // Arrows point in the true field direction
+                    for (let j = 28; j < path.length - 5; j += 42) {
                         const p1 = path[j];
                         const p2 = path[j + 3];
                         const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x);
@@ -479,7 +490,7 @@
                 }
             });
 
-            // Draw charges on top
+            // Draw charges
             charges.forEach((c, idx) => {
                 ctx.beginPath();
                 ctx.arc(c.x, c.y, 14, 0, Math.PI * 2);
@@ -499,7 +510,6 @@
             requestAnimationFrame(draw2D);
         }
 
-        // ---------- DRAG (2D) ----------
         function getPointerPos(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -626,25 +636,21 @@
             return seeds;
         }
 
-        function trace3D(start, q) {
+        function trace3D(start) {
             const path = [];
             const pos = start.clone();
-            const steps = 420;
-            const stepSize = 1.35;
+            const steps = 450;
+            const stepSize = 1.4;
 
             for (let i = 0; i < steps; i++) {
                 const { Ex, Ey, Ez } = field3D(pos.x, pos.y, pos.z);
                 const mag = Math.hypot(Ex, Ey, Ez);
                 if (mag < 2e-5) break;
 
-                let ux = Ex / mag, uy = Ey / mag, uz = Ez / mag;
-                if (q < 0) { // reverse for negative → lines go inward
-                    ux = -ux; uy = -uy; uz = -uz;
-                }
-
-                pos.x += ux * stepSize;
-                pos.y += uy * stepSize;
-                pos.z += uz * stepSize;
+                // Always follow the true field
+                pos.x += (Ex / mag) * stepSize;
+                pos.y += (Ey / mag) * stepSize;
+                pos.z += (Ez / mag) * stepSize;
                 path.push(pos.clone());
 
                 if (Math.abs(pos.x) > 120 || Math.abs(pos.y) > 120 || Math.abs(pos.z) > 120) break;
@@ -681,10 +687,10 @@
             clearList(chargeMeshes);
             clearList(fieldLineObjects);
 
-            // Density slider now controls 3D seed count
             const density = parseInt(densitySlider.value, 10);
             const seedCount = Math.max(10, Math.min(40, Math.round(density * 0.9)));
 
+            // Draw charge spheres
             charges.forEach(c => {
                 const sphere = new THREE.Mesh(
                     new THREE.SphereGeometry(2.7, 24, 24),
@@ -698,13 +704,19 @@
                 chargeMeshes.push(sphere);
             });
 
+            // Launch lines ONLY from positive charges
+            // (or from the negative if it is the only charge)
+            const hasPositive = charges.some(c => c.q > 0);
+
             charges.forEach(c => {
+                if (c.q < 0 && hasPositive) return; // skip negatives when positives exist
+
                 const center = to3D(c);
                 const seeds = getSphereSeeds(3.8, seedCount);
 
                 seeds.forEach(seed => {
                     const start = center.clone().add(seed);
-                    const points = trace3D(start, c.q);
+                    const points = trace3D(start);
                     if (points.length < 4) return;
 
                     const geo = new THREE.BufferGeometry().setFromPoints(points);
@@ -712,8 +724,7 @@
                     scene.add(line);
                     fieldLineObjects.push(line);
 
-                    // Add a few arrow heads along the line
-                    for (let i = 25; i < points.length - 5; i += 55) {
+                    for (let i = 25; i < points.length - 5; i += 50) {
                         const p1 = points[i];
                         const p2 = points[i + 4];
                         const dir = p2.clone().sub(p1);
@@ -737,17 +748,15 @@
             }
         }
 
-        // ---------- EVENTS ----------
         densitySlider.addEventListener("input", () => {
             densityVal.textContent = densitySlider.value;
-            if (is3D) rebuild3D();          // live update in 3D
+            if (is3D) rebuild3D();
         });
 
         mode.addEventListener("change", updateMode);
         dimension.addEventListener("change", switchMode);
         q1.addEventListener("input", () => { setCharges(false); if (is3D) rebuild3D(); });
         q2.addEventListener("input", () => { setCharges(false); if (is3D) rebuild3D(); });
-        showEquipotential.addEventListener("change", () => {}); // 2D redraws automatically
 
         resetBtn.addEventListener("click", () => {
             setCharges(true);
@@ -760,6 +769,7 @@
         // Init
         updateMode();
         draw2D();
+        switchMode();
     </script>
 </body>
 </html>
