@@ -199,21 +199,26 @@
         
         /* Mobile & Tablet Responsive Layout */
         @media (max-width: 900px) {
+            * { 
+                box-sizing: border-box !important; 
+            }
             body, html { 
-                overflow: auto !important; 
+                overflow-x: hidden !important; 
+                overflow-y: auto !important; 
                 height: auto !important; 
+                width: 100vw !important; 
             }
             .workspace {
                 flex-direction: column;
                 overflow-y: visible;
                 height: auto;
                 padding: 1rem;
+                width: 100%;
             }
             .controls {
                 width: 100%;
             }
             .right-panel {
-                /* Forces the canvas to take up at least 60% of the screen height on mobile */
                 min-height: 60vh; 
                 height: 500px;
                 flex-grow: 0;
