@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mirror Combination Simulator | Vidyaalok Lab</title>
 
     <!-- Google Analytics -->
@@ -37,7 +37,9 @@
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
-            overflow-x: hidden; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
         }
 
         /* Top Navigation */
@@ -368,20 +370,36 @@
             border-radius: 2px;
         }
         
+        /* Mobile & Tablet Responsive Layout */
         @media (max-width: 900px) {
+            * { 
+                box-sizing: border-box !important; 
+            }
+            body, html { 
+                overflow-x: hidden !important; 
+                overflow-y: auto !important; 
+                height: auto !important; 
+                width: 100vw !important; 
+            }
             .workspace {
                 flex-direction: column;
                 overflow-y: visible;
                 height: auto;
+                padding: 1rem;
+                width: 100%;
             }
             .controls {
                 width: 100%;
             }
             .right-panel {
+                min-height: 60vh; 
                 height: 550px;
                 flex-grow: 0;
+                margin-top: 1rem;
             }
-            body { overflow: auto; }
+            .navbar { 
+                padding: 1rem; 
+            }
         }
     </style>
 </head>
