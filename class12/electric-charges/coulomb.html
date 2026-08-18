@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Coulomb's Law Simulator | Vidyaalok Lab</title>
     <style>
         :root {
@@ -259,7 +259,6 @@
             transform: translate(-50%, -50%);
             width: 90%; 
             height: 90%;
-            /* Points to the transparent logo in your root folder */
             background-image: url('../../logo.png'); 
             background-size: contain;
             background-repeat: no-repeat;
@@ -278,20 +277,36 @@
             z-index: 1;
         }
         
+        /* Mobile & Tablet Responsive Layout */
         @media (max-width: 900px) {
+            * { 
+                box-sizing: border-box !important; 
+            }
+            body, html { 
+                overflow-x: hidden !important; 
+                overflow-y: auto !important; 
+                height: auto !important; 
+                width: 100vw !important; 
+            }
             .workspace {
                 flex-direction: column;
-                overflow-y: auto;
+                overflow-y: visible;
                 height: auto;
+                padding: 1rem;
+                width: 100%;
             }
             .controls {
                 width: 100%;
             }
             .right-panel {
-                height: 800px;
+                min-height: 80vh; 
+                height: 750px; /* Taller height needed because this has 2 canvases */
                 flex-grow: 0;
+                margin-top: 1rem;
             }
-            body { overflow: auto; }
+            .navbar { 
+                padding: 1rem; 
+            }
         }
     </style>
 </head>
