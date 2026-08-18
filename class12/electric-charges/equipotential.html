@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Equipotential Surfaces | Vidyaalok Lab</title>
 
     <!-- Google Analytics -->
@@ -206,20 +206,36 @@
             z-index: 1;
         }
         
+        /* Mobile & Tablet Responsive Layout */
         @media (max-width: 900px) {
+            * { 
+                box-sizing: border-box !important; 
+            }
+            body, html { 
+                overflow-x: hidden !important; 
+                overflow-y: auto !important; 
+                height: auto !important; 
+                width: 100vw !important; 
+            }
             .workspace {
                 flex-direction: column;
-                overflow-y: auto;
+                overflow-y: visible;
                 height: auto;
+                padding: 1rem;
+                width: 100%;
             }
             .controls {
                 width: 100%;
             }
             .right-panel {
+                min-height: 60vh; 
                 height: 600px;
                 flex-grow: 0;
+                margin-top: 1rem;
             }
-            body { overflow: auto; }
+            .navbar { 
+                padding: 1rem; 
+            }
         }
     </style>
 </head>
