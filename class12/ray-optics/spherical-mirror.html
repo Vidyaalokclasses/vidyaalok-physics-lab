@@ -14,6 +14,12 @@
       gtag('config', 'G-L8DFSQTR66');
     </script>
 
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script>
+        window.MathJax = { tex:{ inlineMath:[['\\(','\\)']] }, svg:{ fontCache:'global' } };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
     <style>
         :root {
             --primary: #00e5ff;
@@ -22,7 +28,7 @@
             --panel-bg: rgba(255, 255, 255, 0.03);
             --text-main: #ffffff;
             --text-muted: #a0aabf;
-            
+
             /* Specific simulation colors */
             --gold: #ffd166;
             --green: #87f7aa;
@@ -183,7 +189,7 @@
             width: 100%;
             background: transparent;
         }
-        
+
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 16px;
@@ -385,7 +391,7 @@
         .cases-table td { padding: 8px 18px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .cases-table tr:last-child td { border-bottom: none; }
         .cases-table td:first-child { color: var(--text-main); font-weight: bold; }
-        
+
         /* Mobile & Tablet Responsive Layout */
         @media (max-width: 900px) {
             * { 
@@ -427,7 +433,7 @@
     </nav>
 
     <div class="workspace">
-        
+
         <!-- Control Panel -->
         <aside class="controls">
             <h2>System Controls</h2>
@@ -488,7 +494,7 @@
                 <span id="canvas-mirror-label">Concave Mirror — Drag the object ↕ along the axis</span>
                 <span id="object-pos-display">u = -30 cm</span>
             </div>
-            
+
             <div class="canvas-wrapper" id="simWrapper">
                 <div class="watermark"></div>
                 <canvas id="mirror-canvas"></canvas>
@@ -533,7 +539,7 @@
                     canvas.height = H;
                     P = Math.round(W * 0.62);
                     axisY = Math.round(H * 0.5);
-                    
+
                     if (!initialized && W > 10 && H > 10) {
                         initialized = true;
                         setMirror('concave');
@@ -640,7 +646,7 @@
             ctx.lineTo(x2,y2);
             ctx.stroke();
             ctx.setLineDash([]);
-            
+
             const hl = headLen || 8;
             if(hl > 0) {
                 const a = Math.atan2(y2-y1,x2-x1);
@@ -689,7 +695,7 @@
                 ctx.beginPath();
                 ctx.arc(cx, axisY, Rpx, -halfAngle, halfAngle);
                 ctx.stroke();
-                
+
                 const steps = 8;
                 for(let i=0;i<=steps;i++){
                     const a = -halfAngle + (i/steps)*2*halfAngle;
@@ -710,7 +716,7 @@
                 ctx.beginPath();
                 ctx.arc(cx, axisY, Rpx, Math.PI - halfAngle, Math.PI + halfAngle);
                 ctx.stroke();
-                
+
                 for(let i=0;i<=8;i++){
                     const a = Math.PI - halfAngle + (i/8)*2*halfAngle;
                     const sx = cx + Rpx*Math.cos(a);
@@ -741,7 +747,7 @@
             ctx.restore();
 
             const f = getF();
-            
+
             let Fx, Cx;
             if(mirrorType === 'concave'){
                 Fx = P + cmToPx(f);   
@@ -781,7 +787,7 @@
             const hasVirtImage = v !== null && isFinite(v) && v > 0;
             const imgX  = (v !== null && isFinite(v)) ? mirrorX(v) : null;
             const imgTipY = (imgX !== null) ? axisY - cmToPx(imgH) : null;
-            
+
             const objTip = { x: objX, y: objTipY };
             const focus = { x: Fx, y: axisY };
             const centre = { x: Cx, y: axisY };
@@ -961,10 +967,10 @@
             const objH = getObjH();
             const { v, m } = computeImage(u, f);
 
-            const visibleDistances = [Math.abs(f) * 2, Math.abs(u)];
-            if(v !== null && isFinite(v) && v < 0) visibleDistances.push(Math.abs(v));
-            scale = Math.min(10, (P * 0.82) / (Math.max(...visibleDistances) + 4));
-            scale = Math.max(4, scale);
+            // FIX: Lock the scale dynamically. 
+            // 60 cm represents the total distance from the Pole to the left edge of the screen.
+            scale = P / 60; 
+            
             const imgH = m !== null ? m * objH : 0;
 
             drawAxis();
@@ -985,7 +991,7 @@
             } else {
                 cx = e.clientX - rect.left;
             }
-            
+
             const px = cx * (W / rect.width);
             const uCm = pxToCm(px - P);
             return Math.min(-2, uCm);
@@ -1043,9 +1049,9 @@
             mirrorType = type;
             document.getElementById('btn-concave').className = 'tool-btn' + (type === 'concave' ? ' active' : '');
             document.getElementById('btn-convex').className = 'tool-btn' + (type === 'convex' ? ' active' : '');
-            
+
             document.getElementById('canvas-mirror-label').textContent = type === 'concave' ? 'Concave Mirror — Drag the object ↕ along the axis' : 'Convex Mirror — Drag the object ↕ along the axis';
-            
+
             const casesList = document.getElementById('cases-list');
             casesList.innerHTML = casesTableHtml(type);
             if(type === 'convex') objU = -20;
