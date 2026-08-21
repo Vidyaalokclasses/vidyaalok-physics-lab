@@ -283,11 +283,11 @@
         .formula-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             line-height: 1.45;
             text-align: left;
         }
-        .formula-table th { padding: 8px; color: var(--gold); font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .formula-table th { padding: 8px; color: var(--gold); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
         .formula-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
         .formula-table tr:last-child td { border-bottom: none; }
 
@@ -391,6 +391,7 @@
             }
             .navbar { padding: 1rem; }
             .tool-row { grid-template-columns: 1fr; }
+            .formula-table th, .formula-table td { padding: 6px; font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -412,7 +413,7 @@
                 <div class="tool-row" style="grid-template-columns: 1fr 1fr 1fr;">
                     <button class="tool-btn active" id="tabImage">Static</button>
                     <button class="tool-btn" id="tabVelocity">Velocity</button>
-                    <button class="tool-btn" id="tabDouble">Dual</button>
+                    <button class="tool-btn" id="tabDouble">Two Mirrors</button>
                 </div>
             </div>
 
@@ -508,12 +509,20 @@
                     </div>
                     <div class="formula-panel" style="padding: 0; border: none; background: transparent;">
                         <table class="formula-table">
-                            <thead><tr><th>Condition (\(m = \frac{360^\circ}{\theta}\))</th><th>Images (\(N\))</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Condition<br>\((m = \frac{360^\circ}{\theta})\)</th>
+                                    <th>Placement</th>
+                                    <th>Images \((n)\)</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                                <tr><td>\( \theta = 0^\circ \) (Parallel)</td><td>\(\infty\)</td></tr>
-                                <tr><td>\( m \) is even</td><td>\( m - 1 \)</td></tr>
-                                <tr><td>\( m \) is odd (Symmetric)</td><td>\( m - 1 \)</td></tr>
-                                <tr><td>\( m \) is odd (Asymmetric)</td><td>\( m \)</td></tr>
+                                <tr><td>\(m\) is Even</td><td>Any</td><td>\(n = m - 1\)</td><td>\(90^\circ(4) \rightarrow 3\)</td></tr>
+                                <tr><td>\(m\) is Odd</td><td>Symmetrical</td><td>\(n = m - 1\)</td><td>\(72^\circ(5) \rightarrow 4\)</td></tr>
+                                <tr><td>\(m\) is Odd</td><td>Asymmetrical</td><td>\(n = m\)</td><td>\(72^\circ(5) \rightarrow 5\)</td></tr>
+                                <tr><td>Fractional</td><td>Any</td><td>\(n = \text{int}(m)\)</td><td>\(50^\circ(7.2) \rightarrow 7\)</td></tr>
+                                <tr><td>Parallel \((0^\circ)\)</td><td>Any</td><td>\(n = \infty\)</td><td>\(0^\circ \rightarrow \infty\)</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -636,7 +645,7 @@
                 document.getElementById("canvas-title").textContent = "Dynamic Velocity Map";
                 resetVelocityMode(); // Ensure it starts perfectly still
             }
-            if (mode === "double") document.getElementById("canvas-title").textContent = "Multiple Reflections";
+            if (mode === "double") document.getElementById("canvas-title").textContent = "Two Mirrors (Multiple Reflections)";
         }
 
         btnImage.addEventListener("click", () => setMode("image"));
@@ -669,13 +678,24 @@
             ctx.stroke();
             ctx.setLineDash([]);
             
-            // Scaled down Arrowhead for maximum space optimization
             ctx.beginPath();
             ctx.moveTo(x, baseY - height);
             ctx.lineTo(x - 8, baseY - height + 12);
             ctx.lineTo(x + 8, baseY - height + 12);
             ctx.closePath();
             ctx.fill();
+            ctx.restore();
+        }
+
+        function drawRay(x1, y1, x2, y2, color, dashed = false) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            if (dashed) ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
             ctx.restore();
         }
 
@@ -688,7 +708,6 @@
             ctx.lineTo(x, bottom);
             ctx.stroke();
 
-            // Hash marks
             ctx.lineWidth = 2;
             for(let y = top + 10; y < bottom; y += 18){
                 ctx.beginPath();
@@ -773,8 +792,30 @@
             imgDistOut.textContent = `${d.toFixed(0)} cm`;
 
             drawMirrorVertical(mirrorX, H * 0.15, H * 0.85);
-            drawArrow(objectX, baseY, Math.min(120, H * 0.25), "#ffd166");
-            drawArrow(imageX, baseY, Math.min(120, H * 0.25), "#00e5ff", true);
+            
+            const objH = Math.min(120, H * 0.25);
+            drawArrow(objectX, baseY, objH, "#ffd166");
+            drawArrow(imageX, baseY, objH, "#00e5ff", true);
+
+            // Added visual ray tracing to make it less basic
+            const objTipY = baseY - objH;
+            
+            if (d > 0) {
+                // Ray 1: Horizontal to mirror
+                drawRay(objectX, objTipY, mirrorX, objTipY, 'rgba(255, 209, 102, 0.7)');
+                // Ray 1: Reflects back
+                drawRay(mirrorX, objTipY, objectX - 50, objTipY, 'rgba(255, 209, 102, 0.7)');
+                // Ray 1: Virtual Extension
+                drawRay(mirrorX, objTipY, imageX, objTipY, 'rgba(0, 229, 255, 0.5)', true);
+
+                // Ray 2: Angled to pole/base
+                drawRay(objectX, objTipY, mirrorX, baseY, 'rgba(255, 209, 102, 0.7)');
+                // Ray 2: Reflects down
+                const reflectY = baseY + (baseY - objTipY);
+                drawRay(mirrorX, baseY, objectX - 50, reflectY + (reflectY - baseY)*(50/d), 'rgba(255, 209, 102, 0.7)');
+                // Ray 2: Virtual Extension
+                drawRay(mirrorX, baseY, imageX, objTipY, 'rgba(0, 229, 255, 0.5)', true);
+            }
 
             ctx.fillStyle = "#eef7ff";
             ctx.font = "bold 16px Segoe UI";
@@ -782,18 +823,17 @@
             ctx.fillText("I", imageX - 10, baseY + 24);
 
             // Distance dashed lines
-            ctx.strokeStyle = "rgba(255,209,102,0.5)";
-            ctx.setLineDash([6, 6]);
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.setLineDash([4, 4]);
             ctx.beginPath();
-            ctx.moveTo(objectX, baseY - 50);
-            ctx.lineTo(imageX, baseY - 50);
+            ctx.moveTo(objectX, baseY);
+            ctx.lineTo(imageX, baseY);
             ctx.stroke();
             ctx.setLineDash([]);
         }
 
         // --- MODE 2: VELOCITY ---
         function clampMovingState() {
-            // Expanded bounds to maximize playable area
             if (movingMirrorX < W * 0.15) movingMirrorX = W * 0.15;
             if (movingMirrorX > W * 0.85) movingMirrorX = W * 0.85;
             if (movingObject.x < 30) movingObject.x = 30;
@@ -811,7 +851,7 @@
             const viy = voy;
 
             movingObject.x += vox * 20 * dt;
-            movingObject.y -= voy * 20 * dt; // Cartesian y is up
+            movingObject.y -= voy * 20 * dt;
             movingMirrorX += vmx * 20 * dt;
             clampMovingState();
 
@@ -834,12 +874,9 @@
             }
 
             drawMirrorVertical(movingMirrorX, H * 0.1, H * 0.9);
-            
-            // Arrows scaled down to maximize free space for movement
             drawArrow(movingObject.x, movingObject.y, Math.min(50, H * 0.1), "#ffd166");
             drawArrow(imageX, imageY, Math.min(50, H * 0.1), "#00e5ff", true);
 
-            // Shrunk labels to prevent overlap
             ctx.fillStyle = "#eef7ff";
             ctx.font = "bold 14px Segoe UI";
             ctx.fillText("O", movingObject.x - 16, movingObject.y + 20);
@@ -903,7 +940,7 @@
             const images = [];
             let currentLeft = object;
             let currentRight = object;
-            for(let n = 0; n < 4; n++){ // Just render first 8 to save canvas space
+            for(let n = 0; n < 4; n++){ 
                 currentLeft = reflectAcrossVertical(currentLeft, leftX);
                 uniquePush(images, currentLeft);
                 currentLeft = reflectAcrossVertical(currentLeft, rightX);
@@ -955,6 +992,22 @@
                 drawShadedMirrorLine(centerX, centerY, a2, mirrorLen, -1);
 
                 const objCanvas = { x: centerX + object.x, y: centerY - object.y };
+                
+                // Add Circular Locus and Angle Bisector for visual clarity
+                const radius = Math.hypot(object.x, object.y);
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX, centerY - radius - 20);
+                ctx.strokeStyle = "rgba(0, 229, 255, 0.2)";
+                ctx.stroke();
+                ctx.setLineDash([]);
+
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
                 const onBisector = Math.abs(ox) < 4;
