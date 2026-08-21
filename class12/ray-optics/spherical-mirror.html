@@ -313,6 +313,7 @@
             position: relative;
         }
 
+        /* ----- FIXED CANVAS HEAD LAYOUT ----- */
         .canvas-head {
             padding: 12px 18px;
             display: flex;
@@ -324,9 +325,19 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(0,0,0,0.2);
             z-index: 2;
+            gap: 15px;
         }
 
-        .canvas-head span:first-child { color: var(--primary); }
+        .canvas-head span:first-child { 
+            color: var(--primary); 
+            line-height: 1.3;
+        }
+
+        #object-pos-display {
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            flex-shrink: 0;
+        }
 
         .canvas-wrapper {
             position: relative;
@@ -414,9 +425,18 @@
                 width: 100%;
             }
             .right-panel {
-                height: auto !important; /* Let panel grow to fit all contents */
+                height: auto !important;
                 flex-grow: 0;
                 margin-top: 1rem;
+            }
+            /* STACK CANVAS HEAD TO PREVENT TEXT JITTER */
+            .canvas-head {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            #object-pos-display {
+                text-align: left;
             }
             /* GUARANTEE Canvas height on mobile so it doesn't get squished */
             .canvas-wrapper {
@@ -496,7 +516,7 @@
         <div class="right-panel">
             <div class="canvas-head">
                 <span id="canvas-mirror-label">Concave Mirror — Drag the object ↕ along the axis</span>
-                <span id="object-pos-display">u = -30 cm</span>
+                <span id="object-pos-display">u = -30.0 cm</span>
             </div>
 
             <div class="canvas-wrapper" id="simWrapper">
