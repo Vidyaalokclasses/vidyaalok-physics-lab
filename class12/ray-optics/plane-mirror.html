@@ -54,7 +54,6 @@
             padding: 1rem 2rem;
             background: rgba(7, 11, 25, 0.8);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0, 229, 255, 0.2);
             display: flex;
             justify-content: space-between;
@@ -90,7 +89,6 @@
             gap: 1.5rem;
             height: calc(100vh - 70px);
             box-sizing: border-box;
-            overflow: hidden;
         }
 
         /* Left Control Panel */
@@ -105,7 +103,6 @@
             flex-direction: column;
             gap: 1.2rem;
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             overflow-y: auto;
         }
@@ -305,7 +302,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
             overflow: hidden;
             position: relative;
@@ -322,16 +318,14 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(0,0,0,0.2);
             z-index: 2;
-            flex-shrink: 0;
         }
 
         .canvas-head span:first-child { color: var(--primary); }
 
         .canvas-wrapper {
             position: relative;
-            flex: 1 1 auto;
+            flex-grow: 1;
             width: 100%;
-            min-height: 400px;
             overflow: hidden;
             background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
         }
@@ -383,13 +377,13 @@
             }
             .controls {
                 width: 100%;
-                max-height: 50vh;
             }
             .right-panel {
-                height: 500px !important;
+                height: auto !important;
                 flex-grow: 0;
                 margin-top: 1rem;
             }
+            /* GUARANTEE Canvas height on mobile */
             .canvas-wrapper {
                 min-height: 400px;
                 height: 400px;
@@ -626,7 +620,7 @@
                 initialized = true;
                 resetAllStates();
             }
-        }, 200);
+        }, 300);
 
         function resetAllStates() {
             movingMirrorX = W * 0.5;
@@ -651,7 +645,6 @@
             }
             if (mode === "double") document.getElementById("canvas-title").textContent = "Two Mirrors (Multiple Reflections)";
 
-            // Force immediate canvas update upon tab switch
             setTimeout(() => {
                 if(canvas.parentElement) {
                     W = canvas.parentElement.clientWidth;
@@ -946,9 +939,13 @@
 
         function drawTwoMirrorsMode() {
             if(W === 0 || H === 0) return;
-            const thetaDeg = parseFloat(dblAngle.value) || 0;
-            const ox = parseFloat(dblObjX.value);
-            const oy = parseFloat(dblObjY.value);
+            
+            let thetaInput = parseFloat(dblAngle.value);
+            if(isNaN(thetaInput)) thetaInput = 0;
+            
+            const thetaDeg = thetaInput;
+            const ox = parseFloat(dblObjX.value) || 0;
+            const oy = parseFloat(dblObjY.value) || 0;
             const apexX = W * 0.45;
             const apexY = H * 0.65;
             const mirrorLen = Math.min(W, H) * 0.5;
@@ -966,6 +963,11 @@
 
                 const objCanvas = { x: leftX + ox, y: apexY - oy };
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
+
+                const images = getParallelImages(objCanvas, leftX + 6, rightX - 6);
+                images.forEach((img, idx) => {
+                    drawPointMarker(img.x, img.y, "#00e5ff", `I${idx + 1}`, true);
+                });
                 countText = "∞ (Parallel)";
             } else {
                 const theta = thetaDeg * Math.PI / 180;
@@ -1055,11 +1057,14 @@
             const dt = Math.min((now - lastTime) / 1000, 0.05);
             lastTime = now;
             
-            drawBackground();
-
-            if (mode === "image") drawImageFormation();
-            else if (mode === "velocity") drawVelocityMode(dt);
-            else drawTwoMirrorsMode();
+            try {
+                drawBackground();
+                if (mode === "image") drawImageFormation();
+                else if (mode === "velocity") drawVelocityMode(dt);
+                else drawTwoMirrorsMode();
+            } catch (e) {
+                console.error("Simulation Error", e);
+            }
 
             requestAnimationFrame(animate);
         }
