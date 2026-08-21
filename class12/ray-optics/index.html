@@ -2,18 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ray Optics & Optical Instruments | Vidyaalok Lab</title>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-L8DFSQTR66');
+    </script>
     <style>
         :root {
             --primary: #ff0055; /* Laser Red */
             --secondary: #00ffaa; /* Laser Green */
+            --tertiary: #c7a6ff; /* Neon Purple */
             --bg-dark: #070b19;
-            --text-main: #ffffff;
+            --text-main: #EEEEEE;
             --text-muted: #a0aabf;
-            --card-glow: rgba(255, 0, 85, 0.15);
         }
-
         body, html {
             margin: 0;
             padding: 0;
@@ -24,8 +31,7 @@
             color: var(--text-main);
             overflow-x: hidden;
         }
-
-        /* Particle/Ray Background */
+        /* Particle Ray Background */
         #rayCanvas {
             position: fixed;
             top: 0;
@@ -35,7 +41,6 @@
             z-index: 0;
             pointer-events: none;
         }
-
         .wrapper {
             position: relative;
             z-index: 1;
@@ -43,19 +48,18 @@
             flex-direction: column;
             min-height: 100vh;
         }
-
         /* Top Navigation */
         .navbar {
-            padding: 1.5rem 3rem;
+            padding: 1.5rem 2rem;
             background: rgba(7, 11, 25, 0.8);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 0, 85, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
-        .back-btn {
+        .navbar .brand {
             color: var(--primary);
             text-decoration: none;
             font-weight: 600;
@@ -65,54 +69,58 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: text-shadow 0.3s ease;
         }
-
-        .back-btn:hover {
-            text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
-        }
-
-        .navbar h1 {
+        .navbar h2 {
             margin: 0;
             font-size: 1.2rem;
             letter-spacing: 2px;
+            color: rgba(255,255,255,0.7);
             text-transform: uppercase;
-            color: rgba(255,255,255,0.6);
         }
-
-        /* Header */
-        .header {
+        /* Header Section */
+        header {
             text-align: center;
             padding: 3rem 1rem 1rem 1rem;
         }
-
-        .header h2 {
-            font-size: 2.5rem;
+        header h1 {
+            font-size: 3rem;
             margin: 0;
-            background: linear-gradient(45deg, var(--primary), #ff99bb);
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        .header p {
-            color: var(--text-muted);
+        header p {
             margin-top: 0.5rem;
             font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Category Headers */
+        .category-header {
+            max-width: 1200px;
+            margin: 2rem auto 1rem auto;
+            padding: 0 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .category-header h2 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid;
+            padding-bottom: 0.5rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         /* Grid Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
-            flex-grow: 1;
+            padding: 0 1.5rem 3rem 1.5rem;
             width: 100%;
             box-sizing: border-box;
-        }
-
-        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             perspective: 1000px;
         }
@@ -120,7 +128,7 @@
         /* Chapter Cards */
         .card {
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid;
             border-radius: 16px;
             padding: 2rem;
             text-decoration: none;
@@ -128,29 +136,24 @@
             display: flex;
             flex-direction: column;
             transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            will-change: transform;
         }
-
-        .card:hover {
-            border-color: rgba(255, 0, 85, 0.5);
-            box-shadow: 0 10px 30px var(--card-glow);
-        }
-
         .card-content {
             transform: translateZ(30px);
-            pointer-events: none;
+            -webkit-transform: translateZ(30px);
             display: flex;
             flex-direction: column;
             height: 100%;
+            pointer-events: none;
         }
-
         .card h3 {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin: 0 0 1rem 0;
             color: var(--text-main);
         }
-
         .card p {
             color: var(--text-muted);
             font-size: 0.95rem;
@@ -158,9 +161,7 @@
             flex-grow: 1;
             margin-bottom: 2rem;
         }
-
         .btn-text {
-            color: var(--primary);
             font-weight: bold;
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -170,112 +171,229 @@
             gap: 8px;
             margin-top: auto;
         }
-
         .btn-text::after {
             content: '→';
             transition: transform 0.3s ease;
         }
-
         .card:hover .btn-text::after {
             transform: translateX(5px);
+        }
+
+        /* Thematic Card Colors */
+        /* Reflection (Red) */
+        .card.reflection { border-color: rgba(255, 0, 85, 0.2); }
+        .card.reflection:hover { border-color: var(--primary); box-shadow: 0 15px 35px rgba(255, 0, 85, 0.15); }
+        .card.reflection .btn-text { color: var(--primary); }
+
+        /* Refraction (Green) */
+        .card.refraction { border-color: rgba(0, 255, 170, 0.2); }
+        .card.refraction:hover { border-color: var(--secondary); box-shadow: 0 15px 35px rgba(0, 255, 170, 0.15); }
+        .card.refraction .btn-text { color: var(--secondary); }
+
+        /* Human Eye (Purple) */
+        .card.eye { border-color: rgba(199, 166, 255, 0.2); }
+        .card.eye:hover { border-color: var(--tertiary); box-shadow: 0 15px 35px rgba(199, 166, 255, 0.15); }
+        .card.eye .btn-text { color: var(--tertiary); }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.2rem; }
+            .category-header { padding: 0 1rem; }
+            .container { padding: 0 1rem 2rem 1rem; gap: 1.5rem; }
         }
     </style>
 </head>
 <body>
-
     <canvas id="rayCanvas"></canvas>
-
     <div class="wrapper">
         <nav class="navbar">
-            <a href="../../class12/index.html" class="back-btn">← Class 12 Hub</a>
-            <h1>Chapter 09</h1>
+            <a href="../../index.html" class="brand">← Vidyaalok Labs</a>
+            <h2>Class 12</h2>
         </nav>
 
-        <div class="header">
-            <h2>Ray Optics</h2>
-            <p>Interactive simulations for reflection, mirrors, and image formation.</p>
-        </div>
+        <header>
+            <h1>Ray Optics</h1>
+            <p>Interactive simulations for Reflection, Refraction, and Optical Instruments.</p>
+        </header>
 
+        <!-- ================= SECTION 1: REFLECTION ================= -->
+        <div class="category-header">
+            <h2 style="color: var(--primary); border-bottom-color: rgba(255, 0, 85, 0.3);">I. Reflection</h2>
+        </div>
         <div class="container">
-            <div class="grid">
-                
-                <!-- Laws of Reflection -->
-                <a href="laws-reflection.html" class="card">
-                    <div class="card-content">
-                        <h3>Laws of Reflection</h3>
-                        <p>Verify the laws of reflection interactively. Adjust the incident laser angle and observe the reflected ray and normal on a plane surface.</p>
-                        <div class="btn-text">Launch Simulator</div>
-                    </div>
-                </a>
-
-                <!-- Plane Mirror -->
-                <a href="plane-mirror.html" class="card">
-                    <div class="card-content">
-                        <h3>Plane Mirror</h3>
-                        <p>Visualize how virtual images are formed by plane mirrors. Understand object distance, image distance, and lateral inversion with interactive ray tracing.</p>
-                        <div class="btn-text">Launch Simulator</div>
-                    </div>
-                </a>
-
-                <!-- Curved Mirrors -->
-                <a href="spherical-mirror.html" class="card">
-                    <div class="card-content">
-                        <h3>Spherical Mirrors</h3>
-                        <p>Interactive ray diagrams for concave and convex mirrors. Move the object across the principal axis and trace standard rays to locate the image.</p>
-                        <div class="btn-text">Launch Simulator</div>
-                    </div>
-                </a>
-
-                <!-- Mirror Combinations -->
-                <a href="mirror-combinations.html" class="card">
-                    <div class="card-content">
-                        <h3>Mirror Combinations</h3>
-                        <p>Advanced setup: See how light bounces between multiple mirrors angled against each other and calculate the number of images formed.</p>
-                        <div class="btn-text">Launch Simulator</div>
-                    </div>
-                </a>
-
-                <!-- Formula Sheet -->
-                <a href="ray-optics-formulas.html" class="card" style="border-color: rgba(0, 255, 170, 0.3);">
-                    <div class="card-content">
-                        <h3 style="color: var(--secondary);">Formula Sheet</h3>
-                        <p>Quick reference guide for the mirror formula, magnification, Snell's law, critical angle, and the Lens Maker's formula.</p>
-                        <div class="btn-text" style="color: var(--secondary);">View Formulas</div>
-                    </div>
-                </a>
-
-            </div>
+            <a href="laws-reflection.html" class="card reflection">
+                <div class="card-content">
+                    <h3>Laws of Reflection</h3>
+                    <p>Observe the incident ray, reflected ray, and normal dynamically. Verify the laws of reflection interactively.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="plane-mirror.html" class="card reflection">
+                <div class="card-content">
+                    <h3>Plane Mirror</h3>
+                    <p>Visualize how virtual images are formed by plane mirrors. Understand lateral inversion and object distance.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="spherical-mirror.html" class="card reflection">
+                <div class="card-content">
+                    <h3>Spherical Mirrors</h3>
+                    <p>Interactive ray diagrams for concave and convex mirrors. Move the object across the principal axis.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="mirror-combinations.html" class="card reflection">
+                <div class="card-content">
+                    <h3>Mirror Combinations</h3>
+                    <p>Observe how light bounces between multiple mirrors angled against each other to form multiple images.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="ray-optics-formulas.html#reflection" class="card reflection">
+                <div class="card-content">
+                    <h3>Reflection Formulas</h3>
+                    <p>Reference guide for the mirror formula, linear magnification, and focal length relations.</p>
+                    <div class="btn-text">View Formulas</div>
+                </div>
+            </a>
         </div>
+
+        <!-- ================= SECTION 2: REFRACTION ================= -->
+        <div class="category-header">
+            <h2 style="color: var(--secondary); border-bottom-color: rgba(0, 255, 170, 0.3);">II. Refraction</h2>
+        </div>
+        <div class="container">
+            <a href="laws-refraction.html" class="card refraction">
+                <div class="card-content">
+                    <h3>Laws of Refraction</h3>
+                    <p>Verify Snell's Law interactively. Transition light across boundaries of different refractive indices.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="tir.html" class="card refraction">
+                <div class="card-content">
+                    <h3>Total Internal Reflection</h3>
+                    <p>Visualize critical angle, TIR, and its real-world applications like optical fibers and mirages.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="glass-slab.html" class="card refraction">
+                <div class="card-content">
+                    <h3>Glass Slab</h3>
+                    <p>Trace the path of a light ray passing through a rectangular glass slab and calculate lateral shift.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="lenses.html" class="card refraction">
+                <div class="card-content">
+                    <h3>Spherical Lenses</h3>
+                    <p>Interactive image formation for convex and concave lenses. Adjust focal length and object position.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="lens-mirror-combinations.html" class="card refraction">
+                <div class="card-content">
+                    <h3>Lens & Mirror Combos</h3>
+                    <p>Complex optical setups. Track light through combinations of lenses and mirrors in sequence.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="apparent-depth.html" class="card refraction">
+                <div class="card-content">
+                    <h3>Apparent Depth</h3>
+                    <p>Understand how objects in denser mediums appear closer than they actually are due to refraction.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="prism.html" class="card refraction">
+                <div class="card-content">
+                    <h3>Prism & Dispersion</h3>
+                    <p>Observe the angle of deviation, angle of minimum deviation, and the splitting of white light.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="ray-optics-formulas.html#refraction" class="card refraction">
+                <div class="card-content">
+                    <h3>Refraction Formulas</h3>
+                    <p>Snell's Law, Lens Maker's Formula, Lens Formula, and Prism equations.</p>
+                    <div class="btn-text">View Formulas</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- ================= SECTION 3: HUMAN EYE ================= -->
+        <div class="category-header">
+            <h2 style="color: var(--tertiary); border-bottom-color: rgba(199, 166, 255, 0.3);">III. Human Eye & Instruments</h2>
+        </div>
+        <div class="container">
+            <a href="human-eye.html" class="card eye">
+                <div class="card-content">
+                    <h3>The Human Eye</h3>
+                    <p>Explore the anatomy of the eye, accommodation, and defects of vision (Myopia, Hypermetropia) with corrections.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="optical-instruments.html" class="card eye">
+                <div class="card-content">
+                    <h3>Microscopes & Telescopes</h3>
+                    <p>Understand angular magnification in simple microscopes, compound microscopes, and astronomical telescopes.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+        </div>
+
     </div>
 
     <script>
-        /* 3D Tilt Effect */
+        // --- 3D CARD TILT EFFECT (Desktop & Mobile Touch Support) ---
         const cards = document.querySelectorAll('.card');
+
         cards.forEach(card => {
-            card.addEventListener('mousemove', (e) => {
+            function handleTilt(clientX, clientY) {
                 const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+                
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                const rotateX = ((y - centerY) / centerY) * -10; 
-                const rotateY = ((x - centerX) / centerX) * 10;
-                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                
+                // Tilt factor calculation
+                const rotateX = ((y - centerY) / centerY) * -12;
+                const rotateY = ((x - centerX) / centerX) * 12;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+            }
+
+            // Mouse Events for Desktop
+            card.addEventListener('mousemove', (e) => {
+                handleTilt(e.clientX, e.clientY);
             });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
-                card.style.transition = `transform 0.5s ease`;
-            });
+
             card.addEventListener('mouseenter', () => {
-                card.style.transition = `none`;
+                card.style.transition = 'border-color 0.3s ease, box-shadow 0.3s ease';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transition = 'transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease';
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+            });
+
+            // Touch Events for Mobile / Tablets
+            card.addEventListener('touchmove', (e) => {
+                if(e.touches.length > 0) {
+                    handleTilt(e.touches[0].clientX, e.touches[0].clientY);
+                }
+            }, { passive: true });
+
+            card.addEventListener('touchend', () => {
+                card.style.transition = 'transform 0.5s ease';
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
             });
         });
 
-        /* Optical Ray Background Animation */
+        // --- Optical Ray Background Animation ---
         const canvas = document.getElementById('rayCanvas');
         const ctx = canvas.getContext('2d');
-        let width, height;
-        let rays = [];
+        let width, height, rays = [];
 
         function resize() {
             width = canvas.width = window.innerWidth;
@@ -287,43 +405,47 @@
         class Ray {
             constructor() {
                 this.reset();
-                this.x = Math.random() * width;
             }
             reset() {
-                this.x = Math.random() * width < width / 2 ? 0 : width;
-                this.y = Math.random() * height;
                 this.length = Math.random() * 150 + 50;
-                this.speed = Math.random() * 3 + 2;
-                this.vx = this.x === 0 ? this.speed : -this.speed; 
+                this.speed = Math.random() * 2 + 1;
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = this.speed;
                 this.vy = (Math.random() - 0.5) * 0.5;
-                this.color = Math.random() > 0.5 ? 'rgba(255, 0, 85, 0.4)' : 'rgba(0, 255, 170, 0.4)';
+                // Mix of Red, Green, and Purple rays for the background
+                const colors = ['rgba(255, 0, 85, 0.3)', 'rgba(0, 255, 170, 0.3)', 'rgba(199, 166, 255, 0.3)'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
             }
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                if (this.x > width + this.length || this.x < -this.length || this.y > height || this.y < 0) {
-                    this.reset();
+                if (this.x > width + this.length) {
+                    this.x = -this.length;
+                    this.y = Math.random() * height;
                 }
             }
             draw() {
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y);
-                ctx.lineTo(this.x - this.vx * (this.length/this.speed), this.y - this.vy * (this.length/this.speed));
                 ctx.strokeStyle = this.color;
                 ctx.lineWidth = 2;
                 ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - this.length, this.y);
                 ctx.stroke();
             }
         }
 
-        for (let i = 0; i < 30; i++) rays.push(new Ray());
+        for (let i = 0; i < 30; i++) {
+            rays.push(new Ray());
+        }
 
         function animate() {
             ctx.clearRect(0, 0, width, height);
-            for (let i = 0; i < rays.length; i++) {
-                rays[i].update();
-                rays[i].draw();
-            }
+            rays.forEach(r => {
+                r.update();
+                r.draw();
+            });
             requestAnimationFrame(animate);
         }
         animate();
