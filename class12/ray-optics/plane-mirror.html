@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Plane Mirror | Vidyaalok Lab</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script>
+        window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] }, svg: { fontCache: 'global' } };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+
+            /* Specific simulation colors */
+            --gold: #ffd166;
+            --green: #87f7aa;
+            --purple: #c7a6ff;
+            --red: #ff7b7b;
+            --blue: #80bfff;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 1rem 2rem;
+            background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .back-btn {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Main Workspace Layout */
+        .workspace {
+            display: flex;
+            flex-grow: 1;
+            padding: 1.5rem;
+            gap: 1.5rem;
+            height: calc(100vh - 70px);
+            box-sizing: border-box;
+        }
+
+        /* Left Control Panel */
+        .controls {
+            width: 380px;
+            flex-shrink: 0; 
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .controls h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .panel-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .panel-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .tool-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .tool-btn, .ghost-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .tool-btn:hover, .ghost-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary);
+        }
+
+        .tool-btn.active {
+            border-color: var(--gold);
+            background: rgba(255, 209, 102, 0.15);
+            color: var(--gold);
+        }
+
+        /* Sliders */
+        .control-group {
+            margin-top: 10px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .control-group span {
+            color: var(--text-main);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        /* Number Inputs */
+        .angle-entry {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.5);
+            color: var(--text-main);
+            font-size: 1rem;
+            font-family: monospace;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        /* Stats Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat strong {
+            color: var(--secondary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat span {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: monospace;
+        }
+
+        .note {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 209, 102, 0.05);
+            border: 1px solid rgba(255, 209, 102, 0.2);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Formula Panel */
+        .formula-panel {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            text-align: center;
+            margin-top: 15px;
+            overflow-x: auto;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .formula-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            text-align: left;
+        }
+        .formula-table th { padding: 8px; color: var(--gold); font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .formula-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
+        .formula-table tr:last-child td { border-bottom: none; }
+
+        .hidden { display: none !important; }
+
+        /* Right Panel Layout (Canvas) */
+        .right-panel {
+            flex-grow: 1;
+            min-width: 0; 
+            display: flex;
+            flex-direction: column;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .canvas-head {
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+
+        .canvas-head span:first-child { color: var(--primary); }
+
+        .canvas-wrapper {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
+        }
+
+        /* Transparent Watermark Logo */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 75%; 
+            height: 75%;
+            background-image: url('../../logo.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.12; 
+            pointer-events: none; 
+            z-index: 0;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            z-index: 1;
+            touch-action: none;
+        }
+
+        /* Mobile & Tablet Responsive Layout */
+        @media (max-width: 900px) {
+            * { box-sizing: border-box !important; }
+            body, html { 
+                overflow-x: hidden !important; 
+                overflow-y: auto !important; 
+                height: auto !important; 
+                width: 100vw !important; 
+            }
+            .workspace {
+                flex-direction: column;
+                overflow-y: visible;
+                height: auto;
+                padding: 1rem;
+                width: 100%;
+            }
+            .controls {
+                width: 100%;
+            }
+            .right-panel {
+                height: auto !important;
+                flex-grow: 0;
+                margin-top: 1rem;
+            }
+            /* GUARANTEE Canvas height on mobile */
+            .canvas-wrapper {
+                min-height: 400px;
+                height: 400px;
+            }
+            .navbar { padding: 1rem; }
+            .tool-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Chapter 09</a>
+        <h1>Plane Mirrors</h1>
+    </nav>
+
+    <div class="workspace">
+
+        <!-- Control Panel -->
+        <aside class="controls">
+            <h2>System Controls</h2>
+
+            <div class="panel-section">
+                <div class="panel-title">1. Simulation Mode</div>
+                <div class="tool-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <button class="tool-btn active" id="tabImage">Static</button>
+                    <button class="tool-btn" id="tabVelocity">Velocity</button>
+                    <button class="tool-btn" id="tabDouble">Dual</button>
+                </div>
+            </div>
+
+            <!-- MODE 1: IMAGE FORMATION -->
+            <div id="mode-image">
+                <div class="panel-section">
+                    <div class="panel-title">2. Modify Properties</div>
+                    <div class="control-group">
+                        <label>Object Distance (x) <span id="imgObjXVal">120 cm</span></label>
+                        <input id="imgObjX" type="range" min="0" max="260" step="1" value="120">
+                    </div>
+                    <div class="control-group">
+                        <label>Vertical Offset (y) <span id="imgObjYVal">0 px</span></label>
+                        <input id="imgObjY" type="range" min="-120" max="120" step="1" value="0">
+                    </div>
+                    <button class="ghost-btn" style="width: 100%; margin-top: 10px;" id="resetImageBtn">↺ Reset</button>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">Analysis</div>
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Image Distance</strong><span id="imgDistOut">120 cm</span></div>
+                    </div>
+                    <div class="formula-panel" id="imgFormula">
+                        \[ d_i = d_o \]
+                    </div>
+                    <div class="note">
+                        The virtual erect image forms at the exact same perpendicular distance behind the mirror as the object is in front of it.
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE 2: VELOCITY -->
+            <div id="mode-velocity" class="hidden">
+                <div class="panel-section">
+                    <div class="panel-title">2. Modify Velocities</div>
+                    <div class="control-group">
+                        <label>Object Vel. (x) <span id="velObjXVal">2.0 m/s</span></label>
+                        <input id="velObjX" type="range" min="-8" max="8" step="0.5" value="2.0">
+                    </div>
+                    <div class="control-group">
+                        <label>Object Vel. (y) <span id="velObjYVal">0.0 m/s</span></label>
+                        <input id="velObjY" type="range" min="-8" max="8" step="0.5" value="0">
+                    </div>
+                    <div class="control-group">
+                        <label>Mirror Vel. (x) <span id="velMirXVal">0.0 m/s</span></label>
+                        <input id="velMirX" type="range" min="-8" max="8" step="0.5" value="0">
+                    </div>
+                    <button class="ghost-btn" style="width: 100%; margin-top: 10px;" id="resetVelBtn">↺ Reset Position</button>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">Analysis</div>
+                    <div class="stat-grid">
+                        <div class="stat" style="flex-direction: column; align-items: flex-start;">
+                            <strong>Image Velocity (\(\vec v_i\))</strong>
+                            <span id="velImgOut" style="margin-top: 5px; color: var(--primary);">(-2.0, 0.0) m/s</span>
+                        </div>
+                    </div>
+                    <div class="formula-panel" id="velFormula">
+                        \[ \vec v_i = (2v_{mx} - v_{ox})\hat i + v_{oy}\hat j \]
+                    </div>
+                    <div class="note">
+                        The image mirrors the object's x-velocity relative to the mirror, while the y-velocity stays perfectly matched.
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODE 3: TWO MIRRORS -->
+            <div id="mode-double" class="hidden">
+                <div class="panel-section">
+                    <div class="panel-title">2. Mirror Configuration</div>
+                    <div class="control-group">
+                        <label>Angle Between Mirrors (\(\theta\))</label>
+                        <input id="dblAngle" class="angle-entry" type="number" min="0" max="180" step="1" value="60">
+                    </div>
+                    <div class="control-group">
+                        <label>Object Offset X <span id="dblObjXVal">0</span></label>
+                        <input id="dblObjX" type="range" min="-140" max="140" step="1" value="0">
+                    </div>
+                    <div class="control-group">
+                        <label>Object Offset Y <span id="dblObjYVal">80</span></label>
+                        <input id="dblObjY" type="range" min="0" max="220" step="1" value="80">
+                    </div>
+                    <button class="ghost-btn" style="width: 100%; margin-top: 10px;" id="resetDblBtn">↺ Reset</button>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">Analysis</div>
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Images Formed</strong><span id="dblCountOut">5</span></div>
+                    </div>
+                    <div class="formula-panel" style="padding: 0; border: none; background: transparent;">
+                        <table class="formula-table">
+                            <thead><tr><th>Condition (\(m = \frac{360^\circ}{\theta}\))</th><th>Images (\(N\))</th></tr></thead>
+                            <tbody>
+                                <tr><td>\( \theta = 0^\circ \) (Parallel)</td><td>\(\infty\)</td></tr>
+                                <tr><td>\( m \) is even</td><td>\( m - 1 \)</td></tr>
+                                <tr><td>\( m \) is odd (Symmetric)</td><td>\( m - 1 \)</td></tr>
+                                <tr><td>\( m \) is odd (Asymmetric)</td><td>\( m \)</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Simulation Area -->
+        <div class="right-panel">
+            <div class="canvas-head">
+                <span id="canvas-title">Plane Mirror Simulator</span>
+            </div>
+
+            <div class="canvas-wrapper" id="simWrapper">
+                <div class="watermark"></div>
+                <canvas id="mirrorCanvas"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById("mirrorCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Tabs
+        const btnImage = document.getElementById("tabImage");
+        const btnVelocity = document.getElementById("tabVelocity");
+        const btnDouble = document.getElementById("tabDouble");
+
+        // Modes
+        const modeImage = document.getElementById("mode-image");
+        const modeVelocity = document.getElementById("mode-velocity");
+        const modeDouble = document.getElementById("mode-double");
+
+        // Controls Mode 1
+        const imgObjX = document.getElementById("imgObjX");
+        const imgObjY = document.getElementById("imgObjY");
+        const imgObjXVal = document.getElementById("imgObjXVal");
+        const imgObjYVal = document.getElementById("imgObjYVal");
+        const imgDistOut = document.getElementById("imgDistOut");
+        const resetImageBtn = document.getElementById("resetImageBtn");
+
+        // Controls Mode 2
+        const velObjX = document.getElementById("velObjX");
+        const velObjY = document.getElementById("velObjY");
+        const velMirX = document.getElementById("velMirX");
+        const velObjXVal = document.getElementById("velObjXVal");
+        const velObjYVal = document.getElementById("velObjYVal");
+        const velMirXVal = document.getElementById("velMirXVal");
+        const velImgOut = document.getElementById("velImgOut");
+        const resetVelBtn = document.getElementById("resetVelBtn");
+        const velFormula = document.getElementById("velFormula");
+
+        // Controls Mode 3
+        const dblAngle = document.getElementById("dblAngle");
+        const dblObjX = document.getElementById("dblObjX");
+        const dblObjY = document.getElementById("dblObjY");
+        const dblObjXVal = document.getElementById("dblObjXVal");
+        const dblObjYVal = document.getElementById("dblObjYVal");
+        const dblCountOut = document.getElementById("dblCountOut");
+        const resetDblBtn = document.getElementById("resetDblBtn");
+
+        let W = 0, H = 0;
+        let mode = "image";
+        let lastTime = performance.now();
+        let initialized = false;
+
+        // Physics State variables
+        let movingObject = { x: 0, y: 0 };
+        let movingMirrorX = 0;
+
+        // --- RESIZE OBSERVER ---
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                if (entry.target.id === 'simWrapper') {
+                    W = Math.floor(entry.contentRect.width);
+                    H = Math.floor(entry.contentRect.height);
+                    canvas.width = W;
+                    canvas.height = H;
+
+                    if (!initialized && W > 10 && H > 10) {
+                        initialized = true;
+                        resetAllStates();
+                    }
+                }
+            }
+        });
+        resizeObserver.observe(document.getElementById('simWrapper'));
+
+        setTimeout(() => {
+            if (!initialized && canvas.parentElement.clientWidth > 10) {
+                W = canvas.parentElement.clientWidth;
+                H = canvas.parentElement.clientHeight || 400; 
+                canvas.width = W;
+                canvas.height = H;
+                initialized = true;
+                resetAllStates();
+            }
+        }, 300);
+
+        function resetAllStates() {
+            movingMirrorX = W * 0.5;
+            movingObject = { x: W * 0.2, y: H * 0.6 };
+        }
+
+        function setMode(nextMode) {
+            mode = nextMode;
+            btnImage.classList.toggle("active", mode === "image");
+            btnVelocity.classList.toggle("active", mode === "velocity");
+            btnDouble.classList.toggle("active", mode === "double");
+
+            modeImage.classList.toggle("hidden", mode !== "image");
+            modeVelocity.classList.toggle("hidden", mode !== "velocity");
+            modeDouble.classList.toggle("hidden", mode !== "double");
+
+            if (mode === "image") document.getElementById("canvas-title").textContent = "Static Image Formation";
+            if (mode === "velocity") document.getElementById("canvas-title").textContent = "Dynamic Velocity Map";
+            if (mode === "double") document.getElementById("canvas-title").textContent = "Multiple Reflections";
+        }
+
+        btnImage.addEventListener("click", () => setMode("image"));
+        btnVelocity.addEventListener("click", () => setMode("velocity"));
+        btnDouble.addEventListener("click", () => setMode("double"));
+
+        resetImageBtn.addEventListener("click", () => { imgObjX.value = "120"; imgObjY.value = "0"; });
+        resetVelBtn.addEventListener("click", () => { 
+            velObjX.value = "2"; velObjY.value = "0"; velMirX.value = "0"; 
+            movingMirrorX = W * 0.5; movingObject = { x: W * 0.2, y: H * 0.6 };
+        });
+        resetDblBtn.addEventListener("click", () => { dblAngle.value = "60"; dblObjX.value = "0"; dblObjY.value = "80"; });
+
+        // DRAWING UTILS
+        function drawArrow(x, baseY, height, color, dashed = false) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 4;
+            if(dashed) ctx.setLineDash([8, 6]);
+            ctx.beginPath();
+            ctx.moveTo(x, baseY);
+            ctx.lineTo(x, baseY - height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Arrowhead
+            ctx.beginPath();
+            ctx.moveTo(x, baseY - height);
+            ctx.lineTo(x - 10, baseY - height + 18);
+            ctx.lineTo(x + 10, baseY - height + 18);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawMirrorVertical(x) {
+            ctx.save();
+            ctx.strokeStyle = "#8de5ff";
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(x, H * 0.15);
+            ctx.lineTo(x, H * 0.85);
+            ctx.stroke();
+
+            // Hash marks
+            ctx.lineWidth = 2;
+            for(let y = H * 0.15 + 10; y < H * 0.85; y += 18){
+                ctx.beginPath();
+                ctx.moveTo(x + 3, y);
+                ctx.lineTo(x + 15, y - 8);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawPointMarker(x, y, color, label, outlined = false) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            if(outlined){
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            ctx.fillStyle = "#eef7ff";
+            ctx.font = "bold 15px Segoe UI";
+            ctx.fillText(label, x + 10, y - 10);
+            ctx.restore();
+        }
+
+        function drawShadedMirrorVertical(x, reflectiveSide){
+            const offset = reflectiveSide === "right" ? 6 : -6;
+            ctx.save();
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = "rgba(120,130,142,0.88)";
+            ctx.beginPath();
+            ctx.moveTo(x - offset, H * 0.1);
+            ctx.lineTo(x - offset, H * 0.9);
+            ctx.stroke();
+
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#00e5ff";
+            ctx.beginPath();
+            ctx.moveTo(x + offset, H * 0.1);
+            ctx.lineTo(x + offset, H * 0.9);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawShadedMirrorLine(cx, cy, angle, length, reflectiveSign){
+            const dx = Math.cos(angle) * length;
+            const dy = Math.sin(angle) * length;
+            const nx = -Math.sin(angle);
+            const ny = Math.cos(angle);
+
+            ctx.save();
+            ctx.lineWidth = 12;
+            ctx.strokeStyle = "rgba(120,130,142,0.88)";
+            ctx.beginPath();
+            ctx.moveTo(cx - dx - nx * reflectiveSign * 6, cy - dy - ny * reflectiveSign * 6);
+            ctx.lineTo(cx + dx - nx * reflectiveSign * 6, cy + dy - ny * reflectiveSign * 6);
+            ctx.stroke();
+
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#00e5ff";
+            ctx.beginPath();
+            ctx.moveTo(cx - dx + nx * reflectiveSign * 6, cy - dy + ny * reflectiveSign * 6);
+            ctx.lineTo(cx + dx + nx * reflectiveSign * 6, cy + dy + ny * reflectiveSign * 6);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // --- MODE 1: STATIC IMAGE ---
+        function drawImageFormation() {
+            const mirrorX = W * 0.5;
+            const d = parseFloat(imgObjX.value);
+            const baseY = (H * 0.6) - parseFloat(imgObjY.value);
+            const objectX = mirrorX - d;
+            const imageX = mirrorX + d;
+
+            imgObjXVal.textContent = `${d.toFixed(0)} cm`;
+            imgObjYVal.textContent = `${parseFloat(imgObjY.value).toFixed(0)} px`;
+            imgDistOut.textContent = `${d.toFixed(0)} cm`;
+
+            drawMirrorVertical(mirrorX);
+            drawArrow(objectX, baseY, Math.min(150, H * 0.3), "#ffd166");
+            drawArrow(imageX, baseY, Math.min(150, H * 0.3), "#00e5ff", true);
+
+            ctx.fillStyle = "#eef7ff";
+            ctx.font = "bold 16px Segoe UI";
+            ctx.fillText("O", objectX - 20, baseY + 24);
+            ctx.fillText("I", imageX - 10, baseY + 24);
+
+            // Distance dashed lines
+            ctx.strokeStyle = "rgba(255,209,102,0.5)";
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath();
+            ctx.moveTo(objectX, baseY - 50);
+            ctx.lineTo(imageX, baseY - 50);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // --- MODE 2: VELOCITY ---
+        function clampMovingState() {
+            if (movingMirrorX < W * 0.3) movingMirrorX = W * 0.3;
+            if (movingMirrorX > W * 0.7) movingMirrorX = W * 0.7;
+            if (movingObject.x < 20) movingObject.x = 20;
+            if (movingObject.x > movingMirrorX - 40) movingObject.x = movingMirrorX - 40;
+            if (movingObject.y < H * 0.3) movingObject.y = H * 0.3;
+            if (movingObject.y > H * 0.8) movingObject.y = H * 0.8;
+        }
+
+        let lastVelFormula = "";
+        function drawVelocityMode(dt) {
+            const vox = parseFloat(velObjX.value);
+            const voy = parseFloat(velObjY.value);
+            const vmx = parseFloat(velMirX.value);
+            const vix = 2 * vmx - vox;
+            const viy = voy;
+
+            movingObject.x += vox * 20 * dt;
+            movingObject.y -= voy * 20 * dt; // Cartesian y is up
+            movingMirrorX += vmx * 20 * dt;
+            clampMovingState();
+
+            const imageX = 2 * movingMirrorX - movingObject.x;
+            const imageY = movingObject.y;
+
+            velObjXVal.textContent = `${vox.toFixed(1)} m/s`;
+            velObjYVal.textContent = `${voy.toFixed(1)} m/s`;
+            velMirXVal.textContent = `${vmx.toFixed(1)} m/s`;
+            velImgOut.textContent = `(${vix.toFixed(1)}, ${viy.toFixed(1)}) m/s`;
+
+            const currentFormula = `\\[\\vec v_i = (${(2*vmx).toFixed(1)} - ${vox.toFixed(1)})\\hat i + ${voy.toFixed(1)}\\hat j = ${vix.toFixed(1)}\\hat i + ${viy.toFixed(1)}\\hat j \\]`;
+            if (currentFormula !== lastVelFormula && window.MathJax && window.MathJax.typesetPromise) {
+                lastVelFormula = currentFormula;
+                velFormula.innerHTML = currentFormula;
+                window.MathJax.typesetPromise([velFormula]);
+            }
+
+            drawMirrorVertical(movingMirrorX);
+            drawArrow(movingObject.x, movingObject.y, Math.min(100, H * 0.2), "#ffd166");
+            drawArrow(imageX, imageY, Math.min(100, H * 0.2), "#00e5ff", true);
+
+            ctx.fillStyle = "#eef7ff";
+            ctx.font = "bold 16px Segoe UI";
+            ctx.fillText("O", movingObject.x - 20, movingObject.y + 24);
+            ctx.fillText("I", imageX - 10, imageY + 24);
+
+            // Overlay Velocity Info directly on canvas
+            ctx.fillStyle = "#ff007f";
+            ctx.font = "bold 14px monospace";
+            ctx.fillText(`vₒ = (${vox.toFixed(1)}, ${voy.toFixed(1)})`, movingObject.x - 30, movingObject.y + 45);
+            ctx.fillStyle = "#00e5ff";
+            ctx.fillText(`vᵢ = (${vix.toFixed(1)}, ${viy.toFixed(1)})`, imageX - 30, imageY + 45);
+        }
+
+        // --- MODE 3: TWO MIRRORS ---
+        function reflectAcrossLine(point, angle){
+            const u = { x: Math.cos(angle), y: Math.sin(angle) };
+            const dot = point.x * u.x + point.y * u.y;
+            return {
+                x: 2 * dot * u.x - point.x,
+                y: 2 * dot * u.y - point.y
+            };
+        }
+        function reflectAcrossVertical(point, xLine){ return { x: 2 * xLine - point.x, y: point.y }; }
+        function uniquePush(list, point){
+            if(!list.some(p => Math.hypot(p.x - point.x, p.y - point.y) < 0.5)) list.push(point);
+        }
+
+        function getImageCountForAngle(thetaDeg, onBisector){
+            if(thetaDeg === 0) return Infinity;
+            const m = 360 / thetaDeg;
+            const rounded = Math.round(m);
+            if(Math.abs(m - rounded) > 1e-6) return Math.floor(m); // Non-integer
+            if(rounded % 2 === 0) return rounded - 1;
+            return onBisector ? rounded - 1 : rounded;
+        }
+
+        function getInclinedImages(object, thetaDeg, desiredCount){
+            const theta = thetaDeg * Math.PI / 180;
+            const angles = [Math.PI / 2 - theta / 2, Math.PI / 2 + theta / 2];
+            const images = [];
+            const queue = [{ point: object, last: -1, depth: 0 }];
+
+            while(queue.length && images.length < Math.min(desiredCount, 25)){
+                const item = queue.shift();
+                for(let m = 0; m < 2; m++){
+                    if(m === item.last) continue;
+                    const rp = reflectAcrossLine(item.point, angles[m]);
+                    if(Math.hypot(rp.x - object.x, rp.y - object.y) < 0.5) continue;
+                    
+                    const already = images.some(p => Math.hypot(p.x - rp.x, p.y - rp.y) < 0.5);
+                    if(!already){
+                        images.push(rp);
+                        if(item.depth < 10) queue.push({ point: rp, last: m, depth: item.depth + 1 });
+                    }
+                    if(images.length >= Math.min(desiredCount, 25)) break;
+                }
+            }
+            return images;
+        }
+
+        function getParallelImages(object, leftX, rightX){
+            const images = [];
+            let currentLeft = object;
+            let currentRight = object;
+            for(let n = 0; n < 4; n++){ // Just render first 8 to save canvas space
+                currentLeft = reflectAcrossVertical(currentLeft, leftX);
+                uniquePush(images, currentLeft);
+                currentLeft = reflectAcrossVertical(currentLeft, rightX);
+                uniquePush(images, currentLeft);
+
+                currentRight = reflectAcrossVertical(currentRight, rightX);
+                uniquePush(images, currentRight);
+                currentRight = reflectAcrossVertical(currentRight, leftX);
+                uniquePush(images, currentRight);
+            }
+            return images;
+        }
+
+        function drawTwoMirrorsMode() {
+            const thetaDeg = parseFloat(dblAngle.value) || 0;
+            const ox = parseFloat(dblObjX.value);
+            const oy = parseFloat(dblObjY.value);
+            const centerX = W * 0.5;
+            const centerY = H * 0.6;
+            const mirrorLen = Math.min(W, H) * 0.4;
+
+            dblObjXVal.textContent = `${ox.toFixed(0)}`;
+            dblObjYVal.textContent = `${oy.toFixed(0)}`;
+
+            const object = { x: ox, y: oy };
+            let images = [];
+            let countText = "";
+
+            if(thetaDeg === 0){
+                const leftX = centerX - 100;
+                const rightX = centerX + 100;
+                drawShadedMirrorVertical(leftX, "right");
+                drawShadedMirrorVertical(rightX, "left");
+
+                const objCanvas = { x: centerX + ox, y: centerY - oy };
+                drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
+
+                images = getParallelImages(objCanvas, leftX + 6, rightX - 6);
+                images.forEach((img, idx) => {
+                    drawPointMarker(img.x, img.y, "#00e5ff", `I${idx + 1}`, true);
+                });
+                countText = "∞ (Parallel)";
+            } else {
+                const theta = thetaDeg * Math.PI / 180;
+                const a1 = Math.PI / 2 - theta / 2;
+                const a2 = Math.PI / 2 + theta / 2;
+
+                drawShadedMirrorLine(centerX, centerY, a1, mirrorLen, 1);
+                drawShadedMirrorLine(centerX, centerY, a2, mirrorLen, -1);
+
+                const objCanvas = { x: centerX + object.x, y: centerY - object.y };
+                drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
+
+                const onBisector = Math.abs(ox) < 4;
+                const count = getImageCountForAngle(thetaDeg, onBisector);
+                countText = isFinite(count) ? `${count}` : "∞";
+                
+                if (isFinite(count) && count > 0) {
+                    images = getInclinedImages(object, thetaDeg, count);
+                    images.forEach((img, idx) => {
+                        const px = centerX + img.x;
+                        const py = centerY - img.y;
+                        drawPointMarker(px, py, "#00e5ff", `I${idx + 1}`, true);
+                    });
+                }
+            }
+            dblCountOut.textContent = countText;
+        }
+
+        // --- MAIN LOOP ---
+        function drawBackground() {
+            ctx.clearRect(0, 0, W, H);
+            
+            // Floor line
+            ctx.strokeStyle = "rgba(255,255,255,0.08)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, H * 0.85);
+            ctx.lineTo(W, H * 0.85);
+            ctx.stroke();
+        }
+
+        function animate(now) {
+            if(!initialized) {
+                requestAnimationFrame(animate);
+                return;
+            }
+            const dt = Math.min((now - lastTime) / 1000, 0.05);
+            lastTime = now;
+            
+            drawBackground();
+
+            if (mode === "image") drawImageFormation();
+            else if (mode === "velocity") drawVelocityMode(dt);
+            else drawTwoMirrorsMode();
+
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+
+    </script>
+</body>
+</html>
