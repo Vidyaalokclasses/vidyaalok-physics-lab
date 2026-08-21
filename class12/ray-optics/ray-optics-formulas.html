@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
@@ -11,7 +11,7 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ray Optics Formulas | Vidyaalok Classes</title>
+<title>Reflection Formulas | Vidyaalok Classes</title>
 <script>
 window.MathJax = {
   tex: {
@@ -68,8 +68,6 @@ button:hover{transform:translateY(-2px)}
 .hero-card{padding:28px}
 .hero-card h1{margin:0 0 12px;font-size:clamp(28px,4vw,44px);line-height:1.02}
 .hero-card p{margin:0;color:var(--muted);font-size:15px;line-height:1.65}
-.hero-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:#dff3ff;font-size:13px}
 .viewer-card{padding:24px}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
 .breadcrumbs{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -131,24 +129,17 @@ button:hover{transform:translateY(-2px)}
   <div class="navbar">
     <div class="brand">🔬 Vidyaalok Classes</div>
     <div class="nav-actions">
-      <button class="ghost-btn" onclick="goToChapter()">Back To Ray Optics</button>
+      <button class="ghost-btn" onclick="window.location.href='ray-optics.html'">Back To Ray Optics</button>
       <button class="primary-btn" onclick="resetFlow()">Start From Root</button>
     </div>
   </div>
   <main class="main">
     <section class="hero">
       <div class="hero-card">
-        <h1>Ray Optics Formula Browser</h1>
+        <h1>Reflection Formula Browser</h1>
         <p>
-          Open one topic at a time and see only its formulas on screen. This keeps the revision cleaner for mirrors, lenses, prism systems, optical instruments, and the human eye.
+          Master the laws of reflection, plane mirror combinations, and spherical mirror derivations. Select a topic to isolate and review its key formulas.
         </p>
-        <div class="hero-pills">
-          <span class="pill">Reflection</span>
-          <span class="pill">Refraction</span>
-          <span class="pill">Prism</span>
-          <span class="pill">Microscope</span>
-          <span class="pill">Human Eye</span>
-        </div>
       </div>
     </section>
     <section class="viewer-card">
@@ -167,154 +158,98 @@ button:hover{transform:translateY(-2px)}
 <script>
 const flowData = {
   id: "root",
-  title: "Ray Optics",
+  title: "Reflection",
   type: "root",
-  description: "Choose a topic and open its formula set.",
+  description: "Choose a topic to view its formulas.",
   children: [
     {
-      id: "reflection",
-      title: "Reflection",
+      id: "plane-mirror-deviation",
+      title: "Plane Mirror Basics & Deviation",
       type: "topic",
-      description: "Plane mirrors, curved mirrors, and mirror combinations.",
+      description: "Laws of reflection and deviation by plane mirrors.",
       children: [
         {
-          id: "plane-mirror",
-          title: "Plane Mirror",
+          id: "basic-laws",
+          title: "Laws & Deviation",
           type: "subtopic",
-          description: "Distance, image motion, and mirror movement.",
+          description: "Fundamental reflection and angular deviation.",
           children: [
-            { id: "plane-equal-distance", title: "Image Distance", type: "formula", formula: "v = -u", note: "For a plane mirror, image distance equals object distance in magnitude.", important: true },
-            { id: "plane-mirror-shift", title: "Mirror Shift", type: "formula", formula: "x_{\\text{image}} = 2x_{\\text{mirror}}", note: "If the plane mirror shifts by x, the image shifts by 2x.", important: true },
-            { id: "two-mirror-images", title: "Two Plane Mirrors", type: "formula", formula: "m = \\frac{360^\\circ}{\\theta}", note: "If m is even, N = m - 1. If m is odd, N = m - 1 for a symmetric object and N = m for an asymmetric object." }
-          ]
-        },
-        {
-          id: "curved-mirror",
-          title: "Curved Mirrors",
-          type: "subtopic",
-          description: "Concave and convex mirrors.",
-          children: [
-            { id: "mirror-formula", title: "Mirror Formula", type: "formula", formula: "\\frac{1}{f} = \\frac{1}{v} + \\frac{1}{u}", note: "Use Cartesian sign convention.", important: true },
-            { id: "mirror-magnification", title: "Magnification", type: "formula", formula: "m = -\\frac{v}{u} = \\frac{h_i}{h_o}", note: "Negative magnification indicates inverted image.", important: true },
-            { id: "mirror-radius", title: "Radius and Focal Length", type: "formula", formula: "f = \\frac{R}{2}", note: "Applies to spherical mirrors.", important: true }
+            { id: "reflection-law", title: "Law of Reflection", type: "formula", formula: "\\angle i = \\angle r", note: "Angle of incidence equals angle of reflection.", important: true },
+            { id: "single-deviation", title: "Deviation in Single Mirror", type: "formula", formula: "\\delta = 180^\\circ - 2i", note: "Deviation of the reflected ray from its original path." },
+            { id: "two-mirror-deviation", title: "Deviation for Two Mirrors", type: "formula", formula: "\\delta = 360^\\circ - 2\\theta", note: "Total deviation when two mirrors are inclined at angle θ.", important: true }
           ]
         }
       ]
     },
     {
-      id: "refraction",
-      title: "Refraction",
+      id: "multiple-images",
+      title: "Multiple Images",
       type: "topic",
-      description: "Glass slab, curved surface, and lens formulas.",
+      description: "Images formed by inclined plane mirrors.",
       children: [
         {
-          id: "basic-refraction",
-          title: "Basic Refraction",
+          id: "image-counting",
+          title: "Counting Images (n = 360/θ)",
           type: "subtopic",
-          description: "Snell's law and slab shift.",
+          description: "Rules for determining the number of images formed.",
           children: [
-            { id: "snells-law", title: "Snell's Law", type: "formula", formula: "n_1\\sin i = n_2\\sin r", note: "Fundamental law of refraction.", important: true },
-            { id: "refractive-index", title: "Refractive Index", type: "formula", formula: "n = \\frac{c}{v}", note: "Ratio of speed of light in vacuum to that in the medium." },
-            { id: "lateral-shift", title: "Glass Slab Lateral Shift", type: "formula", formula: "d = t\\,\\frac{\\sin(i-r)}{\\cos r}", note: "For a parallel-sided slab.", important: true }
-          ]
-        },
-        {
-          id: "curved-surface",
-          title: "Curved Surface and Lens",
-          type: "subtopic",
-          description: "Spherical refracting surface and thin lens formulas.",
-          children: [
-            { id: "spherical-surface", title: "Refraction at Spherical Surface", type: "formula", formula: "\\frac{n_2}{v} - \\frac{n_1}{u} = \\frac{n_2-n_1}{R}", note: "Standard refraction formula for a curved surface.", important: true },
-            { id: "lens-formula", title: "Lens Formula", type: "formula", formula: "\\frac{1}{f} = \\frac{1}{v} - \\frac{1}{u}", note: "For thin lenses with Cartesian sign convention.", important: true },
-            { id: "lens-magnification", title: "Lens Magnification", type: "formula", formula: "m = \\frac{v}{u} = \\frac{h_i}{h_o}", note: "Positive magnification indicates erect image." }
-          ]
-        },
-        {
-          id: "lens-maker",
-          title: "Lens Maker and Power",
-          type: "subtopic",
-          description: "Focal length and power relations.",
-          children: [
-            { id: "lens-maker-formula", title: "Lens Maker Formula", type: "formula", formula: "\\frac{1}{f} = (\\mu - 1)\\left(\\frac{1}{R_1} - \\frac{1}{R_2}\\right)", note: "For a thin lens in air.", important: true },
-            { id: "power-lens", title: "Power of Lens", type: "formula", formula: "P = \\frac{1}{f}", note: "f in metre, P in dioptre.", important: true },
-            { id: "power-combination", title: "Lenses in Contact", type: "formula", formula: "P_{\\text{eq}} = P_1 + P_2 + P_3 + \\cdots", note: "Equivalent power for thin lenses in contact.", important: true }
+            { id: "even-n", title: "n is Even", type: "formula", formula: "\\text{No. of images} = n - 1", note: "Applies regardless of object placement.", important: true },
+            { id: "odd-symmetric", title: "n is Odd (Symmetric)", type: "formula", formula: "\\text{No. of images} = n - 1", note: "When the object lies symmetrically on the angle bisector." },
+            { id: "odd-unsymmetric", title: "n is Odd (Unsymmetric)", type: "formula", formula: "\\text{No. of images} = n", note: "When the object lies unsymmetrically between the mirrors.", important: true }
           ]
         }
       ]
     },
     {
-      id: "tir-prism",
-      title: "TIR and Prism",
+      id: "mirror-velocity",
+      title: "Velocity in Mirrors",
       type: "topic",
-      description: "Critical angle, prism deviation, and special prism conditions.",
+      description: "Relative motion of objects and images.",
       children: [
         {
-          id: "tir",
-          title: "Total Internal Reflection",
+          id: "plane-velocity",
+          title: "Plane Mirror Velocity",
           type: "subtopic",
-          description: "Critical angle and condition.",
+          description: "Motion relative to a plane mirror.",
           children: [
-            { id: "critical-angle", title: "Critical Angle", type: "formula", formula: "\\sin C = \\frac{n_2}{n_1}", note: "For light going from denser to rarer medium, with n1 > n2.", important: true },
-            { id: "tir-condition", title: "TIR Condition", type: "formula", formula: "i > C", note: "Total internal reflection occurs only beyond the critical angle." }
+            { id: "image-velocity-plane", title: "Velocity of Image", type: "formula", formula: "\\vec{V}_I = (2V_m - V_x)\\hat{i} + V_y\\hat{j}", note: "Given object velocity V_o = V_x i + V_y j and mirror velocity V_m i.", important: true }
           ]
         },
         {
-          id: "prism",
-          title: "Prism Relations",
+          id: "spherical-velocity",
+          title: "Spherical Mirror Velocity",
           type: "subtopic",
-          description: "Deviation and minimum-deviation formulas.",
+          description: "Longitudinal velocity in spherical mirrors.",
           children: [
-            { id: "prism-deviation", title: "Angle of Deviation", type: "formula", formula: "\\delta = i + e - A", note: "General deviation formula for a prism.", important: true },
-            { id: "minimum-deviation", title: "At Minimum Deviation", type: "formula", formula: "\\mu = \\frac{\\sin\\left(\\frac{A+\\delta_m}{2}\\right)}{\\sin\\left(\\frac{A}{2}\\right)}", note: "Most-used prism formula in problems.", important: true },
-            { id: "thin-prism", title: "Thin Prism", type: "formula", formula: "\\delta = (\\mu - 1)A", note: "Approximation for a thin prism.", important: true }
+            { id: "image-velocity-spherical", title: "Relative Velocity of Image", type: "formula", formula: "V_{I/m} = -m^2 (V_{o/m})", note: "Velocity of image with respect to mirror depends on magnification squared.", important: true }
           ]
         }
       ]
     },
     {
-      id: "instruments",
-      title: "Optical Instruments",
+      id: "spherical-mirrors",
+      title: "Spherical Mirrors",
       type: "topic",
-      description: "Microscope and telescope formulas.",
+      description: "Focal length, mirror formula, and magnification.",
       children: [
         {
-          id: "microscope",
-          title: "Microscope",
+          id: "spherical-basics",
+          title: "Focal Length & Mirror Equation",
           type: "subtopic",
-          description: "Simple and compound microscope.",
+          description: "Relationships for paraxial rays.",
           children: [
-            { id: "simple-microscope", title: "Simple Microscope", type: "formula", formula: "M = 1 + \\frac{D}{f}", note: "Magnifying power for final image at near point.", important: true },
-            { id: "simple-microscope-infinity", title: "Simple Microscope at Infinity", type: "formula", formula: "M = \\frac{D}{f}", note: "For final image at infinity." },
-            { id: "compound-microscope", title: "Compound Microscope", type: "formula", formula: "M = \\frac{L}{f_o}\\left(1 + \\frac{D}{f_e}\\right)", note: "Standard magnifying power formula.", important: true }
+            { id: "focal-radius", title: "Focal Length", type: "formula", formula: "f \\approx \\frac{R}{2}", note: "Valid for paraxial rays (small aperture).", important: true },
+            { id: "mirror-equation", title: "Mirror Formula", type: "formula", formula: "\\frac{1}{v} + \\frac{1}{u} = \\frac{1}{f}", note: "Apply proper sign convention.", important: true }
           ]
         },
         {
-          id: "telescope",
-          title: "Telescope",
+          id: "magnification",
+          title: "Magnification",
           type: "subtopic",
-          description: "Astronomical telescope formulas.",
+          description: "Transverse and longitudinal sizes.",
           children: [
-            { id: "telescope-normal", title: "Normal Adjustment", type: "formula", formula: "M = \\frac{f_o}{f_e}", note: "Magnifying power of astronomical telescope in normal adjustment.", important: true },
-            { id: "telescope-near-point", title: "At Near Point", type: "formula", formula: "M = \\frac{f_o}{f_e}\\left(1 + \\frac{f_e}{D}\\right)", note: "When final image is formed at the least distance of distinct vision." }
-          ]
-        }
-      ]
-    },
-    {
-      id: "human-eye",
-      title: "Human Eye",
-      type: "topic",
-      description: "Eye defects and correction relations.",
-      children: [
-        {
-          id: "eye-defects",
-          title: "Defects and Correction",
-          type: "subtopic",
-          description: "Myopia, hypermetropia, and power relations.",
-          children: [
-            { id: "power-correction", title: "Corrective Lens Power", type: "formula", formula: "P = \\frac{1}{f}", note: "Used for spectacle correction as well, with f in metre." },
-            { id: "myopia", title: "Myopia Correction", type: "formula", formula: "P = -\\frac{1}{x}", note: "For far point at x metre, use a diverging lens.", important: true },
-            { id: "hypermetropia", title: "Hypermetropia Correction", type: "formula", formula: "P = \\frac{1}{D} - \\frac{1}{x}", note: "For near point shifted to x metre, with D = 0.25 m.", important: true }
+            { id: "transverse-mag", title: "Transverse Magnification", type: "formula", formula: "m_T = -\\frac{v}{u} = \\frac{f}{f-u} = \\frac{f-v}{f}", note: "Negative m indicates an inverted, real image.", important: true },
+            { id: "longitudinal-mag", title: "Longitudinal Magnification", type: "formula", formula: "m_L = \\frac{dv}{du} = -m_T^2", note: "For short objects placed along the principal axis." }
           ]
         }
       ]
@@ -323,10 +258,6 @@ const flowData = {
 };
 
 const pathIds = ["root"];
-
-function goToChapter(){
-  window.location.href = "ray-optics.html";
-}
 
 function resetFlow(){
   pathIds.length = 0;
