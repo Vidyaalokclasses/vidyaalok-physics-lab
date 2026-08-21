@@ -29,7 +29,6 @@
             --text-main: #ffffff;
             --text-muted: #a0aabf;
 
-            /* Specific simulation colors */
             --gold: #ffd166;
             --green: #87f7aa;
             --purple: #c7a6ff;
@@ -283,12 +282,12 @@
         .formula-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.8rem;
-            line-height: 1.45;
+            font-size: 0.75rem;
+            line-height: 1.4;
             text-align: left;
         }
-        .formula-table th { padding: 8px; color: var(--gold); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
-        .formula-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
+        .formula-table th { padding: 6px; color: var(--gold); font-size: 0.65rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+        .formula-table td { padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--text-main); }
         .formula-table tr:last-child td { border-bottom: none; }
 
         .hidden { display: none !important; }
@@ -391,7 +390,7 @@
             }
             .navbar { padding: 1rem; }
             .tool-row { grid-template-columns: 1fr; }
-            .formula-table th, .formula-table td { padding: 6px; font-size: 0.75rem; }
+            .formula-table th, .formula-table td { padding: 5px; font-size: 0.7rem; }
         }
     </style>
 </head>
@@ -487,17 +486,17 @@
             <div id="mode-double" class="hidden">
                 <div class="panel-section">
                     <div class="panel-title">2. Mirror Configuration</div>
-                    <div class="control-group">
-                        <label>Angle Between Mirrors (\(\theta\))</label>
+                    <div class="control-group" style="margin-top: 0;">
+                        <label>Angle (\(\theta\))</label>
                         <input id="dblAngle" class="angle-entry" type="number" min="0" max="180" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Object Offset X <span id="dblObjXVal">0</span></label>
-                        <input id="dblObjX" type="range" min="-140" max="140" step="1" value="0">
+                        <label>Position X <span id="dblObjXVal">0</span></label>
+                        <input id="dblObjX" type="range" min="-120" max="120" step="1" value="0">
                     </div>
                     <div class="control-group">
-                        <label>Object Offset Y <span id="dblObjYVal">80</span></label>
-                        <input id="dblObjY" type="range" min="0" max="220" step="1" value="80">
+                        <label>Position Y <span id="dblObjYVal">60</span></label>
+                        <input id="dblObjY" type="range" min="10" max="160" step="1" value="60">
                     </div>
                     <button class="ghost-btn" style="width: 100%; margin-top: 10px;" id="resetDblBtn">↺ Reset</button>
                 </div>
@@ -511,18 +510,17 @@
                         <table class="formula-table">
                             <thead>
                                 <tr>
-                                    <th>Condition<br>\((m = \frac{360^\circ}{\theta})\)</th>
+                                    <th>Condition</th>
                                     <th>Placement</th>
-                                    <th>Images \((n)\)</th>
-                                    <th>Example</th>
+                                    <th>Images (\(n\))</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td>\(m\) is Even</td><td>Any</td><td>\(n = m - 1\)</td><td>\(90^\circ(4) \rightarrow 3\)</td></tr>
-                                <tr><td>\(m\) is Odd</td><td>Symmetrical</td><td>\(n = m - 1\)</td><td>\(72^\circ(5) \rightarrow 4\)</td></tr>
-                                <tr><td>\(m\) is Odd</td><td>Asymmetrical</td><td>\(n = m\)</td><td>\(72^\circ(5) \rightarrow 5\)</td></tr>
-                                <tr><td>Fractional</td><td>Any</td><td>\(n = \text{int}(m)\)</td><td>\(50^\circ(7.2) \rightarrow 7\)</td></tr>
-                                <tr><td>Parallel \((0^\circ)\)</td><td>Any</td><td>\(n = \infty\)</td><td>\(0^\circ \rightarrow \infty\)</td></tr>
+                                <tr><td>\(m\) Even</td><td>Any</td><td>\(n = m - 1\)</td></tr>
+                                <tr><td>\(m\) Odd</td><td>Symmetric</td><td>\(n = m - 1\)</td></tr>
+                                <tr><td>\(m\) Odd</td><td>Asymmetric</td><td>\(n = m\)</td></tr>
+                                <tr><td>Fraction</td><td>Any</td><td>\(n = \text{int}(m)\)</td></tr>
+                                <tr><td>Parallel</td><td>Any</td><td>\(n = \infty\)</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -592,7 +590,6 @@
         let lastTime = performance.now();
         let initialized = false;
 
-        // Physics State variables
         let movingObject = { x: 0, y: 0 };
         let movingMirrorX = 0;
 
@@ -643,7 +640,7 @@
             if (mode === "image") document.getElementById("canvas-title").textContent = "Static Image Formation";
             if (mode === "velocity") {
                 document.getElementById("canvas-title").textContent = "Dynamic Velocity Map";
-                resetVelocityMode(); // Ensure it starts perfectly still
+                resetVelocityMode();
             }
             if (mode === "double") document.getElementById("canvas-title").textContent = "Two Mirrors (Multiple Reflections)";
         }
@@ -663,7 +660,7 @@
         }
         resetVelBtn.addEventListener("click", resetVelocityMode);
         
-        resetDblBtn.addEventListener("click", () => { dblAngle.value = "60"; dblObjX.value = "0"; dblObjY.value = "80"; });
+        resetDblBtn.addEventListener("click", () => { dblAngle.value = "60"; dblObjX.value = "0"; dblObjY.value = "60"; });
 
         // DRAWING UTILS
         function drawArrow(x, baseY, height, color, dashed = false) {
@@ -737,45 +734,30 @@
             ctx.restore();
         }
 
-        function drawShadedMirrorVertical(x, reflectiveSide){
-            const offset = reflectiveSide === "right" ? 6 : -6;
+        // Professional Mirror Wedge Segment with Shaded Backing & Reflective Front
+        function drawReflectingMirrorSegment(cx, cy, angle, length) {
             ctx.save();
-            ctx.lineWidth = 12;
-            ctx.strokeStyle = "rgba(120,130,142,0.88)";
-            ctx.beginPath();
-            ctx.moveTo(x - offset, H * 0.1);
-            ctx.lineTo(x - offset, H * 0.9);
-            ctx.stroke();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
 
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = "#00e5ff";
-            ctx.beginPath();
-            ctx.moveTo(x + offset, H * 0.1);
-            ctx.lineTo(x + offset, H * 0.9);
-            ctx.stroke();
-            ctx.restore();
-        }
+            // Silvered Backing (Grayish side)
+            ctx.fillStyle = "rgba(120,130,142,0.85)";
+            ctx.fillRect(-length / 2, -5, length, 5);
 
-        function drawShadedMirrorLine(cx, cy, angle, length, reflectiveSign){
-            const dx = Math.cos(angle) * length;
-            const dy = Math.sin(angle) * length;
-            const nx = -Math.sin(angle);
-            const ny = Math.cos(angle);
+            // Reflective Front Surface (Cyan Glowing face)
+            ctx.fillStyle = "#00e5ff";
+            ctx.fillRect(-length / 2, 0, length, 3);
 
-            ctx.save();
-            ctx.lineWidth = 12;
-            ctx.strokeStyle = "rgba(120,130,142,0.88)";
-            ctx.beginPath();
-            ctx.moveTo(cx - dx - nx * reflectiveSign * 6, cy - dy - ny * reflectiveSign * 6);
-            ctx.lineTo(cx + dx - nx * reflectiveSign * 6, cy + dy - ny * reflectiveSign * 6);
-            ctx.stroke();
+            // Hatching marks on the non-reflecting back
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.lineWidth = 1;
+            for(let px = -length / 2 + 10; px < length / 2; px += 15) {
+                ctx.beginPath();
+                ctx.moveTo(px, -5);
+                ctx.lineTo(px - 4, -11);
+                ctx.stroke();
+            }
 
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = "#00e5ff";
-            ctx.beginPath();
-            ctx.moveTo(cx - dx + nx * reflectiveSign * 6, cy - dy + ny * reflectiveSign * 6);
-            ctx.lineTo(cx + dx + nx * reflectiveSign * 6, cy + dy + ny * reflectiveSign * 6);
-            ctx.stroke();
             ctx.restore();
         }
 
@@ -797,23 +779,16 @@
             drawArrow(objectX, baseY, objH, "#ffd166");
             drawArrow(imageX, baseY, objH, "#00e5ff", true);
 
-            // Added visual ray tracing to make it less basic
             const objTipY = baseY - objH;
             
             if (d > 0) {
-                // Ray 1: Horizontal to mirror
                 drawRay(objectX, objTipY, mirrorX, objTipY, 'rgba(255, 209, 102, 0.7)');
-                // Ray 1: Reflects back
                 drawRay(mirrorX, objTipY, objectX - 50, objTipY, 'rgba(255, 209, 102, 0.7)');
-                // Ray 1: Virtual Extension
                 drawRay(mirrorX, objTipY, imageX, objTipY, 'rgba(0, 229, 255, 0.5)', true);
 
-                // Ray 2: Angled to pole/base
                 drawRay(objectX, objTipY, mirrorX, baseY, 'rgba(255, 209, 102, 0.7)');
-                // Ray 2: Reflects down
                 const reflectY = baseY + (baseY - objTipY);
                 drawRay(mirrorX, baseY, objectX - 50, reflectY + (reflectY - baseY)*(50/d), 'rgba(255, 209, 102, 0.7)');
-                // Ray 2: Virtual Extension
                 drawRay(mirrorX, baseY, imageX, objTipY, 'rgba(0, 229, 255, 0.5)', true);
             }
 
@@ -822,7 +797,6 @@
             ctx.fillText("O", objectX - 20, baseY + 24);
             ctx.fillText("I", imageX - 10, baseY + 24);
 
-            // Distance dashed lines
             ctx.strokeStyle = "rgba(255,255,255,0.3)";
             ctx.setLineDash([4, 4]);
             ctx.beginPath();
@@ -907,7 +881,7 @@
             if(thetaDeg === 0) return Infinity;
             const m = 360 / thetaDeg;
             const rounded = Math.round(m);
-            if(Math.abs(m - rounded) > 1e-6) return Math.floor(m); // Non-integer
+            if(Math.abs(m - rounded) > 1e-6) return Math.floor(m); 
             if(rounded % 2 === 0) return rounded - 1;
             return onBisector ? rounded - 1 : rounded;
         }
@@ -936,37 +910,17 @@
             return images;
         }
 
-        function getParallelImages(object, leftX, rightX){
-            const images = [];
-            let currentLeft = object;
-            let currentRight = object;
-            for(let n = 0; n < 4; n++){ 
-                currentLeft = reflectAcrossVertical(currentLeft, leftX);
-                uniquePush(images, currentLeft);
-                currentLeft = reflectAcrossVertical(currentLeft, rightX);
-                uniquePush(images, currentLeft);
-
-                currentRight = reflectAcrossVertical(currentRight, rightX);
-                uniquePush(images, currentRight);
-                currentRight = reflectAcrossVertical(currentRight, leftX);
-                uniquePush(images, currentRight);
-            }
-            return images;
-        }
-
         function drawTwoMirrorsMode() {
             const thetaDeg = parseFloat(dblAngle.value) || 0;
             const ox = parseFloat(dblObjX.value);
             const oy = parseFloat(dblObjY.value);
             const centerX = W * 0.5;
             const centerY = H * 0.6;
-            const mirrorLen = Math.min(W, H) * 0.4;
+            const mirrorLen = Math.min(W, H) * 0.5;
 
             dblObjXVal.textContent = `${ox.toFixed(0)}`;
             dblObjYVal.textContent = `${oy.toFixed(0)}`;
 
-            const object = { x: ox, y: oy };
-            let images = [];
             let countText = "";
 
             if(thetaDeg === 0){
@@ -978,44 +932,79 @@
                 const objCanvas = { x: centerX + ox, y: centerY - oy };
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
-                images = getParallelImages(objCanvas, leftX + 6, rightX - 6);
+                const images = getParallelImages(objCanvas, leftX + 6, rightX - 6);
                 images.forEach((img, idx) => {
                     drawPointMarker(img.x, img.y, "#00e5ff", `I${idx + 1}`, true);
                 });
                 countText = "∞ (Parallel)";
             } else {
                 const theta = thetaDeg * Math.PI / 180;
-                const a1 = Math.PI / 2 - theta / 2;
-                const a2 = Math.PI / 2 + theta / 2;
-
-                drawShadedMirrorLine(centerX, centerY, a1, mirrorLen, 1);
-                drawShadedMirrorLine(centerX, centerY, a2, mirrorLen, -1);
-
-                const objCanvas = { x: centerX + object.x, y: centerY - object.y };
                 
-                // Add Circular Locus and Angle Bisector for visual clarity
-                const radius = Math.hypot(object.x, object.y);
+                // Mirror 1 angle (extending upwards-right from center apex A)
+                const a1 = -Math.PI / 2 + theta / 2;
+                // Mirror 2 angle (extending horizontally right from apex A)
+                const a2 = -Math.PI / 2 - theta / 2;
+
+                // --- CLAMP OBJECT STRICTLY WITHIN THE REFLECTING WEDGE ---
+                // The angle span of the mirrors goes from a2 to a1. 
+                // We convert object Cartesian offset (ox, oy) into polar (r, currentAngle) relative to apex (centerX, centerY)
+                let r = Math.hypot(ox, oy);
+                if (r < 10) r = 40; // minimum radius
+                let currentAngle = Math.atan2(-oy, ox); // canvas y is inverted
+
+                // Ensure object stays within the valid reflecting wedge sector [a2, a1]
+                // If theta is e.g. 60 deg, wedge is between a2 and a1. 
+                // Let's normalize angle bounds properly:
+                let minA = Math.min(a1, a2);
+                let maxA = Math.max(a1, a2);
+                
+                // If angle span crosses wrap-around, let's keep it clean:
+                if (currentAngle < minA) currentAngle = minA + 0.1;
+                if (currentAngle > maxA) currentAngle = maxA - 0.1;
+
+                // Recompute strict valid object position inside the reflecting quadrant
+                const validOx = r * Math.cos(currentAngle);
+                const validOy = -r * Math.sin(currentAngle);
+
+                dblObjX.value = Math.round(validOx);
+                dblObjY.value = Math.round(validOy);
+
+                const objCanvas = { x: centerX + validOx, y: centerY + validOy };
+
+                // Draw professional reflecting mirror wedges meeting at apex (centerX, centerY)
+                // Mirror 1
+                drawReflectingMirrorSegment(centerX + (Math.cos(a1)*mirrorLen)/2, centerY + (Math.sin(a1)*mirrorLen)/2, a1, mirrorLen);
+                // Mirror 2
+                drawReflectingMirrorSegment(centerX + (Math.cos(a2)*mirrorLen)/2, centerY + (Math.sin(a2)*mirrorLen)/2, a2, mirrorLen);
+
+                // Draw Circular Locus of Images
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
                 ctx.setLineDash([5, 5]);
                 ctx.stroke();
 
+                // Draw Angle Bisector Line
+                const bisectorAngle = (a1 + a2) / 2;
                 ctx.beginPath();
                 ctx.moveTo(centerX, centerY);
-                ctx.lineTo(centerX, centerY - radius - 20);
-                ctx.strokeStyle = "rgba(0, 229, 255, 0.2)";
+                ctx.lineTo(centerX + Math.cos(bisectorAngle) * (mirrorLen + 40), centerY + Math.sin(bisectorAngle) * (mirrorLen + 40));
+                ctx.strokeStyle = "rgba(0, 229, 255, 0.25)";
                 ctx.stroke();
                 ctx.setLineDash([]);
 
+                // Draw Object O
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
-                const onBisector = Math.abs(ox) < 4;
+                // Check symmetry (object on angle bisector)
+                const objPolarAngle = Math.atan2(objCanvas.y - centerY, objCanvas.x - centerX);
+                const onBisector = Math.abs(objPolarAngle - bisectorAngle) < 0.05;
+
                 const count = getImageCountForAngle(thetaDeg, onBisector);
                 countText = isFinite(count) ? `${count}` : "∞";
                 
                 if (isFinite(count) && count > 0) {
-                    images = getInclinedImages(object, thetaDeg, count);
+                    const images = getInclinedImages({ x: validOx, y: validOy }, thetaDeg, count);
                     images.forEach((img, idx) => {
                         const px = centerX + img.x;
                         const py = centerY - img.y;
@@ -1030,7 +1019,6 @@
         function drawBackground() {
             ctx.clearRect(0, 0, W, H);
             
-            // Floor line
             ctx.strokeStyle = "rgba(255,255,255,0.08)";
             ctx.lineWidth = 1;
             ctx.beginPath();
