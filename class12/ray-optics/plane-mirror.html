@@ -390,13 +390,12 @@
                 flex-grow: 0;
                 margin-top: 1rem;
             }
-            /* GUARANTEE Canvas height on mobile */
             .canvas-wrapper {
                 min-height: 400px;
                 height: 400px;
             }
             .navbar { padding: 1rem; }
-            .tool-row { grid-template-columns: 1fr 1fr; } /* 2x2 grid for tabs on mobile */
+            .tool-row { grid-template-columns: 1fr 1fr; }
             .formula-table th, .formula-table td { padding: 5px; font-size: 0.7rem; }
         }
     </style>
@@ -544,8 +543,8 @@
                         <input id="rotIncAngle" type="range" min="15" max="165" step="1" value="45">
                     </div>
                     <div class="control-group">
-                        <label>Mirror Rotation (\(\theta\)) <span id="rotMirVal">15°</span></label>
-                        <input id="rotMirAngle" type="range" min="-45" max="45" step="1" value="15">
+                        <label><span>Mirror Rotation (θ)</span> <span id="rotMirVal">0°</span></label>
+                        <input id="rotMirAngle" type="range" min="-45" max="45" step="1" value="0">
                     </div>
                     <button class="ghost-btn" style="width: 100%; margin-top: 10px;" id="resetRotBtn">↺ Reset</button>
                 </div>
@@ -555,7 +554,7 @@
                     <div class="stat-grid">
                         <div class="stat" style="flex-direction: column; align-items: flex-start;">
                             <strong>Reflected Ray Rotated By</strong>
-                            <span id="rotRefOut" style="margin-top: 5px; color: var(--gold);">30.0°</span>
+                            <span id="rotRefOut" style="margin-top: 5px; color: var(--gold);">0.0°</span>
                         </div>
                     </div>
                     <div class="formula-panel" id="rotFormula">
@@ -724,7 +723,7 @@
         resetVelBtn.addEventListener("click", resetVelocityMode);
         
         resetDblBtn.addEventListener("click", () => { dblAngle.value = "90"; dblObjX.value = "40"; dblObjY.value = "40"; });
-        resetRotBtn.addEventListener("click", () => { rotIncAngle.value = "45"; rotMirAngle.value = "15"; });
+        resetRotBtn.addEventListener("click", () => { rotIncAngle.value = "45"; rotMirAngle.value = "0"; });
 
         // DRAWING UTILS
         function drawArrow(x, baseY, height, color, dashed = false) {
@@ -1188,10 +1187,10 @@
             const incRad = incDeg * Math.PI / 180;
             const mirRad = mirDeg * Math.PI / 180;
 
-            // Incident Ray direction (points FROM top toward center)
+            // Incident Ray direction
             const d = { x: Math.cos(incRad), y: Math.sin(incRad) };
 
-            // Original Normal (Horizontal Mirror => Normal is Vertical UP)
+            // Original Normal
             const n0 = { x: 0, y: -1 };
             const r0 = reflect(d, n0);
 
@@ -1199,7 +1198,6 @@
             const n = { x: Math.sin(mirRad), y: -Math.cos(mirRad) };
             const r = reflect(d, n);
 
-            // 1. Draw Reference Elements (Faint)
             ctx.save();
             ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
             ctx.lineWidth = 2;
@@ -1209,29 +1207,22 @@
             ctx.lineTo(cx + mirrorLen / 2, cy);
             ctx.stroke();
 
-            // Ref Normal
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(cx, cy - mirrorLen * 0.4);
             ctx.stroke();
             ctx.restore();
 
-            // Ref Reflected Ray
             drawRayWithArrow(cx, cy, cx + r0.x * mirrorLen * 0.5, cy + r0.y * mirrorLen * 0.5, "rgba(0, 229, 255, 0.3)", true);
 
-            // 2. Draw Active Elements
             drawRotatedMirrorWithHatching(cx, cy, mirRad, mirrorLen);
 
-            // Active Normal
             drawRayWithArrow(cx, cy, cx + n.x * mirrorLen * 0.5, cy + n.y * mirrorLen * 0.5, "rgba(255, 255, 255, 0.6)", true);
 
-            // Incident Ray (Solid White)
             drawRayWithArrow(cx - d.x * mirrorLen * 0.6, cy - d.y * mirrorLen * 0.6, cx, cy, "#ffffff", false);
 
-            // Active Reflected Ray (Solid Gold)
             drawRayWithArrow(cx, cy, cx + r.x * mirrorLen * 0.6, cy + r.y * mirrorLen * 0.6, "#ffd166", false);
 
-            // Mark Origin
             drawPointMarker(cx, cy, "#ff7b7b", "O", false);
             
             ctx.fillStyle = "#ffffff";
