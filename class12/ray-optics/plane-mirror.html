@@ -450,8 +450,8 @@
                 <div class="panel-section">
                     <div class="panel-title">2. Modify Velocities</div>
                     <div class="control-group">
-                        <label>Object Vel. (x) <span id="velObjXVal">2.0 m/s</span></label>
-                        <input id="velObjX" type="range" min="-8" max="8" step="0.5" value="2.0">
+                        <label>Object Vel. (x) <span id="velObjXVal">0.0 m/s</span></label>
+                        <input id="velObjX" type="range" min="-8" max="8" step="0.5" value="0">
                     </div>
                     <div class="control-group">
                         <label>Object Vel. (y) <span id="velObjYVal">0.0 m/s</span></label>
@@ -469,11 +469,12 @@
                     <div class="stat-grid">
                         <div class="stat" style="flex-direction: column; align-items: flex-start;">
                             <strong>Image Velocity (\(\vec v_i\))</strong>
-                            <span id="velImgOut" style="margin-top: 5px; color: var(--primary);">(-2.0, 0.0) m/s</span>
+                            <span id="velImgOut" style="margin-top: 5px; color: var(--primary);">(0.0, 0.0) m/s</span>
                         </div>
                     </div>
-                    <div class="formula-panel" id="velFormula">
-                        \[ \vec v_i = (2v_{mx} - v_{ox})\hat i + v_{oy}\hat j \]
+                    <div class="formula-panel" id="velFormula" style="display: flex; flex-direction: column; gap: 6px;">
+                        \[ \vec{v}_{ox} - \vec{v}_m = -(\vec{v}_{ix} - \vec{v}_m) \]
+                        \[ \vec{v}_{ix} = 2\vec{v}_m - \vec{v}_{ox} \]
                     </div>
                     <div class="note">
                         The image mirrors the object's x-velocity relative to the mirror, while the y-velocity stays perfectly matched.
@@ -631,7 +632,10 @@
             modeDouble.classList.toggle("hidden", mode !== "double");
 
             if (mode === "image") document.getElementById("canvas-title").textContent = "Static Image Formation";
-            if (mode === "velocity") document.getElementById("canvas-title").textContent = "Dynamic Velocity Map";
+            if (mode === "velocity") {
+                document.getElementById("canvas-title").textContent = "Dynamic Velocity Map";
+                resetVelocityMode(); // Ensure it starts perfectly still
+            }
             if (mode === "double") document.getElementById("canvas-title").textContent = "Multiple Reflections";
         }
 
@@ -640,10 +644,16 @@
         btnDouble.addEventListener("click", () => setMode("double"));
 
         resetImageBtn.addEventListener("click", () => { imgObjX.value = "120"; imgObjY.value = "0"; });
-        resetVelBtn.addEventListener("click", () => { 
-            velObjX.value = "2"; velObjY.value = "0"; velMirX.value = "0"; 
-            movingMirrorX = W * 0.5; movingObject = { x: W * 0.2, y: H * 0.6 };
-        });
+        
+        function resetVelocityMode() {
+            velObjX.value = "0"; 
+            velObjY.value = "0"; 
+            velMirX.value = "0"; 
+            movingMirrorX = W * 0.5; 
+            movingObject = { x: W * 0.2, y: H * 0.6 };
+        }
+        resetVelBtn.addEventListener("click", resetVelocityMode);
+        
         resetDblBtn.addEventListener("click", () => { dblAngle.value = "60"; dblObjX.value = "0"; dblObjY.value = "80"; });
 
         // DRAWING UTILS
@@ -812,7 +822,10 @@
             velMirXVal.textContent = `${vmx.toFixed(1)} m/s`;
             velImgOut.textContent = `(${vix.toFixed(1)}, ${viy.toFixed(1)}) m/s`;
 
-            const currentFormula = `\\[\\vec v_i = (${(2*vmx).toFixed(1)} - ${vox.toFixed(1)})\\hat i + ${voy.toFixed(1)}\\hat j = ${vix.toFixed(1)}\\hat i + ${viy.toFixed(1)}\\hat j \\]`;
+            const currentFormula = `\\[ \\vec{v}_{ox} - \\vec{v}_m = -(\\vec{v}_{ix} - \\vec{v}_m) \\]
+                                    \\[ \\vec{v}_{ix} = 2(${vmx.toFixed(1)}) - (${vox.toFixed(1)}) = ${vix.toFixed(1)}\\ \\text{m/s} \\]
+                                    \\[ \\vec{v}_{iy} = \\vec{v}_{oy} = ${viy.toFixed(1)}\\ \\text{m/s} \\]`;
+                                    
             if (currentFormula !== lastVelFormula && window.MathJax && window.MathJax.typesetPromise) {
                 lastVelFormula = currentFormula;
                 velFormula.innerHTML = currentFormula;
