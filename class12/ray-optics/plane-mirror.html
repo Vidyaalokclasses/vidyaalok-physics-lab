@@ -283,7 +283,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.75rem;
-            line-height: 1.4;
+            line-height: 1.45;
             text-align: left;
         }
         .formula-table th { padding: 6px; color: var(--gold); font-size: 0.65rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
@@ -383,7 +383,6 @@
                 flex-grow: 0;
                 margin-top: 1rem;
             }
-            /* GUARANTEE Canvas height on mobile */
             .canvas-wrapper {
                 min-height: 400px;
                 height: 400px;
@@ -487,16 +486,16 @@
                 <div class="panel-section">
                     <div class="panel-title">2. Mirror Configuration</div>
                     <div class="control-group" style="margin-top: 0;">
-                        <label>Angle (\(\theta\))</label>
-                        <input id="dblAngle" class="angle-entry" type="number" min="0" max="180" step="1" value="60">
+                        <label>Angle θ (Degrees)</label>
+                        <input id="dblAngle" class="angle-entry" type="number" min="0" max="180" step="1" value="90">
                     </div>
                     <div class="control-group">
-                        <label>Position X <span id="dblObjXVal">0</span></label>
-                        <input id="dblObjX" type="range" min="-120" max="120" step="1" value="0">
+                        <label>Position X <span id="dblObjXVal">40</span></label>
+                        <input id="dblObjX" type="range" min="10" max="160" step="1" value="40">
                     </div>
                     <div class="control-group">
-                        <label>Position Y <span id="dblObjYVal">60</span></label>
-                        <input id="dblObjY" type="range" min="10" max="160" step="1" value="60">
+                        <label>Position Y <span id="dblObjYVal">40</span></label>
+                        <input id="dblObjY" type="range" min="10" max="160" step="1" value="40">
                     </div>
                     <button class="ghost-btn" style="width: 100%; margin-top: 10px;" id="resetDblBtn">↺ Reset</button>
                 </div>
@@ -504,7 +503,7 @@
                 <div class="panel-section">
                     <div class="panel-title">Analysis</div>
                     <div class="stat-grid">
-                        <div class="stat"><strong>Images Formed</strong><span id="dblCountOut">5</span></div>
+                        <div class="stat"><strong>Images Formed</strong><span id="dblCountOut">3</span></div>
                     </div>
                     <div class="formula-panel" style="padding: 0; border: none; background: transparent;">
                         <table class="formula-table">
@@ -660,7 +659,7 @@
         }
         resetVelBtn.addEventListener("click", resetVelocityMode);
         
-        resetDblBtn.addEventListener("click", () => { dblAngle.value = "60"; dblObjX.value = "0"; dblObjY.value = "60"; });
+        resetDblBtn.addEventListener("click", () => { dblAngle.value = "90"; dblObjX.value = "40"; dblObjY.value = "40"; });
 
         // DRAWING UTILS
         function drawArrow(x, baseY, height, color, dashed = false) {
@@ -734,30 +733,51 @@
             ctx.restore();
         }
 
-        // Professional Mirror Wedge Segment with Shaded Backing & Reflective Front
-        function drawReflectingMirrorSegment(cx, cy, angle, length) {
+        function drawHorizontalMirrorSegment(cx, cy, length, reflectiveSide) {
             ctx.save();
             ctx.translate(cx, cy);
-            ctx.rotate(angle);
+            const offset = reflectiveSide === "top" ? -4 : 4;
 
-            // Silvered Backing (Grayish side)
+            // Silvered Backing
             ctx.fillStyle = "rgba(120,130,142,0.85)";
-            ctx.fillRect(-length / 2, -5, length, 5);
+            ctx.fillRect(-length / 2, offset - 2, length, 5);
 
-            // Reflective Front Surface (Cyan Glowing face)
+            // Reflective Front
             ctx.fillStyle = "#00e5ff";
-            ctx.fillRect(-length / 2, 0, length, 3);
+            ctx.fillRect(-length / 2, offset, length, 3);
 
-            // Hatching marks on the non-reflecting back
+            // Hatching marks
             ctx.strokeStyle = "rgba(255,255,255,0.4)";
             ctx.lineWidth = 1;
             for(let px = -length / 2 + 10; px < length / 2; px += 15) {
                 ctx.beginPath();
-                ctx.moveTo(px, -5);
-                ctx.lineTo(px - 4, -11);
+                ctx.moveTo(px, offset);
+                ctx.lineTo(px - 4, offset + (reflectiveSide === "top" ? -8 : 8));
                 ctx.stroke();
             }
+            ctx.restore();
+        }
 
+        function drawRotatedMirrorSegment(cx, cy, angle, length, reflectiveSide) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            const offset = reflectiveSide === "left" ? -4 : 4;
+
+            ctx.fillStyle = "rgba(120,130,142,0.85)";
+            ctx.fillRect(-length / 2, offset - 2, length, 5);
+
+            ctx.fillStyle = "#00e5ff";
+            ctx.fillRect(-length / 2, offset, length, 3);
+
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.lineWidth = 1;
+            for(let px = -length / 2 + 10; px < length / 2; px += 15) {
+                ctx.beginPath();
+                ctx.moveTo(px, offset);
+                ctx.lineTo(px - 4, offset + (reflectiveSide === "left" ? -8 : 8));
+                ctx.stroke();
+            }
             ctx.restore();
         }
 
@@ -872,10 +892,6 @@
                 y: 2 * dot * u.y - point.y
             };
         }
-        function reflectAcrossVertical(point, xLine){ return { x: 2 * xLine - point.x, y: point.y }; }
-        function uniquePush(list, point){
-            if(!list.some(p => Math.hypot(p.x - point.x, p.y - point.y) < 0.5)) list.push(point);
-        }
 
         function getImageCountForAngle(thetaDeg, onBisector){
             if(thetaDeg === 0) return Infinity;
@@ -888,7 +904,8 @@
 
         function getInclinedImages(object, thetaDeg, desiredCount){
             const theta = thetaDeg * Math.PI / 180;
-            const angles = [Math.PI / 2 - theta / 2, Math.PI / 2 + theta / 2];
+            // Mirror 1 is horizontal along X-axis (angle 0), Mirror 2 is at angle -theta
+            const angles = [0, -theta];
             const images = [];
             const queue = [{ point: object, last: -1, depth: 0 }];
 
@@ -914,9 +931,9 @@
             const thetaDeg = parseFloat(dblAngle.value) || 0;
             const ox = parseFloat(dblObjX.value);
             const oy = parseFloat(dblObjY.value);
-            const centerX = W * 0.5;
-            const centerY = H * 0.6;
-            const mirrorLen = Math.min(W, H) * 0.5;
+            const apexX = W * 0.4;
+            const apexY = H * 0.7;
+            const mirrorLen = Math.min(W, H) * 0.45;
 
             dblObjXVal.textContent = `${ox.toFixed(0)}`;
             dblObjYVal.textContent = `${oy.toFixed(0)}`;
@@ -924,71 +941,55 @@
             let countText = "";
 
             if(thetaDeg === 0){
-                const leftX = centerX - 100;
-                const rightX = centerX + 100;
+                const leftX = W * 0.3;
+                const rightX = W * 0.7;
                 drawShadedMirrorVertical(leftX, "right");
                 drawShadedMirrorVertical(rightX, "left");
 
-                const objCanvas = { x: centerX + ox, y: centerY - oy };
+                const objCanvas = { x: leftX + ox, y: centerY - oy };
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
-
-                const images = getParallelImages(objCanvas, leftX + 6, rightX - 6);
-                images.forEach((img, idx) => {
-                    drawPointMarker(img.x, img.y, "#00e5ff", `I${idx + 1}`, true);
-                });
                 countText = "∞ (Parallel)";
             } else {
                 const theta = thetaDeg * Math.PI / 180;
-                
-                // Mirror 1 angle (extending upwards-right from center apex A)
-                const a1 = -Math.PI / 2 + theta / 2;
-                // Mirror 2 angle (extending horizontally right from apex A)
-                const a2 = -Math.PI / 2 - theta / 2;
 
-                // --- CLAMP OBJECT STRICTLY WITHIN THE REFLECTING WEDGE ---
-                // The angle span of the mirrors goes from a2 to a1. 
-                // We convert object Cartesian offset (ox, oy) into polar (r, currentAngle) relative to apex (centerX, centerY)
+                // --- CLAMP OBJECT STRICTLY INSIDE THE REFLECTING WEDGE ---
                 let r = Math.hypot(ox, oy);
-                if (r < 10) r = 40; // minimum radius
-                let currentAngle = Math.atan2(-oy, ox); // canvas y is inverted
+                if (r < 20) r = 40;
+                let currentAngle = Math.atan2(-oy, ox); 
 
-                // Ensure object stays within the valid reflecting wedge sector [a2, a1]
-                // If theta is e.g. 60 deg, wedge is between a2 and a1. 
-                // Let's normalize angle bounds properly:
-                let minA = Math.min(a1, a2);
-                let maxA = Math.max(a1, a2);
+                // Wedge is between angle 0 (horizontal mirror) and -theta (inclined mirror)
+                let minA = Math.min(0, -theta);
+                let maxA = Math.max(0, -theta);
                 
-                // If angle span crosses wrap-around, let's keep it clean:
-                if (currentAngle < minA) currentAngle = minA + 0.1;
-                if (currentAngle > maxA) currentAngle = maxA - 0.1;
+                if (currentAngle < minA) currentAngle = minA + 0.05;
+                if (currentAngle > maxA) currentAngle = maxA - 0.05;
 
-                // Recompute strict valid object position inside the reflecting quadrant
                 const validOx = r * Math.cos(currentAngle);
                 const validOy = -r * Math.sin(currentAngle);
 
                 dblObjX.value = Math.round(validOx);
                 dblObjY.value = Math.round(validOy);
 
-                const objCanvas = { x: centerX + validOx, y: centerY + validOy };
+                const objCanvas = { x: apexX + validOx, y: apexY + validOy };
 
-                // Draw professional reflecting mirror wedges meeting at apex (centerX, centerY)
-                // Mirror 1
-                drawReflectingMirrorSegment(centerX + (Math.cos(a1)*mirrorLen)/2, centerY + (Math.sin(a1)*mirrorLen)/2, a1, mirrorLen);
-                // Mirror 2
-                drawReflectingMirrorSegment(centerX + (Math.cos(a2)*mirrorLen)/2, centerY + (Math.sin(a2)*mirrorLen)/2, a2, mirrorLen);
+                // 1. Draw Horizontal Mirror (Mirror 1 along angle 0)
+                drawHorizontalMirrorSegment(apexX + mirrorLen / 2, apexY, mirrorLen, "top");
+
+                // 2. Draw Inclined Mirror (Mirror 2 at angle -theta meeting at apexX, apexY)
+                drawRotatedMirrorSegment(apexX + (Math.cos(-theta) * mirrorLen) / 2, apexY + (Math.sin(-theta) * mirrorLen) / 2, -theta, mirrorLen, "left");
 
                 // Draw Circular Locus of Images
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                ctx.arc(apexX, apexY, r, 0, Math.PI * 2);
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
                 ctx.setLineDash([5, 5]);
                 ctx.stroke();
 
                 // Draw Angle Bisector Line
-                const bisectorAngle = (a1 + a2) / 2;
+                const bisectorAngle = -theta / 2;
                 ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(centerX + Math.cos(bisectorAngle) * (mirrorLen + 40), centerY + Math.sin(bisectorAngle) * (mirrorLen + 40));
+                ctx.moveTo(apexX, apexY);
+                ctx.lineTo(apexX + Math.cos(bisectorAngle) * (mirrorLen + 20), apexY + Math.sin(bisectorAngle) * (mirrorLen + 20));
                 ctx.strokeStyle = "rgba(0, 229, 255, 0.25)";
                 ctx.stroke();
                 ctx.setLineDash([]);
@@ -996,8 +997,7 @@
                 // Draw Object O
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
-                // Check symmetry (object on angle bisector)
-                const objPolarAngle = Math.atan2(objCanvas.y - centerY, objCanvas.x - centerX);
+                const objPolarAngle = Math.atan2(objCanvas.y - apexY, objCanvas.x - apexX);
                 const onBisector = Math.abs(objPolarAngle - bisectorAngle) < 0.05;
 
                 const count = getImageCountForAngle(thetaDeg, onBisector);
@@ -1006,8 +1006,8 @@
                 if (isFinite(count) && count > 0) {
                     const images = getInclinedImages({ x: validOx, y: validOy }, thetaDeg, count);
                     images.forEach((img, idx) => {
-                        const px = centerX + img.x;
-                        const py = centerY - img.y;
+                        const px = apexX + img.x;
+                        const py = apexY - img.y;
                         drawPointMarker(px, py, "#00e5ff", `I${idx + 1}`, true);
                     });
                 }
