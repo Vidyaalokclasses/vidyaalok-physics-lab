@@ -54,6 +54,7 @@
             padding: 1rem 2rem;
             background: rgba(7, 11, 25, 0.8);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0, 229, 255, 0.2);
             display: flex;
             justify-content: space-between;
@@ -89,6 +90,7 @@
             gap: 1.5rem;
             height: calc(100vh - 70px);
             box-sizing: border-box;
+            overflow: hidden;
         }
 
         /* Left Control Panel */
@@ -103,6 +105,7 @@
             flex-direction: column;
             gap: 1.2rem;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             overflow-y: auto;
         }
@@ -133,7 +136,7 @@
 
         .tool-row {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             margin-bottom: 8px;
         }
@@ -302,6 +305,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
             overflow: hidden;
             position: relative;
@@ -318,14 +322,16 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             background: rgba(0,0,0,0.2);
             z-index: 2;
+            flex-shrink: 0;
         }
 
         .canvas-head span:first-child { color: var(--primary); }
 
         .canvas-wrapper {
             position: relative;
-            flex-grow: 1;
+            flex: 1 1 auto;
             width: 100%;
+            min-height: 400px;
             overflow: hidden;
             background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
         }
@@ -377,18 +383,20 @@
             }
             .controls {
                 width: 100%;
+                max-height: 50vh;
             }
             .right-panel {
-                height: auto !important;
+                height: 500px !important;
                 flex-grow: 0;
                 margin-top: 1rem;
             }
+            /* GUARANTEE Canvas height on mobile */
             .canvas-wrapper {
                 min-height: 400px;
                 height: 400px;
             }
             .navbar { padding: 1rem; }
-            .tool-row { grid-template-columns: 1fr; }
+            .tool-row { grid-template-columns: 1fr 1fr; } /* 2x2 grid for tabs on mobile */
             .formula-table th, .formula-table td { padding: 5px; font-size: 0.7rem; }
         }
     </style>
@@ -408,10 +416,11 @@
 
             <div class="panel-section">
                 <div class="panel-title">1. Simulation Mode</div>
-                <div class="tool-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="tool-row">
                     <button class="tool-btn active" id="tabImage">Static</button>
                     <button class="tool-btn" id="tabVelocity">Velocity</button>
                     <button class="tool-btn" id="tabDouble">Two Mirrors</button>
+                    <button class="tool-btn" id="tabRotation">Rotation</button>
                 </div>
             </div>
 
@@ -526,6 +535,38 @@
                 </div>
             </div>
 
+            <!-- MODE 4: ROTATION -->
+            <div id="mode-rotation" class="hidden">
+                <div class="panel-section">
+                    <div class="panel-title">2. Rotate Mirror</div>
+                    <div class="control-group">
+                        <label>Incident Ray Angle <span id="rotIncVal">45°</span></label>
+                        <input id="rotIncAngle" type="range" min="15" max="165" step="1" value="45">
+                    </div>
+                    <div class="control-group">
+                        <label>Mirror Rotation (\(\theta\)) <span id="rotMirVal">15°</span></label>
+                        <input id="rotMirAngle" type="range" min="-45" max="45" step="1" value="15">
+                    </div>
+                    <button class="ghost-btn" style="width: 100%; margin-top: 10px;" id="resetRotBtn">↺ Reset</button>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">Analysis</div>
+                    <div class="stat-grid">
+                        <div class="stat" style="flex-direction: column; align-items: flex-start;">
+                            <strong>Reflected Ray Rotated By</strong>
+                            <span id="rotRefOut" style="margin-top: 5px; color: var(--gold);">30.0°</span>
+                        </div>
+                    </div>
+                    <div class="formula-panel" id="rotFormula">
+                        \[ \delta_{ref} = 2\theta \]
+                    </div>
+                    <div class="note">
+                        If the incident ray is kept fixed, and the mirror is rotated by an angle \(\theta\), the reflected ray rotates by an angle \(2\theta\).
+                    </div>
+                </div>
+            </div>
+
         </aside>
 
         <!-- Simulation Area -->
@@ -550,11 +591,13 @@
         const btnImage = document.getElementById("tabImage");
         const btnVelocity = document.getElementById("tabVelocity");
         const btnDouble = document.getElementById("tabDouble");
+        const btnRotation = document.getElementById("tabRotation");
 
         // Modes
         const modeImage = document.getElementById("mode-image");
         const modeVelocity = document.getElementById("mode-velocity");
         const modeDouble = document.getElementById("mode-double");
+        const modeRotation = document.getElementById("mode-rotation");
 
         // Controls Mode 1
         const imgObjX = document.getElementById("imgObjX");
@@ -583,6 +626,11 @@
         const dblObjYVal = document.getElementById("dblObjYVal");
         const dblCountOut = document.getElementById("dblCountOut");
         const resetDblBtn = document.getElementById("resetDblBtn");
+
+        // Controls Mode 4
+        const rotIncAngle = document.getElementById("rotIncAngle");
+        const rotMirAngle = document.getElementById("rotMirAngle");
+        const resetRotBtn = document.getElementById("resetRotBtn");
 
         let W = 0, H = 0;
         let mode = "image";
@@ -619,7 +667,7 @@
                 initialized = true;
                 resetAllStates();
             }
-        }, 300);
+        }, 200);
 
         function resetAllStates() {
             movingMirrorX = W * 0.5;
@@ -632,10 +680,12 @@
             btnImage.classList.toggle("active", mode === "image");
             btnVelocity.classList.toggle("active", mode === "velocity");
             btnDouble.classList.toggle("active", mode === "double");
+            btnRotation.classList.toggle("active", mode === "rotation");
 
             modeImage.classList.toggle("hidden", mode !== "image");
             modeVelocity.classList.toggle("hidden", mode !== "velocity");
             modeDouble.classList.toggle("hidden", mode !== "double");
+            modeRotation.classList.toggle("hidden", mode !== "rotation");
 
             if (mode === "image") document.getElementById("canvas-title").textContent = "Static Image Formation";
             if (mode === "velocity") {
@@ -643,7 +693,9 @@
                 resetVelocityMode();
             }
             if (mode === "double") document.getElementById("canvas-title").textContent = "Two Mirrors (Multiple Reflections)";
+            if (mode === "rotation") document.getElementById("canvas-title").textContent = "Rotated Mirror & Fixed Ray";
 
+            // Force immediate canvas update upon tab switch
             setTimeout(() => {
                 if(canvas.parentElement) {
                     W = canvas.parentElement.clientWidth;
@@ -658,6 +710,7 @@
         btnImage.addEventListener("click", () => setMode("image"));
         btnVelocity.addEventListener("click", () => setMode("velocity"));
         btnDouble.addEventListener("click", () => setMode("double"));
+        btnRotation.addEventListener("click", () => setMode("rotation"));
 
         resetImageBtn.addEventListener("click", () => { imgObjX.value = "120"; imgObjY.value = "0"; });
         
@@ -671,6 +724,7 @@
         resetVelBtn.addEventListener("click", resetVelocityMode);
         
         resetDblBtn.addEventListener("click", () => { dblAngle.value = "90"; dblObjX.value = "40"; dblObjY.value = "40"; });
+        resetRotBtn.addEventListener("click", () => { rotIncAngle.value = "45"; rotMirAngle.value = "15"; });
 
         // DRAWING UTILS
         function drawArrow(x, baseY, height, color, dashed = false) {
@@ -703,6 +757,34 @@
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
             ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawRayWithArrow(x1, y1, x2, y2, color, dashed = false) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 3;
+            if(dashed) {
+                ctx.setLineDash([6, 5]);
+                ctx.lineWidth = 2;
+            }
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const hx = x1 + (x2 - x1) * 0.55; 
+            const hy = y1 + (y2 - y1) * 0.55;
+            
+            ctx.beginPath();
+            ctx.moveTo(hx, hy);
+            ctx.lineTo(hx - 12 * Math.cos(angle - 0.4), hy - 12 * Math.sin(angle - 0.4));
+            ctx.lineTo(hx - 12 * Math.cos(angle + 0.4), hy - 12 * Math.sin(angle + 0.4));
+            ctx.closePath();
+            ctx.fill();
             ctx.restore();
         }
 
@@ -744,31 +826,79 @@
             ctx.restore();
         }
 
-        function drawMirrorSegment(cx, cy, angle, length, isTopWedge) {
+        function drawHorizontalMirrorSegment(cx, cy, length, reflectiveSide) {
             ctx.save();
             ctx.translate(cx, cy);
-            ctx.rotate(angle);
-            const offset = isTopWedge ? -4 : 4; 
+            const offset = reflectiveSide === "top" ? -4 : 4;
 
-            // Silvered Backing
             ctx.fillStyle = "rgba(120,130,142,0.85)";
-            ctx.fillRect(-length / 2, offset - 3, length, 6);
+            ctx.fillRect(-length / 2, offset - 2, length, 5);
 
-            // Reflective Front
             ctx.fillStyle = "#00e5ff";
-            ctx.fillRect(-length / 2, isTopWedge ? offset + 1 : offset - 3, length, 2);
+            ctx.fillRect(-length / 2, offset, length, 3);
 
-            // Hatching marks
             ctx.strokeStyle = "rgba(255,255,255,0.4)";
             ctx.lineWidth = 1;
             for(let px = -length / 2 + 10; px < length / 2; px += 15) {
                 ctx.beginPath();
-                ctx.moveTo(px, isTopWedge ? offset - 3 : offset + 3);
-                ctx.lineTo(px - 4, isTopWedge ? offset - 10 : offset + 10);
+                ctx.moveTo(px, offset);
+                ctx.lineTo(px - 4, offset + (reflectiveSide === "top" ? -8 : 8));
                 ctx.stroke();
             }
             ctx.restore();
         }
+
+        function drawRotatedMirrorSegment(cx, cy, angle, length, reflectiveSide) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            const offset = reflectiveSide === "left" ? -4 : 4;
+
+            ctx.fillStyle = "rgba(120,130,142,0.85)";
+            ctx.fillRect(-length / 2, offset - 2, length, 5);
+
+            ctx.fillStyle = "#00e5ff";
+            ctx.fillRect(-length / 2, offset, length, 3);
+
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.lineWidth = 1;
+            for(let px = -length / 2 + 10; px < length / 2; px += 15) {
+                ctx.beginPath();
+                ctx.moveTo(px, offset);
+                ctx.lineTo(px - 4, offset + (reflectiveSide === "left" ? -8 : 8));
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawRotatedMirrorWithHatching(cx, cy, angle, length) {
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+            
+            ctx.fillStyle = "rgba(120,130,142,0.85)";
+            ctx.fillRect(-length / 2, 0, length, 4);
+
+            ctx.fillStyle = "#00e5ff";
+            ctx.fillRect(-length / 2, -2, length, 2);
+
+            ctx.strokeStyle = "rgba(255,255,255,0.4)";
+            ctx.lineWidth = 1;
+            for(let px = -length / 2 + 10; px < length / 2; px += 15) {
+                ctx.beginPath();
+                ctx.moveTo(px, 4);
+                ctx.lineTo(px - 4, 12);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // Math Vectors
+        function norm(v){ const l = Math.hypot(v.x, v.y) || 1; return { x: v.x / l, y: v.y / l }; }
+        function sub(a,b){ return { x: a.x - b.x, y: a.y - b.y }; }
+        function mul(a,s){ return { x: a.x * s, y: a.y * s }; }
+        function dot(a,b){ return a.x * b.x + a.y * b.y; }
+        function reflect(d,n){ const nn = norm(n); return norm(sub(d, mul(nn, 2 * dot(d, nn)))); }
 
         // --- MODE 1: STATIC IMAGE ---
         function drawImageFormation() {
@@ -883,10 +1013,6 @@
                 y: 2 * dot * u.y - point.y
             };
         }
-        function reflectAcrossVertical(point, xLine){ return { x: 2 * xLine - point.x, y: point.y }; }
-        function uniquePush(list, point){
-            if(!list.some(p => Math.hypot(p.x - point.x, p.y - point.y) < 0.5)) list.push(point);
-        }
 
         function getImageCountForAngle(thetaDeg, onBisector){
             if(thetaDeg === 0) return Infinity;
@@ -899,7 +1025,7 @@
 
         function getInclinedImages(object, thetaDeg, desiredCount){
             const theta = thetaDeg * Math.PI / 180;
-            const angles = [0, theta]; // Mathematically positive rotation
+            const angles = [0, -theta]; 
             const images = [];
             const queue = [{ point: object, last: -1, depth: 0 }];
 
@@ -961,7 +1087,6 @@
                 const leftX = W * 0.3;
                 const rightX = W * 0.7;
                 
-                // Draw manual segments for parallel mirrors to ensure styling matches
                 ctx.save();
                 ctx.translate(leftX, apexY);
                 ctx.fillStyle = "rgba(120,130,142,0.85)";
@@ -991,54 +1116,45 @@
 
                 let r = Math.hypot(ox, oy);
                 if (r < 20) r = 40;
+                let currentAngle = Math.atan2(-oy, ox); 
+
+                let minA = Math.min(0, -theta);
+                let maxA = Math.max(0, -theta);
                 
-                // Cartesian math angle
-                let currentAngle = Math.atan2(oy, ox); 
+                if (currentAngle < minA) currentAngle = minA + 0.05;
+                if (currentAngle > maxA) currentAngle = maxA - 0.05;
 
-                // Strictly clamp angle mathematically between 0 and theta
-                if (currentAngle < 0.05) currentAngle = 0.05;
-                if (currentAngle > theta - 0.05) currentAngle = theta - 0.05;
-
-                // Force object within valid angle if theta is extremely tight
                 if (theta < 0.1) currentAngle = theta / 2;
 
                 const validOx = r * Math.cos(currentAngle);
-                const validOy = r * Math.sin(currentAngle);
+                const validOy = -r * Math.sin(currentAngle);
 
-                // Gently update sliders without interrupting drag events
                 if (Math.abs(dblObjX.value - validOx) > 1) dblObjX.value = Math.round(validOx);
                 if (Math.abs(dblObjY.value - validOy) > 1) dblObjY.value = Math.round(validOy);
 
-                // Convert to canvas coordinates (Canvas Y goes DOWN, so subtract validOy)
-                const objCanvas = { x: apexX + validOx, y: apexY - validOy };
+                const objCanvas = { x: apexX + validOx, y: apexY + validOy };
 
-                // 1. Draw Horizontal Mirror (Angle 0)
-                drawMirrorSegment(apexX + mirrorLen / 2, apexY, 0, mirrorLen, false);
+                drawHorizontalMirrorSegment(apexX + mirrorLen / 2, apexY, mirrorLen, "top");
+                drawRotatedMirrorSegment(apexX + (Math.cos(-theta) * mirrorLen) / 2, apexY + (Math.sin(-theta) * mirrorLen) / 2, -theta, mirrorLen, "left");
 
-                // 2. Draw Inclined Mirror (Canvas angle is -theta to rotate UP)
-                drawMirrorSegment(apexX + (Math.cos(-theta) * mirrorLen) / 2, apexY + (Math.sin(-theta) * mirrorLen) / 2, -theta, mirrorLen, true);
-
-                // Circular Locus
                 ctx.beginPath();
                 ctx.arc(apexX, apexY, r, 0, Math.PI * 2);
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
                 ctx.setLineDash([5, 5]);
                 ctx.stroke();
 
-                // Angle Bisector Line
-                const bisectorAngleCanvas = -theta / 2;
+                const bisectorAngle = -theta / 2;
                 ctx.beginPath();
                 ctx.moveTo(apexX, apexY);
-                ctx.lineTo(apexX + Math.cos(bisectorAngleCanvas) * (mirrorLen + 20), apexY + Math.sin(bisectorAngleCanvas) * (mirrorLen + 20));
+                ctx.lineTo(apexX + Math.cos(bisectorAngle) * (mirrorLen + 20), apexY + Math.sin(bisectorAngle) * (mirrorLen + 20));
                 ctx.strokeStyle = "rgba(0, 229, 255, 0.25)";
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // Object O
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
                 const objPolarAngle = Math.atan2(validOy, validOx);
-                const onBisector = Math.abs(objPolarAngle - (theta / 2)) < 0.05;
+                const onBisector = Math.abs(objPolarAngle - bisectorAngle) < 0.05;
 
                 const count = getImageCountForAngle(thetaDeg, onBisector);
                 countText = isFinite(count) ? `${count}` : "∞";
@@ -1047,12 +1163,82 @@
                     const images = getInclinedImages({ x: validOx, y: validOy }, thetaDeg, count);
                     images.forEach((img, idx) => {
                         const px = apexX + img.x;
-                        const py = apexY - img.y; // Convert back to canvas Y
+                        const py = apexY - img.y; 
                         drawPointMarker(px, py, "#00e5ff", `I${idx + 1}`, true);
                     });
                 }
             }
             dblCountOut.textContent = countText;
+        }
+
+        // --- MODE 4: ROTATION ---
+        function drawRotationMode() {
+            if(W === 0 || H === 0) return;
+            const cx = W * 0.5;
+            const cy = H * 0.65;
+            const mirrorLen = Math.min(W, H) * 0.5;
+
+            const incDeg = parseFloat(rotIncAngle.value) || 45;
+            const mirDeg = parseFloat(rotMirAngle.value) || 0;
+
+            document.getElementById("rotIncVal").textContent = `${incDeg}°`;
+            document.getElementById("rotMirVal").textContent = `${mirDeg}°`;
+            document.getElementById("rotRefOut").textContent = `${(2 * Math.abs(mirDeg)).toFixed(1)}°`;
+
+            const incRad = incDeg * Math.PI / 180;
+            const mirRad = mirDeg * Math.PI / 180;
+
+            // Incident Ray direction (points FROM top toward center)
+            const d = { x: Math.cos(incRad), y: Math.sin(incRad) };
+
+            // Original Normal (Horizontal Mirror => Normal is Vertical UP)
+            const n0 = { x: 0, y: -1 };
+            const r0 = reflect(d, n0);
+
+            // Rotated Mirror Normal
+            const n = { x: Math.sin(mirRad), y: -Math.cos(mirRad) };
+            const r = reflect(d, n);
+
+            // 1. Draw Reference Elements (Faint)
+            ctx.save();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(cx - mirrorLen / 2, cy);
+            ctx.lineTo(cx + mirrorLen / 2, cy);
+            ctx.stroke();
+
+            // Ref Normal
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx, cy - mirrorLen * 0.4);
+            ctx.stroke();
+            ctx.restore();
+
+            // Ref Reflected Ray
+            drawRayWithArrow(cx, cy, cx + r0.x * mirrorLen * 0.5, cy + r0.y * mirrorLen * 0.5, "rgba(0, 229, 255, 0.3)", true);
+
+            // 2. Draw Active Elements
+            drawRotatedMirrorWithHatching(cx, cy, mirRad, mirrorLen);
+
+            // Active Normal
+            drawRayWithArrow(cx, cy, cx + n.x * mirrorLen * 0.5, cy + n.y * mirrorLen * 0.5, "rgba(255, 255, 255, 0.6)", true);
+
+            // Incident Ray (Solid White)
+            drawRayWithArrow(cx - d.x * mirrorLen * 0.6, cy - d.y * mirrorLen * 0.6, cx, cy, "#ffffff", false);
+
+            // Active Reflected Ray (Solid Gold)
+            drawRayWithArrow(cx, cy, cx + r.x * mirrorLen * 0.6, cy + r.y * mirrorLen * 0.6, "#ffd166", false);
+
+            // Mark Origin
+            drawPointMarker(cx, cy, "#ff7b7b", "O", false);
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "14px Segoe UI";
+            ctx.fillText("Incident", cx - d.x * mirrorLen * 0.65 - 20, cy - d.y * mirrorLen * 0.65 - 10);
+            ctx.fillStyle = "#ffd166";
+            ctx.fillText("Reflected", cx + r.x * mirrorLen * 0.65 - 20, cy + r.y * mirrorLen * 0.65 - 10);
         }
 
         // --- MAIN LOOP ---
@@ -1071,7 +1257,8 @@
             drawBackground();
             if (mode === "image") drawImageFormation();
             else if (mode === "velocity") drawVelocityMode(0.016);
-            else drawTwoMirrorsMode();
+            else if (mode === "double") drawTwoMirrorsMode();
+            else if (mode === "rotation") drawRotationMode();
         }
 
         function animate(now) {
@@ -1086,7 +1273,8 @@
                 drawBackground();
                 if (mode === "image") drawImageFormation();
                 else if (mode === "velocity") drawVelocityMode(dt);
-                else drawTwoMirrorsMode();
+                else if (mode === "double") drawTwoMirrorsMode();
+                else if (mode === "rotation") drawRotationMode();
             } catch(e) {
                 console.error(e);
             }
