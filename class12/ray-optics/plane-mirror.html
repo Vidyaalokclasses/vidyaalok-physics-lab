@@ -383,7 +383,6 @@
                 flex-grow: 0;
                 margin-top: 1rem;
             }
-            /* GUARANTEE Canvas height on mobile */
             .canvas-wrapper {
                 min-height: 400px;
                 height: 400px;
@@ -745,46 +744,27 @@
             ctx.restore();
         }
 
-        function drawHorizontalMirrorSegment(cx, cy, length, reflectiveSide) {
-            ctx.save();
-            ctx.translate(cx, cy);
-            const offset = reflectiveSide === "top" ? -4 : 4;
-
-            ctx.fillStyle = "rgba(120,130,142,0.85)";
-            ctx.fillRect(-length / 2, offset - 2, length, 5);
-
-            ctx.fillStyle = "#00e5ff";
-            ctx.fillRect(-length / 2, offset, length, 3);
-
-            ctx.strokeStyle = "rgba(255,255,255,0.4)";
-            ctx.lineWidth = 1;
-            for(let px = -length / 2 + 10; px < length / 2; px += 15) {
-                ctx.beginPath();
-                ctx.moveTo(px, offset);
-                ctx.lineTo(px - 4, offset + (reflectiveSide === "top" ? -8 : 8));
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        function drawRotatedMirrorSegment(cx, cy, angle, length, reflectiveSide) {
+        function drawMirrorSegment(cx, cy, angle, length, isTopWedge) {
             ctx.save();
             ctx.translate(cx, cy);
             ctx.rotate(angle);
-            const offset = reflectiveSide === "left" ? -4 : 4;
+            const offset = isTopWedge ? -4 : 4; 
 
+            // Silvered Backing
             ctx.fillStyle = "rgba(120,130,142,0.85)";
-            ctx.fillRect(-length / 2, offset - 2, length, 5);
+            ctx.fillRect(-length / 2, offset - 3, length, 6);
 
+            // Reflective Front
             ctx.fillStyle = "#00e5ff";
-            ctx.fillRect(-length / 2, offset, length, 3);
+            ctx.fillRect(-length / 2, isTopWedge ? offset + 1 : offset - 3, length, 2);
 
+            // Hatching marks
             ctx.strokeStyle = "rgba(255,255,255,0.4)";
             ctx.lineWidth = 1;
             for(let px = -length / 2 + 10; px < length / 2; px += 15) {
                 ctx.beginPath();
-                ctx.moveTo(px, offset);
-                ctx.lineTo(px - 4, offset + (reflectiveSide === "left" ? -8 : 8));
+                ctx.moveTo(px, isTopWedge ? offset - 3 : offset + 3);
+                ctx.lineTo(px - 4, isTopWedge ? offset - 10 : offset + 10);
                 ctx.stroke();
             }
             ctx.restore();
@@ -856,7 +836,7 @@
             const viy = voy;
 
             movingObject.x += vox * 20 * dt;
-            movingObject.y -= voy * 20 * dt;
+            movingObject.y -= voy * 20 * dt; 
             movingMirrorX += vmx * 20 * dt;
             clampMovingState();
 
@@ -903,6 +883,10 @@
                 y: 2 * dot * u.y - point.y
             };
         }
+        function reflectAcrossVertical(point, xLine){ return { x: 2 * xLine - point.x, y: point.y }; }
+        function uniquePush(list, point){
+            if(!list.some(p => Math.hypot(p.x - point.x, p.y - point.y) < 0.5)) list.push(point);
+        }
 
         function getImageCountForAngle(thetaDeg, onBisector){
             if(thetaDeg === 0) return Infinity;
@@ -915,7 +899,7 @@
 
         function getInclinedImages(object, thetaDeg, desiredCount){
             const theta = thetaDeg * Math.PI / 180;
-            const angles = [0, -theta];
+            const angles = [0, theta]; // Mathematically positive rotation
             const images = [];
             const queue = [{ point: object, last: -1, depth: 0 }];
 
@@ -933,6 +917,24 @@
                     }
                     if(images.length >= Math.min(desiredCount, 25)) break;
                 }
+            }
+            return images;
+        }
+
+        function getParallelImages(object, leftX, rightX){
+            const images = [];
+            let currentLeft = object;
+            let currentRight = object;
+            for(let n = 0; n < 4; n++){ 
+                currentLeft = reflectAcrossVertical(currentLeft, leftX);
+                uniquePush(images, currentLeft);
+                currentLeft = reflectAcrossVertical(currentLeft, rightX);
+                uniquePush(images, currentLeft);
+
+                currentRight = reflectAcrossVertical(currentRight, rightX);
+                uniquePush(images, currentRight);
+                currentRight = reflectAcrossVertical(currentRight, leftX);
+                uniquePush(images, currentRight);
             }
             return images;
         }
@@ -958,13 +960,28 @@
             if(thetaDeg === 0){
                 const leftX = W * 0.3;
                 const rightX = W * 0.7;
-                drawShadedMirrorVertical(leftX, "right");
-                drawShadedMirrorVertical(rightX, "left");
+                
+                // Draw manual segments for parallel mirrors to ensure styling matches
+                ctx.save();
+                ctx.translate(leftX, apexY);
+                ctx.fillStyle = "rgba(120,130,142,0.85)";
+                ctx.fillRect(-6, -mirrorLen/2, 6, mirrorLen);
+                ctx.fillStyle = "#00e5ff";
+                ctx.fillRect(0, -mirrorLen/2, 2, mirrorLen);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(rightX, apexY);
+                ctx.fillStyle = "rgba(120,130,142,0.85)";
+                ctx.fillRect(0, -mirrorLen/2, 6, mirrorLen);
+                ctx.fillStyle = "#00e5ff";
+                ctx.fillRect(-2, -mirrorLen/2, 2, mirrorLen);
+                ctx.restore();
 
                 const objCanvas = { x: leftX + ox, y: apexY - oy };
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
-                const images = getParallelImages(objCanvas, leftX + 6, rightX - 6);
+                const images = getParallelImages(objCanvas, leftX + 2, rightX - 2);
                 images.forEach((img, idx) => {
                     drawPointMarker(img.x, img.y, "#00e5ff", `I${idx + 1}`, true);
                 });
@@ -974,24 +991,32 @@
 
                 let r = Math.hypot(ox, oy);
                 if (r < 20) r = 40;
-                let currentAngle = Math.atan2(-oy, ox); 
-
-                let minA = Math.min(0, -theta);
-                let maxA = Math.max(0, -theta);
                 
-                if (currentAngle < minA) currentAngle = minA + 0.05;
-                if (currentAngle > maxA) currentAngle = maxA - 0.05;
+                // Cartesian math angle
+                let currentAngle = Math.atan2(oy, ox); 
+
+                // Strictly clamp angle mathematically between 0 and theta
+                if (currentAngle < 0.05) currentAngle = 0.05;
+                if (currentAngle > theta - 0.05) currentAngle = theta - 0.05;
+
+                // Force object within valid angle if theta is extremely tight
+                if (theta < 0.1) currentAngle = theta / 2;
 
                 const validOx = r * Math.cos(currentAngle);
-                const validOy = -r * Math.sin(currentAngle);
+                const validOy = r * Math.sin(currentAngle);
 
-                const objCanvas = { x: apexX + validOx, y: apexY + validOy };
+                // Gently update sliders without interrupting drag events
+                if (Math.abs(dblObjX.value - validOx) > 1) dblObjX.value = Math.round(validOx);
+                if (Math.abs(dblObjY.value - validOy) > 1) dblObjY.value = Math.round(validOy);
 
-                // 1. Draw Horizontal Mirror
-                drawHorizontalMirrorSegment(apexX + mirrorLen / 2, apexY, mirrorLen, "top");
+                // Convert to canvas coordinates (Canvas Y goes DOWN, so subtract validOy)
+                const objCanvas = { x: apexX + validOx, y: apexY - validOy };
 
-                // 2. Draw Inclined Mirror
-                drawRotatedMirrorSegment(apexX + (Math.cos(-theta) * mirrorLen) / 2, apexY + (Math.sin(-theta) * mirrorLen) / 2, -theta, mirrorLen, "left");
+                // 1. Draw Horizontal Mirror (Angle 0)
+                drawMirrorSegment(apexX + mirrorLen / 2, apexY, 0, mirrorLen, false);
+
+                // 2. Draw Inclined Mirror (Canvas angle is -theta to rotate UP)
+                drawMirrorSegment(apexX + (Math.cos(-theta) * mirrorLen) / 2, apexY + (Math.sin(-theta) * mirrorLen) / 2, -theta, mirrorLen, true);
 
                 // Circular Locus
                 ctx.beginPath();
@@ -1000,11 +1025,11 @@
                 ctx.setLineDash([5, 5]);
                 ctx.stroke();
 
-                // Angle Bisector
-                const bisectorAngle = -theta / 2;
+                // Angle Bisector Line
+                const bisectorAngleCanvas = -theta / 2;
                 ctx.beginPath();
                 ctx.moveTo(apexX, apexY);
-                ctx.lineTo(apexX + Math.cos(bisectorAngle) * (mirrorLen + 20), apexY + Math.sin(bisectorAngle) * (mirrorLen + 20));
+                ctx.lineTo(apexX + Math.cos(bisectorAngleCanvas) * (mirrorLen + 20), apexY + Math.sin(bisectorAngleCanvas) * (mirrorLen + 20));
                 ctx.strokeStyle = "rgba(0, 229, 255, 0.25)";
                 ctx.stroke();
                 ctx.setLineDash([]);
@@ -1012,8 +1037,8 @@
                 // Object O
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
-                const objPolarAngle = Math.atan2(objCanvas.y - apexY, objCanvas.x - apexX);
-                const onBisector = Math.abs(objPolarAngle - bisectorAngle) < 0.05;
+                const objPolarAngle = Math.atan2(validOy, validOx);
+                const onBisector = Math.abs(objPolarAngle - (theta / 2)) < 0.05;
 
                 const count = getImageCountForAngle(thetaDeg, onBisector);
                 countText = isFinite(count) ? `${count}` : "∞";
@@ -1022,7 +1047,7 @@
                     const images = getInclinedImages({ x: validOx, y: validOy }, thetaDeg, count);
                     images.forEach((img, idx) => {
                         const px = apexX + img.x;
-                        const py = apexY - img.y;
+                        const py = apexY - img.y; // Convert back to canvas Y
                         drawPointMarker(px, py, "#00e5ff", `I${idx + 1}`, true);
                     });
                 }
@@ -1062,8 +1087,8 @@
                 if (mode === "image") drawImageFormation();
                 else if (mode === "velocity") drawVelocityMode(dt);
                 else drawTwoMirrorsMode();
-            } catch (e) {
-                console.error("Simulation Error", e);
+            } catch(e) {
+                console.error(e);
             }
 
             requestAnimationFrame(animate);
