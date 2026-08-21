@@ -414,10 +414,14 @@
                 width: 100%;
             }
             .right-panel {
-                min-height: 60vh; 
-                height: 500px;
+                height: auto !important; /* Let panel grow to fit all contents */
                 flex-grow: 0;
                 margin-top: 1rem;
+            }
+            /* GUARANTEE Canvas height on mobile so it doesn't get squished */
+            .canvas-wrapper {
+                min-height: 400px;
+                height: 400px;
             }
             .navbar { 
                 padding: 1rem; 
@@ -550,6 +554,20 @@
             }
         });
         resizeObserver.observe(document.getElementById('simWrapper'));
+
+        // Fallback initialization for mobile browsers to guarantee canvas sizing
+        setTimeout(() => {
+            if (!initialized && canvas.parentElement.clientWidth > 10) {
+                W = canvas.parentElement.clientWidth;
+                H = canvas.parentElement.clientHeight || 400; // Use fallback 400 height if collapsed
+                canvas.width = W;
+                canvas.height = H;
+                P = Math.round(W * 0.62);
+                axisY = Math.round(H * 0.5);
+                initialized = true;
+                setMirror(mirrorType);
+            }
+        }, 300);
 
         function cmToPx(cm){ return cm * scale; }
         function pxToCm(px){ return px / scale; }
@@ -967,8 +985,8 @@
             const objH = getObjH();
             const { v, m } = computeImage(u, f);
 
-            // FIX: Lock the scale dynamically. 
-            // 60 cm represents the total distance from the Pole to the left edge of the screen.
+            // FIX: Lock the scale dynamically so the mirror doesn't shrink. 
+            // 60 cm represents the total fixed distance from the Pole to the left edge of the screen.
             scale = P / 60; 
             
             const imgH = m !== null ? m * objH : 0;
