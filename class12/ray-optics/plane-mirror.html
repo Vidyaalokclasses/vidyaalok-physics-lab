@@ -738,15 +738,12 @@
             ctx.translate(cx, cy);
             const offset = reflectiveSide === "top" ? -4 : 4;
 
-            // Silvered Backing
             ctx.fillStyle = "rgba(120,130,142,0.85)";
             ctx.fillRect(-length / 2, offset - 2, length, 5);
 
-            // Reflective Front
             ctx.fillStyle = "#00e5ff";
             ctx.fillRect(-length / 2, offset, length, 3);
 
-            // Hatching marks
             ctx.strokeStyle = "rgba(255,255,255,0.4)";
             ctx.lineWidth = 1;
             for(let px = -length / 2 + 10; px < length / 2; px += 15) {
@@ -904,7 +901,6 @@
 
         function getInclinedImages(object, thetaDeg, desiredCount){
             const theta = thetaDeg * Math.PI / 180;
-            // Mirror 1 is horizontal along X-axis (angle 0), Mirror 2 is at angle -theta
             const angles = [0, -theta];
             const images = [];
             const queue = [{ point: object, last: -1, depth: 0 }];
@@ -928,12 +924,13 @@
         }
 
         function drawTwoMirrorsMode() {
+            if(W === 0 || H === 0) return;
             const thetaDeg = parseFloat(dblAngle.value) || 0;
             const ox = parseFloat(dblObjX.value);
             const oy = parseFloat(dblObjY.value);
             const apexX = W * 0.4;
             const apexY = H * 0.7;
-            const mirrorLen = Math.min(W, H) * 0.45;
+            const mirrorLen = Math.min(W, H) * 0.5;
 
             dblObjXVal.textContent = `${ox.toFixed(0)}`;
             dblObjYVal.textContent = `${oy.toFixed(0)}`;
@@ -946,18 +943,16 @@
                 drawShadedMirrorVertical(leftX, "right");
                 drawShadedMirrorVertical(rightX, "left");
 
-                const objCanvas = { x: leftX + ox, y: centerY - oy };
+                const objCanvas = { x: leftX + ox, y: apexY - oy };
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
                 countText = "∞ (Parallel)";
             } else {
                 const theta = thetaDeg * Math.PI / 180;
 
-                // --- CLAMP OBJECT STRICTLY INSIDE THE REFLECTING WEDGE ---
                 let r = Math.hypot(ox, oy);
                 if (r < 20) r = 40;
                 let currentAngle = Math.atan2(-oy, ox); 
 
-                // Wedge is between angle 0 (horizontal mirror) and -theta (inclined mirror)
                 let minA = Math.min(0, -theta);
                 let maxA = Math.max(0, -theta);
                 
@@ -967,25 +962,22 @@
                 const validOx = r * Math.cos(currentAngle);
                 const validOy = -r * Math.sin(currentAngle);
 
-                dblObjX.value = Math.round(validOx);
-                dblObjY.value = Math.round(validOy);
-
                 const objCanvas = { x: apexX + validOx, y: apexY + validOy };
 
-                // 1. Draw Horizontal Mirror (Mirror 1 along angle 0)
+                // 1. Draw Horizontal Mirror
                 drawHorizontalMirrorSegment(apexX + mirrorLen / 2, apexY, mirrorLen, "top");
 
-                // 2. Draw Inclined Mirror (Mirror 2 at angle -theta meeting at apexX, apexY)
+                // 2. Draw Inclined Mirror
                 drawRotatedMirrorSegment(apexX + (Math.cos(-theta) * mirrorLen) / 2, apexY + (Math.sin(-theta) * mirrorLen) / 2, -theta, mirrorLen, "left");
 
-                // Draw Circular Locus of Images
+                // Circular Locus
                 ctx.beginPath();
                 ctx.arc(apexX, apexY, r, 0, Math.PI * 2);
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
                 ctx.setLineDash([5, 5]);
                 ctx.stroke();
 
-                // Draw Angle Bisector Line
+                // Angle Bisector
                 const bisectorAngle = -theta / 2;
                 ctx.beginPath();
                 ctx.moveTo(apexX, apexY);
@@ -994,7 +986,7 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // Draw Object O
+                // Object O
                 drawPointMarker(objCanvas.x, objCanvas.y, "#ffd166", "O");
 
                 const objPolarAngle = Math.atan2(objCanvas.y - apexY, objCanvas.x - apexX);
