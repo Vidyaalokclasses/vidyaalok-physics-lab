@@ -252,7 +252,7 @@
       gap: 16px;
     }
 
-    /* Individual Formula Cards */
+    /* Individual Formula/Table Cards */
     .node-card {
       background: rgba(0, 0, 0, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -278,6 +278,7 @@
       background: rgba(255, 209, 102, 0.1);
       border: 1px solid rgba(255, 209, 102, 0.3);
       color: var(--gold);
+      font-size: 0.65rem;
     }
 
     .card-title {
@@ -313,6 +314,50 @@
       line-height: 1.4;
       border-top: 1px dashed rgba(255,255,255,0.1);
       padding-top: 10px;
+    }
+
+    /* Table Styles for Image Formation */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    .data-table th {
+      background: rgba(0, 229, 255, 0.1);
+      color: var(--primary);
+      padding: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.75rem;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 12px;
+      color: var(--text-main);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      line-height: 1.4;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
     }
 
     .empty-state {
@@ -357,7 +402,7 @@
     <section class="hero-card">
       <h1>Reflection Formula Browser</h1>
       <p>
-        Master the laws of reflection, plane mirror combinations, and spherical mirror derivations. Select a topic to isolate and review its key formulas.
+        Master the laws of reflection, plane mirror combinations, and spherical mirror derivations. Select a topic to isolate and review its key formulas and image formation tables.
       </p>
     </section>
 
@@ -444,15 +489,15 @@ const flowData = {
       id: "spherical-mirrors",
       title: "Spherical Mirrors",
       type: "topic",
-      description: "Focal length, mirror formula, and magnification.",
+      description: "Focal length, mirror formula, and image formation tables.",
       children: [
         {
           id: "spherical-basics",
           title: "Focal Length & Mirror Equation",
           type: "subtopic",
           children: [
-            { id: "focal-radius", title: "Focal Length", type: "formula", formula: "f \\approx \\frac{R}{2}", note: "Valid for paraxial rays (small aperture).", important: true },
-            { id: "mirror-equation", title: "Mirror Formula", type: "formula", formula: "\\frac{1}{v} + \\frac{1}{u} = \\frac{1}{f}", note: "Apply proper sign convention.", important: true }
+            { id: "focal-radius", title: "Focal Length (Marginal & Paraxial)", type: "formula", formula: "f = R - \\frac{R}{2\\cos i} \\quad \\Rightarrow \\quad f \\approx \\frac{R}{2} \\text{ (Paraxial)}", note: "Exact focal length depends on incidence angle i. For paraxial rays, the angle is small.", important: true },
+            { id: "mirror-equation", title: "Mirror Formula", type: "formula", formula: "\\frac{1}{v} + \\frac{1}{u} = \\frac{1}{f}", note: "Apply proper Cartesian sign convention.", important: true }
           ]
         },
         {
@@ -462,6 +507,41 @@ const flowData = {
           children: [
             { id: "transverse-mag", title: "Transverse Magnification", type: "formula", formula: "m_T = -\\frac{v}{u} = \\frac{f}{f-u} = \\frac{f-v}{f}", note: "Negative m indicates an inverted, real image.", important: true },
             { id: "longitudinal-mag", title: "Longitudinal Magnification", type: "formula", formula: "m_L = \\frac{dv}{du} = -m_T^2", note: "For short objects placed along the principal axis." }
+          ]
+        },
+        {
+          id: "image-tables",
+          title: "Image Formation Tables",
+          type: "subtopic",
+          children: [
+            {
+              id: "concave-table",
+              title: "Concave Mirror Image Formation",
+              type: "table",
+              headers: ["Position of Object", "Position of Image", "Nature of Image"],
+              rows: [
+                ["At infinity", "At focus (F)", "Real, inverted, and diminished"],
+                ["Beyond C", "Between F and C", "Real, inverted, and diminished"],
+                ["At C", "At C", "Real, inverted, and same size"],
+                ["Between F and C", "Beyond C", "Real, inverted, and enlarged"],
+                ["At F", "At infinity", "Real, inverted, and highly enlarged"],
+                ["Between F and P", "Behind the mirror", "Virtual, enlarged, and erect"]
+              ],
+              note: "For interactive ray diagrams of these specific cases, visit the Spherical Mirrors Simulator.",
+              important: true
+            },
+            {
+              id: "convex-table",
+              title: "Convex Mirror Image Formation",
+              type: "table",
+              headers: ["Position of Object", "Position of Image", "Nature of Image"],
+              rows: [
+                ["At infinity", "At F, behind mirror", "Virtual, erect, highly diminished"],
+                ["Any finite position", "Between P and F, behind mirror", "Virtual, erect, diminished"]
+              ],
+              note: "Convex mirrors always form virtual, erect, and diminished images regardless of object position.",
+              important: true
+            }
           ]
         }
       ]
@@ -477,9 +557,14 @@ function createFormulaCard(node){
   const card = document.createElement("div");
   card.className = "node-card";
 
+  // Force tables to take full width of the grid
+  if (node.type === "table") {
+    card.style.gridColumn = "1 / -1";
+  }
+
   const kicker = document.createElement("div");
   kicker.className = "card-kicker";
-  kicker.textContent = "Formula";
+  kicker.textContent = node.type === "table" ? "Reference Table" : "Formula";
   if(node.important){
     const tag = document.createElement("span");
     tag.className = "importance-tag";
@@ -493,15 +578,42 @@ function createFormulaCard(node){
   title.textContent = node.title;
   card.appendChild(title);
 
-  const formulaBox = document.createElement("div");
-  formulaBox.className = "formula-box";
-  
-  const formulaMain = document.createElement("div");
-  formulaMain.className = "formula-main";
-  formulaMain.innerHTML = formatFormulaText(node.formula);
-  formulaBox.appendChild(formulaMain);
-  card.appendChild(formulaBox);
+  // Render Table Type
+  if (node.type === "table") {
+    const tableWrapper = document.createElement("div");
+    tableWrapper.className = "table-wrapper";
+    
+    let tableHTML = '<table class="data-table"><thead><tr>';
+    node.headers.forEach(h => {
+      tableHTML += `<th>${h}</th>`;
+    });
+    tableHTML += '</tr></thead><tbody>';
+    
+    node.rows.forEach(row => {
+      tableHTML += '<tr>';
+      row.forEach(cell => {
+        tableHTML += `<td>${cell}</td>`;
+      });
+      tableHTML += '</tr>';
+    });
+    tableHTML += '</tbody></table>';
+    
+    tableWrapper.innerHTML = tableHTML;
+    card.appendChild(tableWrapper);
+  } 
+  // Render Formula Type
+  else {
+    const formulaBox = document.createElement("div");
+    formulaBox.className = "formula-box";
+    
+    const formulaMain = document.createElement("div");
+    formulaMain.className = "formula-main";
+    formulaMain.innerHTML = formatFormulaText(node.formula);
+    formulaBox.appendChild(formulaMain);
+    card.appendChild(formulaBox);
+  }
 
+  // Add Note if present
   if(node.note){
     const formulaNote = document.createElement("div");
     formulaNote.className = "formula-note";
