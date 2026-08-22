@@ -14,6 +14,15 @@
     gtag('config', 'G-L8DFSQTR66');
   </script>
 
+  <!-- MathJax for rendering LaTeX formulas -->
+  <script>
+    window.MathJax = { 
+      tex: { inlineMath: [['\\(', '\\)']] }, 
+      svg: { fontCache: 'global' } 
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
   <style>
     :root {
       --primary: #00e5ff;
@@ -255,6 +264,24 @@
       overflow: hidden;
     }
 
+    /* Formula Overlay */
+    .formula-overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 15px 25px;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 10;
+      color: var(--primary);
+      font-size: 1.1rem;
+      pointer-events: none; /* Let clicks pass through to canvas if needed */
+    }
+
     .watermark {
       position: absolute;
       top: 50%;
@@ -305,10 +332,18 @@
         margin-top: 1rem;
       }
       .canvas-wrapper {
-        min-height: 450px;
-        height: 450px;
+        min-height: 500px;
+        height: 500px;
       }
       .navbar { padding: 1rem; }
+      .formula-overlay {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 10px;
+        font-size: 0.9rem;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -329,12 +364,12 @@
         <div class="panel-title">1. Modify Properties</div>
         
         <div class="control-group">
-          <label>Refractive Index n₁ (Top) <span id="n1Val">1.00</span></label>
+          <label>Base Refractive Index n₁ <span id="n1Val">1.00</span></label>
           <input id="n1Slider" type="range" min="1.0" max="3.0" step="0.01" value="1.00">
         </div>
         
         <div class="control-group">
-          <label>Refractive Index n₂ (Bottom) <span id="n2Val">1.50</span></label>
+          <label>Base Refractive Index n₂ <span id="n2Val">1.50</span></label>
           <input id="n2Slider" type="range" min="1.0" max="3.0" step="0.01" value="1.50">
         </div>
 
@@ -375,6 +410,11 @@
       <div class="canvas-wrapper" id="simWrapper">
         <div class="watermark"></div>
         <canvas id="refractionCanvas"></canvas>
+        
+        <!-- Extended Snell's Law Overlay -->
+        <div id="snellsLawFormula" class="formula-overlay">
+          \[ \frac{\sin i}{\sin r} = \frac{n_2}{n_1} = \frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2} \]
+        </div>
       </div>
     </div>
   </div>
@@ -425,7 +465,6 @@
     });
     resizeObserver.observe(document.getElementById('simWrapper'));
 
-    // Fallback for mobile loading
     setTimeout(() => {
       if (!initialized && canvas.parentElement.clientWidth > 10) {
         W = canvas.parentElement.clientWidth;
@@ -456,7 +495,6 @@
         R = 0.0; G = 0.0; B = 0.0;
       }
 
-      // Intensity falloff at the vision limits
       if (wl >= 380 && wl < 420) alpha = 0.3 + 0.7 * (wl - 380) / (420 - 380);
       else if (wl >= 420 && wl < 700) alpha = 1.0;
       else if (wl >= 700 && wl <= 750) alpha = 0.3 + 0.7 * (750 - wl) / (750 - 700);
@@ -466,18 +504,31 @@
       G = Math.round(G * 255);
       B = Math.round(B * 255);
       
-      // We use a CSS filter format or pure rgb() returning
       return `rgba(${R}, ${G}, ${B}, ${alpha})`;
     }
 
+    // --- DISPERSION FORMULA (Cauchy's approximation for simulation) ---
+    // Mathematically scales refractive index based on wavelength
+    function getEffectiveRefractiveIndex(baseN, wl) {
+      if (baseN === 1.0) return 1.0; // Vacuum/Air doesn't disperse
+      // Simulate dispersion: lower wavelength = higher refractive index
+      const dispersionFactor = 20000;
+      const refWl = 550;
+      return baseN + (baseN - 1) * dispersionFactor * ((1 / (wl * wl)) - (1 / (refWl * refWl)));
+    }
+
     // --- DRAWING UTILS ---
-    function drawRayWithArrow(startX, startY, endX, endY, color, isDashed = false, opacity = 1.0) {
+    function drawRayWithGlow(startX, startY, endX, endY, color, isDashed = false, opacity = 1.0) {
       ctx.save();
       ctx.globalAlpha = opacity;
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
       ctx.lineWidth = 3;
       
+      // Glow Effect
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = color;
+
       if (isDashed) ctx.setLineDash([8, 8]);
       
       ctx.beginPath();
@@ -485,7 +536,8 @@
       ctx.lineTo(endX, endY);
       ctx.stroke();
       
-      ctx.setLineDash([]); // Reset for arrow
+      ctx.setLineDash([]); 
+      ctx.shadowBlur = 0; // Turn off glow for crisp arrowhead
       
       // Calculate Arrowhead at midpoint
       const dx = endX - startX;
@@ -504,16 +556,35 @@
       ctx.restore();
     }
 
+    function drawAngleArc(cx, cy, radius, startAngle, endAngle, label, color) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, startAngle, endAngle, false);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      
+      // Calculate label position
+      const midAngle = (startAngle + endAngle) / 2;
+      const lx = cx + (radius + 20) * Math.cos(midAngle);
+      const ly = cy + (radius + 20) * Math.sin(midAngle);
+      
+      ctx.fillStyle = color;
+      ctx.font = "italic 16px 'Segoe UI'";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, lx, ly);
+      ctx.restore();
+    }
+
     function drawMediums(n1, n2) {
       const originY = H / 2;
       
-      // Medium 1 (Top)
-      // Darker tint for higher refractive index
       const alpha1 = Math.min((n1 - 1) * 0.15, 0.4);
       ctx.fillStyle = `rgba(0, 229, 255, ${alpha1})`;
       ctx.fillRect(0, 0, W, originY);
 
-      // Medium 2 (Bottom)
       const alpha2 = Math.min((n2 - 1) * 0.15, 0.4);
       ctx.fillStyle = `rgba(0, 229, 255, ${alpha2})`;
       ctx.fillRect(0, originY, W, H - originY);
@@ -526,8 +597,8 @@
       ctx.lineTo(W, originY);
       ctx.stroke();
 
-      // Normal Line (Dashed)
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      // Normal Line
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
       ctx.setLineDash([5, 5]);
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -536,25 +607,28 @@
       ctx.stroke();
       ctx.setLineDash([]);
       
-      // Labels
       ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
       ctx.font = "14px 'Segoe UI'";
-      ctx.fillText(`Medium 1 (n = ${n1.toFixed(2)})`, 20, 30);
-      ctx.fillText(`Medium 2 (n = ${n2.toFixed(2)})`, 20, originY + 30);
+      ctx.fillText(`Medium 1 (Base n = ${n1.toFixed(2)})`, 20, 30);
+      ctx.fillText(`Medium 2 (Base n = ${n2.toFixed(2)})`, 20, originY + 30);
     }
 
     // --- MAIN PHYSICS & RENDER LOOP ---
     function draw() {
       if(W === 0 || H === 0 || !initialized) return;
 
-      const n1 = parseFloat(n1Slider.value);
-      const n2 = parseFloat(n2Slider.value);
+      const baseN1 = parseFloat(n1Slider.value);
+      const baseN2 = parseFloat(n2Slider.value);
       const i_deg = parseFloat(angleSlider.value);
       const wl_vac = parseFloat(wlSlider.value);
 
+      // Apply Dispersion (Cauchy's Equation)
+      const n1 = getEffectiveRefractiveIndex(baseN1, wl_vac);
+      const n2 = getEffectiveRefractiveIndex(baseN2, wl_vac);
+
       // Update Slider Labels
-      n1Val.textContent = n1.toFixed(2);
-      n2Val.textContent = n2.toFixed(2);
+      n1Val.textContent = baseN1.toFixed(2);
+      n2Val.textContent = baseN2.toFixed(2);
       angleVal.textContent = `${i_deg}°`;
       wlVal.textContent = `${wl_vac} nm`;
 
@@ -564,6 +638,7 @@
       const originX = W / 2;
       const originY = H / 2;
       const rayLength = Math.min(W, H) * 0.45;
+      const arcRadius = 50;
 
       let r_rad = 0;
       let r_deg = 0;
@@ -604,35 +679,51 @@
 
       // --- CANVAS RENDERING ---
       ctx.clearRect(0, 0, W, H);
-      drawMediums(n1, n2);
+      drawMediums(baseN1, baseN2);
 
       // 1. Incident Ray (Comes from Top-Left quadrant)
       const incX = originX - rayLength * Math.sin(i_rad);
       const incY = originY - rayLength * Math.cos(i_rad);
-      drawRayWithArrow(incX, incY, originX, originY, rayColor, false, 1.0);
+      drawRayWithGlow(incX, incY, originX, originY, rayColor, false, 1.0);
+
+      // Angle of Incidence Arc
+      drawAngleArc(originX, originY, arcRadius, -Math.PI/2 - i_rad, -Math.PI/2, "i", "#ffffff");
 
       if (isTIR) {
-        // 2. TIR Reflected Ray (Goes to Top-Right quadrant, full strength)
+        // TIR Reflected Ray
         const refX = originX + rayLength * Math.sin(i_rad);
         const refY = originY - rayLength * Math.cos(i_rad);
-        drawRayWithArrow(originX, originY, refX, refY, rayColor, false, 1.0);
+        drawRayWithGlow(originX, originY, refX, refY, rayColor, false, 1.0);
+        
+        // Reflection Angle Arc
+        drawAngleArc(originX, originY, arcRadius + 10, -Math.PI/2, -Math.PI/2 + i_rad, "r", "#ffd166");
       } else {
-        // 3. Refracted Ray (Goes to Bottom-Right quadrant)
+        // Refracted Ray (Goes to Bottom-Right quadrant)
         const refracX = originX + rayLength * Math.sin(r_rad);
         const refracY = originY + rayLength * Math.cos(r_rad);
-        drawRayWithArrow(originX, originY, refracX, refracY, rayColor, false, 1.0);
+        drawRayWithGlow(originX, originY, refracX, refracY, rayColor, false, 1.0);
 
-        // 4. Faint Partial Reflected Ray (Goes to Top-Right quadrant)
+        // Angle of Refraction Arc
+        drawAngleArc(originX, originY, arcRadius, Math.PI/2 - r_rad, Math.PI/2, "r", "#00ffaa");
+
+        // Faint Partial Reflected Ray
         const refX = originX + rayLength * Math.sin(i_rad);
         const refY = originY - rayLength * Math.cos(i_rad);
-        // Fresnel approximation (visually simplified for simulator: more reflection at higher grazing angles)
         let reflectance = Math.max(0.1, Math.pow(Math.sin(i_rad), 3)); 
-        drawRayWithArrow(originX, originY, refX, refY, rayColor, true, reflectance);
+        drawRayWithGlow(originX, originY, refX, refY, rayColor, true, reflectance);
 
-        // Draw original path extension (faint dashed line in medium 2)
+        // Original Path Extension (Dashed line)
         const extX = originX + rayLength * Math.sin(i_rad);
         const extY = originY + rayLength * Math.cos(i_rad);
-        drawRayWithArrow(originX, originY, extX, extY, "rgba(255,255,255,0.2)", true, 0.5);
+        drawRayWithGlow(originX, originY, extX, extY, "rgba(255,255,255,0.2)", true, 0.5);
+
+        // Angle of Deviation Arc (Between Extended Path and Refracted Path)
+        // Ensure we draw from the smaller angle to larger angle correctly
+        let extAngle = Math.PI/2 - i_rad;
+        let refAngle = Math.PI/2 - r_rad;
+        let startDev = Math.min(extAngle, refAngle);
+        let endDev = Math.max(extAngle, refAngle);
+        drawAngleArc(originX, originY, arcRadius + 25, startDev, endDev, "δ", "#ff007f");
       }
     }
 
