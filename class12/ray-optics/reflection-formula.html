@@ -205,7 +205,7 @@
       transform: translate(-50%, -50%);
       width: 80%; 
       height: 80%;
-      background-image: url('../../logo.png'); /* Ensure this path matches your directory structure */
+      background-image: url('../../logo.png'); 
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -331,7 +331,7 @@
         padding: 1rem;
       }
       .navbar h1 {
-        display: none; /* Hide chapter title on very small screens to save space */
+        display: none;
       }
       .main {
         padding: 0;
@@ -355,9 +355,9 @@
 
   <main class="main">
     <section class="hero-card">
-      <h1>Formula & Graph Reference</h1>
+      <h1>Reflection Formula Browser</h1>
       <p>
-        Open a topic from the sidebar to view its formulas and standard graphs. This isolated view keeps the screen clean and focused, perfect for rapid JEE and NEET revision.
+        Master the laws of reflection, plane mirror combinations, and spherical mirror derivations. Select a topic to isolate and review its key formulas.
       </p>
     </section>
 
@@ -398,20 +398,20 @@ const flowData = {
       ]
     },
     {
-      id: "multiple-images",
-      title: "Multiple Images",
+      id: "multiple-plane-mirrors",
+      title: "Multiple Plane Mirrors",
       type: "topic",
       description: "Images formed by inclined plane mirrors.",
       children: [
         {
           id: "image-counting",
-          title: "Counting Images (n = 360/θ)",
+          title: "Circular Method",
           type: "subtopic",
           children: [
-            { id: "even-n", title: "n is Even", type: "formula", formula: "\\text{Images} = n - 1", note: "Applies regardless of object placement.", important: true },
-            { id: "odd-symmetric", title: "n is Odd (Symmetric)", type: "formula", formula: "\\text{Images} = n - 1", note: "When the object lies symmetrically on the angle bisector." },
-            { id: "odd-unsymmetric", title: "n is Odd (Unsymmetric)", type: "formula", formula: "\\text{Images} = n", note: "When the object lies unsymmetrically between the mirrors.", important: true },
-            { id: "parallel-mirrors", title: "Parallel Mirrors (θ = 0)", type: "formula", formula: "\\text{Images} = \\infty", note: "Infinite images are formed." }
+            { id: "even-n", title: "If (360/θ) is Even", type: "formula", formula: "\\text{Number of images} = \\left(\\frac{360}{\\theta}\\right) - 1", note: "Applies regardless of object placement.", important: true },
+            { id: "odd-symmetric", title: "If (360/θ) is Odd (Symmetric)", type: "formula", formula: "\\text{Number of images} = \\left(\\frac{360}{\\theta}\\right) - 1", note: "Object placed symmetrically (on angle bisector) between the mirrors." },
+            { id: "odd-unsymmetric", title: "If (360/θ) is Odd (Asymmetric)", type: "formula", formula: "\\text{Number of images} = \\left(\\frac{360}{\\theta}\\right)", note: "Object placed asymmetrically (not on angle bisector) between the mirrors.", important: true },
+            { id: "parallel-mirrors", title: "Parallel Mirrors (θ = 0)", type: "formula", formula: "\\text{Number of images} = \\infty", note: "Infinite images are formed." }
           ]
         }
       ]
@@ -532,7 +532,7 @@ function renderSidebar() {
 
 function renderDisplay() {
   const stage = document.getElementById("flowStage");
-  stage.innerHTML = '<div class="watermark"></div>'; // Always include watermark
+  stage.innerHTML = '<div class="watermark"></div>';
   
   if (!activeTopicId) {
     const empty = document.createElement("div");
@@ -567,13 +567,11 @@ function renderDisplay() {
 
   stage.appendChild(stack);
 
-  // Re-render LaTeX
   if(window.MathJax && window.MathJax.typesetPromise) {
     window.MathJax.typesetPromise([stage]);
   }
 }
 
-// Initial Render
 renderSidebar();
 renderDisplay();
 
