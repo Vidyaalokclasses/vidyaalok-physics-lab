@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Laws of Refraction | Vidyaalok Lab</title>
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L8DFSQTR66');
+  </script>
+
+  <style>
+    :root {
+      --primary: #00e5ff;
+      --secondary: #ff007f;
+      --bg-dark: #070b19;
+      --panel-bg: rgba(255, 255, 255, 0.03);
+      --text-main: #ffffff;
+      --text-muted: #a0aabf;
+      --gold: #ffd166;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    * { box-sizing: border-box; }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow-x: hidden; 
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    .navbar {
+      padding: 1rem 2rem;
+      background: rgba(7, 11, 25, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .back-btn {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      display: flex;
+      flex-grow: 1;
+      padding: 1.5rem;
+      gap: 1.5rem;
+      height: calc(100vh - 70px);
+    }
+
+    /* Left Control Panel */
+    .controls {
+      width: 380px;
+      flex-shrink: 0; 
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      overflow-y: auto;
+    }
+
+    .controls h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--primary);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+      padding-bottom: 0.5rem;
+    }
+
+    .panel-section {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .panel-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--secondary);
+      margin-bottom: 15px;
+    }
+
+    /* Sliders */
+    .control-group {
+      margin-bottom: 15px;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .control-group span {
+      color: var(--text-main);
+      font-family: monospace;
+      font-size: 0.95rem;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      margin-top: -6px;
+      box-shadow: 0 0 10px var(--primary);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    /* Spectral Color Bar for Wavelength Slider */
+    .spectrum-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      margin-top: 10px;
+      background: linear-gradient(to right, 
+        rgb(100, 0, 150), rgb(0, 0, 255), rgb(0, 255, 255), 
+        rgb(0, 255, 0), rgb(255, 255, 0), rgb(255, 0, 0), rgb(150, 0, 0));
+    }
+
+    /* Stats Grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .stat {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .stat strong {
+      color: var(--gold);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: var(--text-main);
+      font-family: monospace;
+    }
+
+    /* Right Panel Layout (Canvas) */
+    .right-panel {
+      flex-grow: 1;
+      min-width: 0; 
+      display: flex;
+      flex-direction: column;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .canvas-head {
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: bold;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
+    .canvas-head span:first-child { color: var(--primary); }
+
+    .canvas-wrapper {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 75%; 
+      height: 75%;
+      background-image: url('../../logo.png'); 
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.12; 
+      pointer-events: none; 
+      z-index: 0;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* Mobile & Tablet Responsive Layout */
+    @media (max-width: 900px) {
+      * { box-sizing: border-box !important; }
+      body, html { 
+        overflow-x: hidden !important; 
+        overflow-y: auto !important; 
+        height: auto !important; 
+      }
+      .workspace {
+        flex-direction: column;
+        overflow-y: visible;
+        height: auto;
+        padding: 1rem;
+      }
+      .controls {
+        width: 100%;
+      }
+      .right-panel {
+        height: auto !important;
+        flex-grow: 0;
+        margin-top: 1rem;
+      }
+      .canvas-wrapper {
+        min-height: 450px;
+        height: 450px;
+      }
+      .navbar { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="back-btn">← Chapter 09</a>
+    <h1>Laws of Refraction</h1>
+  </nav>
+
+  <div class="workspace">
+    
+    <!-- Control Panel -->
+    <aside class="controls">
+      <h2>System Controls</h2>
+      
+      <div class="panel-section">
+        <div class="panel-title">1. Modify Properties</div>
+        
+        <div class="control-group">
+          <label>Refractive Index n₁ (Top) <span id="n1Val">1.00</span></label>
+          <input id="n1Slider" type="range" min="1.0" max="3.0" step="0.01" value="1.00">
+        </div>
+        
+        <div class="control-group">
+          <label>Refractive Index n₂ (Bottom) <span id="n2Val">1.50</span></label>
+          <input id="n2Slider" type="range" min="1.0" max="3.0" step="0.01" value="1.50">
+        </div>
+
+        <div class="control-group" style="margin-top: 20px;">
+          <label>Angle of Incidence (∠i) <span id="angleVal">45°</span></label>
+          <input id="angleSlider" type="range" min="0" max="89" step="1" value="45">
+        </div>
+
+        <div class="control-group" style="margin-top: 20px;">
+          <label>Light Wavelength (λ) <span id="wlVal">550 nm</span></label>
+          <input id="wlSlider" type="range" min="380" max="750" step="1" value="550">
+          <div class="spectrum-track"></div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-title">Analysis & Data</div>
+        
+        <div class="stat-grid">
+          <div class="stat"><strong>Angle of Refraction (∠r)</strong><span id="statR">28.1°</span></div>
+          <div class="stat"><strong>Angle of Deviation (δ)</strong><span id="statDev">16.9°</span></div>
+          <div class="stat"><strong>Speed v₁</strong><span id="statV1">3.00 × 10⁸ m/s</span></div>
+          <div class="stat"><strong>Speed v₂</strong><span id="statV2">2.00 × 10⁸ m/s</span></div>
+          <div class="stat"><strong>Wavelength λ₁</strong><span id="statWl1">550 nm</span></div>
+          <div class="stat"><strong>Wavelength λ₂</strong><span id="statWl2">367 nm</span></div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Simulation Area -->
+    <div class="right-panel">
+      <div class="canvas-head">
+        <span>Refraction & Total Internal Reflection Simulator</span>
+        <span id="tirWarning" style="color: var(--secondary); display: none;">TOTAL INTERNAL REFLECTION</span>
+      </div>
+      
+      <div class="canvas-wrapper" id="simWrapper">
+        <div class="watermark"></div>
+        <canvas id="refractionCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("refractionCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // UI Elements
+    const n1Slider = document.getElementById("n1Slider");
+    const n2Slider = document.getElementById("n2Slider");
+    const angleSlider = document.getElementById("angleSlider");
+    const wlSlider = document.getElementById("wlSlider");
+
+    const n1Val = document.getElementById("n1Val");
+    const n2Val = document.getElementById("n2Val");
+    const angleVal = document.getElementById("angleVal");
+    const wlVal = document.getElementById("wlVal");
+
+    const statR = document.getElementById("statR");
+    const statDev = document.getElementById("statDev");
+    const statV1 = document.getElementById("statV1");
+    const statV2 = document.getElementById("statV2");
+    const statWl1 = document.getElementById("statWl1");
+    const statWl2 = document.getElementById("statWl2");
+    const tirWarning = document.getElementById("tirWarning");
+
+    let W = 0, H = 0;
+    let initialized = false;
+    const c = 3.00; // Speed of light in vacuum (x 10^8 m/s)
+
+    // --- RESIZE OBSERVER ---
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        if (entry.target.id === 'simWrapper') {
+          W = Math.floor(entry.contentRect.width);
+          H = Math.floor(entry.contentRect.height);
+          canvas.width = W;
+          canvas.height = H;
+          if (!initialized && W > 10 && H > 10) {
+            initialized = true;
+            draw();
+          } else if (initialized) {
+            draw();
+          }
+        }
+      }
+    });
+    resizeObserver.observe(document.getElementById('simWrapper'));
+
+    // Fallback for mobile loading
+    setTimeout(() => {
+      if (!initialized && canvas.parentElement.clientWidth > 10) {
+        W = canvas.parentElement.clientWidth;
+        H = canvas.parentElement.clientHeight || 450; 
+        canvas.width = W;
+        canvas.height = H;
+        initialized = true;
+        draw();
+      }
+    }, 300);
+
+    // --- WAVELENGTH TO RGB ALGORITHM ---
+    function wavelengthToColor(wl) {
+      let R, G, B, alpha;
+      if (wl >= 380 && wl < 440) {
+        R = -(wl - 440) / (440 - 380); G = 0.0; B = 1.0;
+      } else if (wl >= 440 && wl < 490) {
+        R = 0.0; G = (wl - 440) / (490 - 440); B = 1.0;
+      } else if (wl >= 490 && wl < 510) {
+        R = 0.0; G = 1.0; B = -(wl - 510) / (510 - 490);
+      } else if (wl >= 510 && wl < 580) {
+        R = (wl - 510) / (580 - 510); G = 1.0; B = 0.0;
+      } else if (wl >= 580 && wl < 645) {
+        R = 1.0; G = -(wl - 645) / (645 - 580); B = 0.0;
+      } else if (wl >= 645 && wl <= 750) {
+        R = 1.0; G = 0.0; B = 0.0;
+      } else {
+        R = 0.0; G = 0.0; B = 0.0;
+      }
+
+      // Intensity falloff at the vision limits
+      if (wl >= 380 && wl < 420) alpha = 0.3 + 0.7 * (wl - 380) / (420 - 380);
+      else if (wl >= 420 && wl < 700) alpha = 1.0;
+      else if (wl >= 700 && wl <= 750) alpha = 0.3 + 0.7 * (750 - wl) / (750 - 700);
+      else alpha = 0.0;
+
+      R = Math.round(R * 255);
+      G = Math.round(G * 255);
+      B = Math.round(B * 255);
+      
+      // We use a CSS filter format or pure rgb() returning
+      return `rgba(${R}, ${G}, ${B}, ${alpha})`;
+    }
+
+    // --- DRAWING UTILS ---
+    function drawRayWithArrow(startX, startY, endX, endY, color, isDashed = false, opacity = 1.0) {
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      
+      if (isDashed) ctx.setLineDash([8, 8]);
+      
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      
+      ctx.setLineDash([]); // Reset for arrow
+      
+      // Calculate Arrowhead at midpoint
+      const dx = endX - startX;
+      const dy = endY - startY;
+      const angle = Math.atan2(dy, dx);
+      const midX = startX + dx * 0.55;
+      const midY = startY + dy * 0.55;
+
+      ctx.beginPath();
+      ctx.moveTo(midX, midY);
+      ctx.lineTo(midX - 12 * Math.cos(angle - 0.4), midY - 12 * Math.sin(angle - 0.4));
+      ctx.lineTo(midX - 12 * Math.cos(angle + 0.4), midY - 12 * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.restore();
+    }
+
+    function drawMediums(n1, n2) {
+      const originY = H / 2;
+      
+      // Medium 1 (Top)
+      // Darker tint for higher refractive index
+      const alpha1 = Math.min((n1 - 1) * 0.15, 0.4);
+      ctx.fillStyle = `rgba(0, 229, 255, ${alpha1})`;
+      ctx.fillRect(0, 0, W, originY);
+
+      // Medium 2 (Bottom)
+      const alpha2 = Math.min((n2 - 1) * 0.15, 0.4);
+      ctx.fillStyle = `rgba(0, 229, 255, ${alpha2})`;
+      ctx.fillRect(0, originY, W, H - originY);
+
+      // Boundary Line
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, originY);
+      ctx.lineTo(W, originY);
+      ctx.stroke();
+
+      // Normal Line (Dashed)
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(W / 2, 20);
+      ctx.lineTo(W / 2, H - 20);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Labels
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.font = "14px 'Segoe UI'";
+      ctx.fillText(`Medium 1 (n = ${n1.toFixed(2)})`, 20, 30);
+      ctx.fillText(`Medium 2 (n = ${n2.toFixed(2)})`, 20, originY + 30);
+    }
+
+    // --- MAIN PHYSICS & RENDER LOOP ---
+    function draw() {
+      if(W === 0 || H === 0 || !initialized) return;
+
+      const n1 = parseFloat(n1Slider.value);
+      const n2 = parseFloat(n2Slider.value);
+      const i_deg = parseFloat(angleSlider.value);
+      const wl_vac = parseFloat(wlSlider.value);
+
+      // Update Slider Labels
+      n1Val.textContent = n1.toFixed(2);
+      n2Val.textContent = n2.toFixed(2);
+      angleVal.textContent = `${i_deg}°`;
+      wlVal.textContent = `${wl_vac} nm`;
+
+      // Physics Calculations
+      const i_rad = i_deg * Math.PI / 180;
+      const rayColor = wavelengthToColor(wl_vac);
+      const originX = W / 2;
+      const originY = H / 2;
+      const rayLength = Math.min(W, H) * 0.45;
+
+      let r_rad = 0;
+      let r_deg = 0;
+      let isTIR = false;
+
+      // Snell's Law
+      const sin_r = (n1 / n2) * Math.sin(i_rad);
+      
+      if (sin_r > 1.0) {
+        isTIR = true;
+      } else {
+        r_rad = Math.asin(sin_r);
+        r_deg = r_rad * 180 / Math.PI;
+      }
+
+      // Update Analysis Readouts
+      const v1 = c / n1;
+      const v2 = c / n2;
+      const wl1 = wl_vac / n1;
+      const wl2 = wl_vac / n2;
+
+      statV1.textContent = `${v1.toFixed(2)} × 10⁸ m/s`;
+      statV2.textContent = `${v2.toFixed(2)} × 10⁸ m/s`;
+      statWl1.textContent = `${wl1.toFixed(0)} nm`;
+      statWl2.textContent = `${wl2.toFixed(0)} nm`;
+
+      if (isTIR) {
+        statR.textContent = `TIR`;
+        statR.style.color = "var(--secondary)";
+        statDev.textContent = `${(180 - 2 * i_deg).toFixed(1)}°`;
+        tirWarning.style.display = "block";
+      } else {
+        statR.textContent = `${r_deg.toFixed(1)}°`;
+        statR.style.color = "var(--text-main)";
+        statDev.textContent = `${Math.abs(i_deg - r_deg).toFixed(1)}°`;
+        tirWarning.style.display = "none";
+      }
+
+      // --- CANVAS RENDERING ---
+      ctx.clearRect(0, 0, W, H);
+      drawMediums(n1, n2);
+
+      // 1. Incident Ray (Comes from Top-Left quadrant)
+      const incX = originX - rayLength * Math.sin(i_rad);
+      const incY = originY - rayLength * Math.cos(i_rad);
+      drawRayWithArrow(incX, incY, originX, originY, rayColor, false, 1.0);
+
+      if (isTIR) {
+        // 2. TIR Reflected Ray (Goes to Top-Right quadrant, full strength)
+        const refX = originX + rayLength * Math.sin(i_rad);
+        const refY = originY - rayLength * Math.cos(i_rad);
+        drawRayWithArrow(originX, originY, refX, refY, rayColor, false, 1.0);
+      } else {
+        // 3. Refracted Ray (Goes to Bottom-Right quadrant)
+        const refracX = originX + rayLength * Math.sin(r_rad);
+        const refracY = originY + rayLength * Math.cos(r_rad);
+        drawRayWithArrow(originX, originY, refracX, refracY, rayColor, false, 1.0);
+
+        // 4. Faint Partial Reflected Ray (Goes to Top-Right quadrant)
+        const refX = originX + rayLength * Math.sin(i_rad);
+        const refY = originY - rayLength * Math.cos(i_rad);
+        // Fresnel approximation (visually simplified for simulator: more reflection at higher grazing angles)
+        let reflectance = Math.max(0.1, Math.pow(Math.sin(i_rad), 3)); 
+        drawRayWithArrow(originX, originY, refX, refY, rayColor, true, reflectance);
+
+        // Draw original path extension (faint dashed line in medium 2)
+        const extX = originX + rayLength * Math.sin(i_rad);
+        const extY = originY + rayLength * Math.cos(i_rad);
+        drawRayWithArrow(originX, originY, extX, extY, "rgba(255,255,255,0.2)", true, 0.5);
+      }
+    }
+
+    // Event Listeners
+    [n1Slider, n2Slider, angleSlider, wlSlider].forEach(slider => {
+      slider.addEventListener('input', draw);
+    });
+
+  </script>
+</body>
+</html>
