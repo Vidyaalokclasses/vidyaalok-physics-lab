@@ -183,7 +183,6 @@
       border-radius: 2px;
     }
 
-    /* Spectral Color Bar for Wavelength Slider */
     .spectrum-track {
       width: 100%;
       height: 6px;
@@ -232,25 +231,48 @@
       background: rgba(255, 51, 102, 0.1);
     }
 
-    /* Applications Cards */
+    /* Applications Cards & Animations */
     .app-card {
       background: rgba(255, 255, 255, 0.05);
       border-left: 3px solid var(--primary);
-      padding: 10px 12px;
+      padding: 12px 14px;
       border-radius: 4px 8px 8px 4px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .app-card:last-child { margin-bottom: 0; }
     .app-card h4 {
-      margin: 0 0 4px;
-      font-size: 0.85rem;
+      margin: 0 0 6px;
+      font-size: 0.9rem;
       color: var(--text-main);
     }
     .app-card p {
-      margin: 0;
+      margin: 0 0 10px;
       font-size: 0.75rem;
       color: var(--text-muted);
       line-height: 1.4;
+    }
+
+    .svg-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 6px;
+      padding: 10px 0;
+    }
+    .app-svg {
+      width: 90%;
+      max-height: 50px;
+    }
+    
+    /* CSS Pulse Animation for Light Rays */
+    .anim-ray {
+      stroke-dasharray: 40 400; /* Create a single light pulse */
+      stroke-dashoffset: 440;
+      animation: shootRay 1.5s infinite linear;
+    }
+    @keyframes shootRay {
+      to { stroke-dashoffset: 0; }
     }
 
     /* Right Panel Layout (Canvas) */
@@ -441,7 +463,7 @@
         <div class="panel-title">Analysis & Data</div>
         
         <div class="stat-grid">
-          <div class="stat"><strong>Critical Angle (i_c)</strong><span id="statIc">41.8°</span></div>
+          <div class="stat"><strong>Critical Angle (i<sub>c</sub>)</strong><span id="statIc">41.8°</span></div>
           <div class="stat"><strong>Refraction Angle (r)</strong><span id="statR">59.4°</span></div>
           <div class="stat" id="statCardI"><strong>Current Angle (i)</strong><span id="statI">35.0°</span></div>
           <div class="stat"><strong>State</strong><span id="statState">Refraction</span></div>
@@ -450,17 +472,52 @@
 
       <div class="panel-section">
         <div class="panel-title">Real-World Applications</div>
+        
+        <!-- Diamond Card -->
         <div class="app-card">
           <h4>Diamond Brilliance</h4>
-          <p>Diamonds have a high refractive index (n ≈ 2.42), making their critical angle very small (i_c ≈ 24.4°). Light entering the diamond undergoes multiple TIRs, causing its signature sparkle.</p>
+          <p>Diamonds have a high refractive index (n ≈ 2.42), making their critical angle very small (i<sub>c</sub> ≈ 24.4°). Light entering the diamond undergoes multiple TIRs.</p>
+          <div class="svg-container">
+            <svg viewBox="0 0 100 100" class="app-svg">
+              <polygon points="50,90 20,40 10,20 90,20 80,40" fill="rgba(255,255,255,0.05)" stroke="var(--primary)" stroke-width="1"/>
+              <line x1="20" y1="40" x2="80" y2="40" stroke="var(--primary)" stroke-width="1" opacity="0.3"/>
+              <!-- Bouncing Ray Animation -->
+              <path class="anim-ray" d="M 30,0 L 40,20 L 50,85 L 80,20 L 90,0" stroke="var(--gold)" stroke-width="2" fill="none" />
+            </svg>
+          </div>
         </div>
+
+        <!-- Optical Fibre Card -->
         <div class="app-card" style="border-left-color: var(--secondary);">
           <h4>Optical Fibres</h4>
-          <p>A dense glass core (high n) surrounded by a rarer cladding (low n). Signals entering at angles greater than i_c reflect continuously without energy loss.</p>
+          <p>A dense glass core surrounded by a rarer cladding. Signals entering at angles greater than i<sub>c</sub> reflect continuously without energy loss.</p>
+          <div class="svg-container">
+            <svg viewBox="0 0 200 60" class="app-svg">
+              <rect x="0" y="5" width="200" height="50" fill="rgba(255,255,255,0.03)" stroke="var(--secondary)" stroke-width="1"/>
+              <rect x="0" y="15" width="200" height="30" fill="rgba(255,255,255,0.1)"/>
+              <!-- Zig-zag Ray Animation -->
+              <path class="anim-ray" d="M 0,30 L 40,15 L 100,45 L 160,15 L 200,30" stroke="var(--primary)" stroke-width="2" fill="none" style="animation-duration: 2.5s" />
+            </svg>
+          </div>
         </div>
+
+        <!-- Mirage Card -->
         <div class="app-card" style="border-left-color: var(--gold);">
           <h4>Mirage</h4>
-          <p>Hot air near the ground acts as a rarer medium. Light from the sky travels from denser (cool air) to rarer (hot air), eventually exceeding the critical angle and bending upwards into the observer's eyes.</p>
+          <p>Hot air near the ground acts as a rarer medium. Light travels from denser to rarer air, eventually exceeding i<sub>c</sub> and bending upwards.</p>
+          <div class="svg-container">
+            <svg viewBox="0 0 200 80" class="app-svg">
+              <rect x="0" y="70" width="200" height="10" fill="rgba(255,209,102,0.3)"/>
+              <rect x="0" y="60" width="200" height="10" fill="rgba(255,209,102,0.15)"/>
+              <rect x="170" y="20" width="6" height="50" fill="var(--text-muted)"/>
+              <circle cx="173" cy="20" r="15" fill="var(--secondary)" opacity="0.5"/>
+              <!-- Eye drawing -->
+              <path d="M 10,20 Q 20,10 30,20 Q 20,30 10,20" stroke="var(--primary)" fill="none" stroke-width="1"/>
+              <circle cx="20" cy="20" r="2" fill="var(--primary)"/>
+              <!-- Curved Ray Animation -->
+              <path class="anim-ray" d="M 170,20 Q 100,95 20,20" stroke="var(--gold)" stroke-width="2" fill="none" style="animation-duration: 2s" />
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -626,17 +683,14 @@
     function drawMediums(n1, n2) {
       const originY = H / 2;
       
-      // Top Medium (n1)
       const alpha1 = Math.min((n1 - 1) * 0.15, 0.4);
       ctx.fillStyle = `rgba(0, 229, 255, ${alpha1})`;
       ctx.fillRect(0, 0, W, originY);
 
-      // Bottom Medium (n2)
       const alpha2 = Math.min((n2 - 1) * 0.15, 0.4);
       ctx.fillStyle = `rgba(0, 229, 255, ${alpha2})`;
       ctx.fillRect(0, originY, W, H - originY);
 
-      // Boundary Line
       ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -644,7 +698,6 @@
       ctx.lineTo(W, originY);
       ctx.stroke();
 
-      // Normal Line
       ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
       ctx.setLineDash([5, 5]);
       ctx.lineWidth = 1;
@@ -675,16 +728,14 @@
       const i_deg = parseFloat(angleSlider.value);
       const wl_vac = parseFloat(wlSlider.value);
 
-      // Apply Dispersion
       const n1 = getEffectiveRefractiveIndex(baseN1, wl_vac);
       const n2 = getEffectiveRefractiveIndex(baseN2, wl_vac);
 
-      // Update Slider Labels
       n1Val.textContent = baseN1.toFixed(2);
       n2Val.textContent = baseN2.toFixed(2);
       angleVal.textContent = `${i_deg}°`;
       wlVal.textContent = `${wl_vac} nm`;
-      statI.textContent = `${i_deg.toFixed(1)}°`;
+      statI.innerHTML = `${i_deg.toFixed(1)}°`;
 
       const i_rad = i_deg * Math.PI / 180;
       const rayColor = wavelengthToColor(wl_vac);
@@ -699,7 +750,6 @@
       let ic_rad = 0;
       let ic_deg = 0;
 
-      // Check if TIR is physically possible
       if (n2 <= n1) {
         tirImpossible = true;
       } else {
@@ -708,16 +758,15 @@
       }
 
       if (tirImpossible) {
-        statIc.textContent = "N/A";
-        conditionText.textContent = "TIR Impossible! Light must travel from Denser (n₂) to Rarer (n₁).";
+        statIc.innerHTML = "N/A";
+        conditionText.innerHTML = "TIR Impossible! Light must travel from Denser (n₂) to Rarer (n₁).";
         conditionText.style.color = "var(--tir-color)";
       } else {
-        statIc.textContent = `${ic_deg.toFixed(1)}°`;
-        conditionText.textContent = `For TIR to occur: i > i_c (${ic_deg.toFixed(1)}°)`;
+        statIc.innerHTML = `${ic_deg.toFixed(1)}°`;
+        conditionText.innerHTML = `For TIR to occur: i > i<sub>c</sub> (${ic_deg.toFixed(1)}°)`;
         conditionText.style.color = "var(--text-muted)";
       }
 
-      // Snell's Law
       const sin_r = (n2 / n1) * Math.sin(i_rad);
       
       if (sin_r > 1.0 || (n2 > n1 && i_deg >= ic_deg)) {
@@ -727,31 +776,27 @@
         r_deg = r_rad * 180 / Math.PI;
       }
 
-      // UI Updates based on state
       if (isTIR) {
-        statR.textContent = `None (TIR)`;
-        statState.textContent = "TIR Active";
+        statR.innerHTML = `None (TIR)`;
+        statState.innerHTML = "TIR Active";
         statState.style.color = "var(--tir-color)";
         statCardI.classList.add("alert");
         tirWarning.style.display = "block";
       } else {
-        statR.textContent = `${r_deg.toFixed(1)}°`;
-        statState.textContent = "Refraction";
+        statR.innerHTML = `${r_deg.toFixed(1)}°`;
+        statState.innerHTML = "Refraction";
         statState.style.color = "var(--primary)";
         statCardI.classList.remove("alert");
         tirWarning.style.display = "none";
       }
 
-      // --- CANVAS RENDERING ---
       ctx.clearRect(0, 0, W, H);
       drawMediums(baseN1, baseN2);
 
-      // 1. Incident Ray (Comes from Bottom-Left quadrant)
       const incX = originX - rayLength * Math.sin(i_rad);
       const incY = originY + rayLength * Math.cos(i_rad);
       drawRayWithGlow(incX, incY, originX, originY, rayColor, false, 1.0);
 
-      // 2. Draw Critical Angle Threshold Line (Faint dashed boundary if possible)
       if (!tirImpossible) {
         const icX = originX - rayLength * Math.sin(ic_rad);
         const icY = originY + rayLength * Math.cos(ic_rad);
@@ -759,26 +804,21 @@
       }
 
       if (isTIR) {
-        // TIR Reflected Ray (Goes to Bottom-Right quadrant, full strength)
         const refX = originX + rayLength * Math.sin(i_rad);
         const refY = originY + rayLength * Math.cos(i_rad);
         drawRayWithGlow(originX, originY, refX, refY, rayColor, false, 1.0);
       } else {
-        // Refracted Ray (Goes to Top-Right quadrant)
         const refracX = originX + rayLength * Math.sin(r_rad);
         const refracY = originY - rayLength * Math.cos(r_rad);
         drawRayWithGlow(originX, originY, refracX, refracY, rayColor, false, 1.0);
 
-        // Faint Partial Reflected Ray (Goes to Bottom-Right quadrant)
         const refX = originX + rayLength * Math.sin(i_rad);
         const refY = originY + rayLength * Math.cos(i_rad);
-        // Fresnel approximation (visually simplified)
         let reflectance = Math.max(0.05, Math.pow(Math.sin(i_rad), 4)); 
         drawRayWithGlow(originX, originY, refX, refY, rayColor, true, reflectance);
       }
     }
 
-    // Event Listeners
     [n1Slider, n2Slider, angleSlider, wlSlider].forEach(slider => {
       slider.addEventListener('input', draw);
     });
