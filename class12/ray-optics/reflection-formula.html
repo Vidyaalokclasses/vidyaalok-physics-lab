@@ -296,10 +296,9 @@
       overflow-y: hidden;
       text-align: center;
       margin-bottom: 10px;
-      -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* Custom Scrollbar for Formula Box */
     .formula-box::-webkit-scrollbar {
       height: 6px;
     }
@@ -315,11 +314,10 @@
     .formula-main {
       color: var(--primary);
       font-size: 1.1rem;
-      display: inline-block; /* Helps with overflow calculation */
+      display: inline-block; 
       min-width: 100%;
     }
 
-    /* Crucial fix to prevent SVG clipping on mobile */
     .formula-main mjx-container {
       max-width: none !important;
       min-width: min-content;
@@ -455,7 +453,7 @@ const flowData = {
       id: "plane-mirror-deviation",
       title: "Plane Mirror Basics & Deviation",
       type: "topic",
-      description: "Laws of reflection and deviation by plane mirrors.",
+      description: "Laws of reflection, deviation, and mirror rotation.",
       children: [
         {
           id: "basic-laws",
@@ -465,6 +463,14 @@ const flowData = {
             { id: "reflection-law", title: "Law of Reflection", type: "formula", formula: "\\angle i = \\angle r", note: "Angle of incidence equals angle of reflection.", important: true },
             { id: "single-deviation", title: "Deviation in Single Mirror", type: "formula", formula: "\\delta = 180^\\circ - 2i", note: "Deviation of the reflected ray from its original path." },
             { id: "two-mirror-deviation", title: "Deviation for Two Mirrors", type: "formula", formula: "\\delta = 360^\\circ - 2\\theta", note: "Total deviation when two mirrors are inclined at angle θ.", important: true }
+          ]
+        },
+        {
+          id: "mirror-rotation",
+          title: "Effect of Rotation of Mirror",
+          type: "subtopic",
+          children: [
+            { id: "rotation-deviation", title: "Rotation of Reflected Ray", type: "formula", formula: "\\delta_{\\text{ray}} = 2\\theta", note: "If the mirror rotates by an angle θ, the reflected ray rotates by an angle 2θ.", important: true }
           ]
         }
       ]
@@ -527,7 +533,6 @@ const flowData = {
               id: "focal-radius", 
               title: "Focal Length (Marginal & Paraxial)", 
               type: "formula", 
-              /* Using aligned block to split long equation onto two lines for mobile display */
               formula: "\\begin{aligned} f &= R - \\frac{R}{2\\cos i} \\\\[1ex] \\Rightarrow f &\\approx \\frac{R}{2} \\text{ (Paraxial)} \\end{aligned}", 
               note: "Exact focal length depends on incidence angle i. For paraxial rays, the angle is small.", 
               important: true 
