@@ -363,6 +363,7 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.05);
     }
 
     .anim-svg {
@@ -433,7 +434,7 @@
         <div id="tirWarning" class="tir-indicator">TOTAL INTERNAL REFLECTION</div>
         
         <div class="stats-overlay">
-          <div class="stat-mini"><strong>Critical (i_c)</strong><span id="statIc">41.8°</span></div>
+          <div class="stat-mini"><strong>Critical (i<sub>c</sub>)</strong><span id="statIc">41.8°</span></div>
           <div class="stat-mini"><strong>Refract (r)</strong><span id="statR">59.4°</span></div>
           <div class="stat-mini"><strong>Incidence (i)</strong><span id="statI" style="color: var(--text-main);">35.0°</span></div>
           <div class="stat-mini"><strong>State</strong><span id="statState">Refraction</span></div>
@@ -476,7 +477,7 @@
         <div class="app-card" style="border-color: var(--primary);">
           <div class="app-card-text">
             <h3>Diamond Brilliance</h3>
-            <p>A diamond's high refractive index (n ≈ 2.42) creates a tiny critical angle (i_c ≈ 24.4°). Light entering the diamond gets trapped, undergoing multiple total internal reflections before exiting, causing its signature sparkle.</p>
+            <p>A diamond's high refractive index (n ≈ 2.42) creates a tiny critical angle (i<sub>c</sub> ≈ 24.4°). Light entering the diamond gets trapped, undergoing multiple total internal reflections before exiting, causing its signature sparkle.</p>
           </div>
           <div class="anim-container">
             <!-- SVG Diamond Definitions -->
@@ -851,11 +852,13 @@
         statR.textContent = `None (TIR)`;
         statState.textContent = "TIR Active";
         statState.style.color = "var(--tir-color)";
+        statCardI.classList.add("alert");
         tirWarning.style.display = "block";
       } else {
         statR.textContent = `${r_deg.toFixed(1)}°`;
         statState.textContent = "Refraction";
         statState.style.color = "var(--primary)";
+        statCardI.classList.remove("alert");
         tirWarning.style.display = "none";
       }
 
