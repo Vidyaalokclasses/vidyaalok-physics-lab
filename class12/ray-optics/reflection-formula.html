@@ -392,6 +392,91 @@
       font-size: 1.1rem;
     }
 
+    /* Flowchart Specific Styles */
+    .tree-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 10px 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+    }
+    .tree-wrapper::-webkit-scrollbar { height: 6px; }
+    .tree-wrapper::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 3px; }
+    .tree-wrapper::-webkit-scrollbar-thumb { background: rgba(0, 229, 255, 0.3); border-radius: 3px; }
+
+    .tree {
+      display: flex;
+      justify-content: center;
+      min-width: max-content; 
+    }
+    .tree ul {
+      padding-top: 20px; position: relative;
+      display: flex; padding-left: 0; margin: 0;
+    }
+    .tree li {
+      float: left; text-align: center;
+      list-style-type: none;
+      position: relative;
+      padding: 20px 15px 0 15px;
+    }
+    
+    /* Flowchart connector lines */
+    .tree li::before, .tree li::after {
+      content: ''; position: absolute; top: 0; right: 50%;
+      border-top: 2px solid rgba(255,255,255,0.15);
+      width: 50%; height: 20px;
+    }
+    .tree li::after {
+      right: auto; left: 50%;
+      border-left: 2px solid rgba(255,255,255,0.15);
+    }
+    .tree li:only-child::after, .tree li:only-child::before { display: none; }
+    .tree li:only-child { padding-top: 0; }
+    .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+    .tree li:last-child::before {
+      border-right: 2px solid rgba(255,255,255,0.15);
+      border-radius: 0 5px 0 0;
+    }
+    .tree li:first-child::after {
+      border-radius: 5px 0 0 0;
+    }
+    .tree ul ul::before {
+      content: ''; position: absolute; top: 0; left: 50%;
+      border-left: 2px solid rgba(255,255,255,0.15);
+      width: 0; height: 20px;
+      transform: translateX(-1px);
+    }
+
+    /* Flowchart Nodes */
+    .tree-node {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 14px 20px;
+      border-radius: 12px;
+      color: var(--text-main);
+      display: inline-block;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 2;
+      min-width: 140px;
+    }
+    .tree-node.cond { border-color: rgba(255, 209, 102, 0.5); }
+    .tree-node.res { border-color: var(--gold); }
+    .tree-node.res mjx-container { color: var(--primary) !important; max-width: none !important; min-width: min-content; }
+    .tree-node strong { color: var(--gold); font-weight: 800; }
+    
+    .parallel-case {
+      display: flex; flex-direction: column; align-items: center;
+      margin-top: 20px;
+    }
+    .connector-down {
+      width: 2px; height: 20px; background: rgba(255,255,255,0.15);
+    }
+
     /* Mobile & Tablet Responsive Layout */
     @media(max-width: 900px) {
       .formula-browser {
@@ -483,14 +568,56 @@ const flowData = {
       children: [
         {
           id: "image-counting",
-          title: "Circular Method",
-          type: "subtopic",
-          children: [
-            { id: "even-n", title: "If (360/θ) is Even", type: "formula", formula: "\\text{Number of images} = \\left(\\frac{360}{\\theta}\\right) - 1", note: "Applies regardless of object placement.", important: true },
-            { id: "odd-symmetric", title: "If (360/θ) is Odd (Symmetric)", type: "formula", formula: "\\text{Number of images} = \\left(\\frac{360}{\\theta}\\right) - 1", note: "Object placed symmetrically (on angle bisector) between the mirrors." },
-            { id: "odd-unsymmetric", title: "If (360/θ) is Odd (Asymmetric)", type: "formula", formula: "\\text{Number of images} = \\left(\\frac{360}{\\theta}\\right)", note: "Object placed asymmetrically (not on angle bisector) between the mirrors.", important: true },
-            { id: "parallel-mirrors", title: "Parallel Mirrors (θ = 0)", type: "formula", formula: "\\text{Number of images} = \\infty", note: "Infinite images are formed." }
-          ]
+          title: "Circular Method Flowchart",
+          type: "flowchart",
+          html: `
+            <div class="tree-wrapper">
+              <div class="tree">
+                <ul>
+                  <li>
+                    <div class="tree-node">Find \\( n = \\frac{360}{\\theta} \\)</div>
+                    <ul>
+                      <li>
+                        <div class="tree-node cond">If \\( n \\) is <strong>even</strong></div>
+                        <ul>
+                          <li>
+                            <div class="tree-node res">\\[ \\text{Images} = n - 1 \\]</div>
+                          </li>
+                        </ul>
+                      </li>
+                      <li>
+                        <div class="tree-node cond">If \\( n \\) is <strong>odd</strong></div>
+                        <ul>
+                          <li>
+                            <div class="tree-node cond">Object placed<br><strong>Symmetrically</strong></div>
+                            <ul>
+                              <li>
+                                <div class="tree-node res">\\[ \\text{Images} = n - 1 \\]</div>
+                              </li>
+                            </ul>
+                          </li>
+                          <li>
+                            <div class="tree-node cond">Object placed<br><strong>Asymmetrically</strong></div>
+                            <ul>
+                              <li>
+                                <div class="tree-node res">\\[ \\text{Images} = n \\]</div>
+                              </li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+              <div class="parallel-case">
+                <div class="tree-node cond">Parallel Mirrors (\\( \\theta = 0^\\circ \\))</div>
+                <div class="connector-down"></div>
+                <div class="tree-node res">\\[ \\text{Images} = \\infty \\]</div>
+              </div>
+            </div>
+          `,
+          note: "Scroll horizontally to view the full flowchart on smaller screens. Symmetric means the object lies exactly on the angle bisector."
         }
       ]
     },
@@ -597,14 +724,18 @@ function createFormulaCard(node){
   const card = document.createElement("div");
   card.className = "node-card";
 
-  // Force tables to take full width of the grid
-  if (node.type === "table") {
+  // Force tables and flowcharts to take full width of the grid
+  if (node.type === "table" || node.type === "flowchart") {
     card.style.gridColumn = "1 / -1";
   }
 
   const kicker = document.createElement("div");
   kicker.className = "card-kicker";
-  kicker.textContent = node.type === "table" ? "Reference Table" : "Formula";
+  
+  if (node.type === "table") kicker.textContent = "Reference Table";
+  else if (node.type === "flowchart") kicker.textContent = "Logic Map";
+  else kicker.textContent = "Formula";
+
   if(node.important){
     const tag = document.createElement("span");
     tag.className = "importance-tag";
@@ -641,7 +772,13 @@ function createFormulaCard(node){
     tableWrapper.innerHTML = tableHTML;
     card.appendChild(tableWrapper);
   } 
-  // Render Formula Type
+  // Render Custom Flowchart Type
+  else if (node.type === "flowchart") {
+    const flowchartWrapper = document.createElement("div");
+    flowchartWrapper.innerHTML = node.html;
+    card.appendChild(flowchartWrapper);
+  }
+  // Render Standard Formula Type
   else {
     const formulaBox = document.createElement("div");
     formulaBox.className = "formula-box";
