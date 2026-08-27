@@ -392,7 +392,7 @@
       font-size: 1.1rem;
     }
 
-    /* Flowchart Specific Styles */
+    /* Flowchart Specific Styles (Flexbox based) */
     .tree-wrapper {
       width: 100%;
       overflow-x: auto;
@@ -413,14 +413,21 @@
       min-width: max-content; 
     }
     .tree ul {
-      padding-top: 20px; position: relative;
-      display: flex; padding-left: 0; margin: 0;
+      padding-top: 20px; 
+      position: relative;
+      display: flex; 
+      justify-content: center;
+      padding-left: 0; 
+      margin: 0;
     }
     .tree li {
-      float: left; text-align: center;
+      text-align: center;
       list-style-type: none;
       position: relative;
       padding: 20px 15px 0 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     
     /* Flowchart connector lines */
@@ -568,28 +575,22 @@ const flowData = {
       children: [
         {
           id: "image-counting",
-          title: "Circular Method Flowchart",
-          type: "flowchart",
-          html: `
-            <div class="tree-wrapper">
-              <div class="tree">
-                <ul>
-                  <li>
-                    <div class="tree-node">Find \\( n = \\frac{360}{\\theta} \\)</div>
+          title: "Circular Method",
+          type: "subtopic",
+          children: [
+            {
+              id: "circular-flowchart",
+              title: "Flowchart for Counting Images",
+              type: "flowchart",
+              html: `
+                <div class="tree-wrapper">
+                  <div class="tree">
                     <ul>
                       <li>
-                        <div class="tree-node cond">If \\( n \\) is <strong>even</strong></div>
+                        <div class="tree-node">Find \\( n = \\frac{360}{\\theta} \\)</div>
                         <ul>
                           <li>
-                            <div class="tree-node res">\\[ \\text{Images} = n - 1 \\]</div>
-                          </li>
-                        </ul>
-                      </li>
-                      <li>
-                        <div class="tree-node cond">If \\( n \\) is <strong>odd</strong></div>
-                        <ul>
-                          <li>
-                            <div class="tree-node cond">Object placed<br><strong>Symmetrically</strong></div>
+                            <div class="tree-node cond">If \\( n \\) is <strong>even</strong></div>
                             <ul>
                               <li>
                                 <div class="tree-node res">\\[ \\text{Images} = n - 1 \\]</div>
@@ -597,27 +598,41 @@ const flowData = {
                             </ul>
                           </li>
                           <li>
-                            <div class="tree-node cond">Object placed<br><strong>Asymmetrically</strong></div>
+                            <div class="tree-node cond">If \\( n \\) is <strong>odd</strong></div>
                             <ul>
                               <li>
-                                <div class="tree-node res">\\[ \\text{Images} = n \\]</div>
+                                <div class="tree-node cond">Object placed<br><strong>Symmetrically</strong></div>
+                                <ul>
+                                  <li>
+                                    <div class="tree-node res">\\[ \\text{Images} = n - 1 \\]</div>
+                                  </li>
+                                </ul>
+                              </li>
+                              <li>
+                                <div class="tree-node cond">Object placed<br><strong>Asymmetrically</strong></div>
+                                <ul>
+                                  <li>
+                                    <div class="tree-node res">\\[ \\text{Images} = n \\]</div>
+                                  </li>
+                                </ul>
                               </li>
                             </ul>
                           </li>
                         </ul>
                       </li>
                     </ul>
-                  </li>
-                </ul>
-              </div>
-              <div class="parallel-case">
-                <div class="tree-node cond">Parallel Mirrors (\\( \\theta = 0^\\circ \\))</div>
-                <div class="connector-down"></div>
-                <div class="tree-node res">\\[ \\text{Images} = \\infty \\]</div>
-              </div>
-            </div>
-          `,
-          note: "Scroll horizontally to view the full flowchart on smaller screens. Symmetric means the object lies exactly on the angle bisector."
+                  </div>
+                  <div class="parallel-case">
+                    <div class="tree-node cond">Parallel Mirrors (\\( \\theta = 0^\\circ \\))</div>
+                    <div class="connector-down"></div>
+                    <div class="tree-node res">\\[ \\text{Images} = \\infty \\]</div>
+                  </div>
+                </div>
+              `,
+              note: "Scroll horizontally to view the full flowchart on smaller screens. Symmetric means the object lies exactly on the angle bisector.",
+              important: true
+            }
+          ]
         }
       ]
     },
