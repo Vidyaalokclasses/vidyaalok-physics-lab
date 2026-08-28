@@ -31,7 +31,6 @@
       --panel-bg: rgba(255, 255, 255, 0.03);
       --text-main: #ffffff;
       --text-muted: #a0aabf;
-      --gold: #ffd166;
       --border: rgba(255, 255, 255, 0.1);
       
       --ray-1: #ff3366;        /* Parallel Ray */
@@ -47,7 +46,6 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100vh;
       height: 100dvh; /* Dynamic viewport height for mobile */
       font-family: 'Segoe UI', system-ui, sans-serif;
       background-color: var(--bg-dark);
@@ -68,7 +66,7 @@
       justify-content: space-between;
       align-items: center;
       flex-shrink: 0;
-      z-index: 20;
+      z-index: 40;
     }
 
     .back-btn {
@@ -98,9 +96,10 @@
       padding: 1.5rem;
       gap: 1.5rem;
       height: calc(100dvh - 50px);
+      position: relative;
     }
 
-    /* Left Control Panel */
+    /* Left Control Panel (Desktop Default) */
     .controls {
       width: 380px;
       flex-shrink: 0; 
@@ -133,15 +132,6 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .panel-title {
-      font-size: 0.85rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 10px;
-    }
-
     .tool-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -163,7 +153,7 @@
     }
 
     .tool-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--primary); }
-    .tool-btn.active { border-color: var(--gold); background: rgba(255, 209, 102, 0.15); color: var(--gold); }
+    .tool-btn.active { border-color: #ffd166; background: rgba(255, 209, 102, 0.15); color: #ffd166; }
 
     /* Sliders */
     .control-group {
@@ -207,6 +197,48 @@
       border-radius: 2px;
     }
 
+    /* Stats Grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .stat {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .stat strong {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .stat span {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--text-main);
+      font-family: monospace;
+    }
+
+    /* Formula Panel */
+    .formula-panel {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      text-align: center;
+      margin-top: 15px;
+      color: var(--primary);
+      font-weight: bold;
+    }
+    .formula-panel mjx-container { font-size: 1.05rem; }
+
     /* Right Panel Layout (Canvas) */
     .right-panel {
       flex-grow: 1;
@@ -225,9 +257,7 @@
 
     .canvas-head {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
+      top: 0; left: 0; width: 100%;
       padding: 12px 18px;
       display: flex;
       justify-content: space-between;
@@ -239,15 +269,11 @@
       background: rgba(0,0,0,0.3);
       z-index: 15;
     }
-
     .canvas-head span:first-child { color: var(--primary); }
 
     .canvas-wrapper {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
       overflow: hidden;
       background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
     }
@@ -270,21 +296,19 @@
 
     canvas {
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       display: block;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       cursor: crosshair;
       z-index: 1;
       touch-action: none; 
     }
 
-    /* Floating Stats Overlay */
+    /* Floating Stats Overlay (Inside Canvas) */
     .stats-overlay {
       position: absolute;
-      top: 50px; /* Below canvas head */
-      right: 15px; /* Default desktop position */
+      top: 55px; /* Below canvas head */
+      right: 15px; /* Desktop position */
       background: rgba(0, 0, 0, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
@@ -301,7 +325,7 @@
     .stat-mini strong { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .stat-mini span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
 
-    /* Legend */
+    /* Legend Overlay */
     .legend {
       position: absolute;
       bottom: 15px;
@@ -323,64 +347,64 @@
     .leg-line { width: 16px; height: 3px; border-radius: 2px; }
     .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-    /* Formula Overlay */
-    .formula-overlay {
-      position: absolute;
-      bottom: 15px;
-      left: 15px;
-      background: rgba(0, 0, 0, 0.65);
-      border: 1px solid rgba(0, 229, 255, 0.3);
-      padding: 10px 20px;
-      border-radius: 8px;
-      backdrop-filter: blur(8px);
-      z-index: 10;
-      color: var(--primary);
-      pointer-events: none; 
-      text-align: center;
-    }
-    .formula-overlay mjx-container { font-size: 0.95rem; }
-
-    /* Mobile & Tablet Responsive Layout */
+    /* Mobile & Tablet Layout (HUD Overlay style) */
     @media (max-width: 900px) {
       .workspace {
-        flex-direction: column; /* Stack vertically */
+        display: block; 
         padding: 0;
-        gap: 0;
       }
       .right-panel {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        height: 100% !important;
         border-radius: 0;
         border: none;
-        flex: 1 1 55%; /* Canvas takes top ~55% */
-        height: auto !important; 
-        width: 100%;
       }
+      
+      /* HUD Controls overlaying the bottom of the canvas */
       .controls {
-        position: relative;
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
         width: 100%;
-        flex: 1 1 45%; /* Controls take bottom ~45% */
+        max-height: 40vh; /* Compact lower section */
         border-radius: 20px 20px 0 0;
-        background: rgba(7, 11, 25, 0.95);
-        padding: 1rem 1.5rem;
+        background: rgba(7, 11, 25, 0.88);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 15px 20px 20px 20px;
         border-top: 1px solid rgba(0, 229, 255, 0.3);
         border-left: none; border-right: none; border-bottom: none;
-        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.7);
+        z-index: 30;
       }
-      .controls h2 { display: none; } /* Hide title to save space */
+
+      /* Hide redundant components on mobile */
+      .controls h2 { display: none; }
+      .controls > .panel-section:last-child { display: none; } /* Hide duplicate stats */
       
-      .canvas-head { padding: 8px 12px; font-size: 0.75rem; }
+      .controls > .panel-section:first-child {
+        padding: 0; background: transparent; border: none;
+      }
       
-      /* Reposition Overlays for Mobile */
+      .tool-row { margin-bottom: 12px; }
+      .control-group { margin-top: 8px; }
+      .control-group label { margin-bottom: 4px; }
+      
+      .canvas-head { padding: 10px 15px; font-size: 0.8rem; }
+      
+      /* Reposition Overlays for Mobile Screen */
       .stats-overlay {
-        top: 40px; /* Below canvas head */
-        left: 10px; /* Force to Top-Left */
+        top: 45px; 
+        left: 10px; /* Float top-left */
         right: auto;
-        padding: 8px 12px;
-        gap: 8px;
+        padding: 10px 12px;
+        gap: 10px;
       }
-      .stat-mini strong { font-size: 0.55rem; margin-bottom: 2px; }
-      .stat-mini span { font-size: 0.9rem; }
+      .stat-mini strong { font-size: 0.55rem; }
+      .stat-mini span { font-size: 0.95rem; }
       
-      .legend, .formula-overlay { display: none; } /* Hide secondary elements to maximize view */
+      /* Hide legend to keep view clear */
+      .legend { display: none; } 
     }
   </style>
 </head>
@@ -393,7 +417,7 @@
 
   <div class="workspace">
     
-    <!-- Simulation Area (Top on Mobile) -->
+    <!-- Simulation Area -->
     <div class="right-panel">
       <div class="canvas-wrapper" id="simWrapper">
         <div class="canvas-head">
@@ -411,12 +435,6 @@
           <div class="stat-mini" style="grid-column: span 2;"><strong>Nature</strong><span id="natureOut">Real & Inverted</span></div>
         </div>
 
-        <!-- Formula Overlay (Hidden on Mobile) -->
-        <div class="formula-overlay" id="formulas">
-          \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad u = \frac{vf}{f-v} \]
-          \[ m = \frac{v}{u} = \frac{f}{f+u} \]
-        </div>
-
         <!-- Legend Overlay (Hidden on Mobile) -->
         <div class="legend">
           <div class="leg"><div class="leg-line" style="background: var(--ray-1);"></div> Parallel Ray</div>
@@ -429,11 +447,11 @@
       </div>
     </div>
 
-    <!-- Bottom/Left: Controls Area -->
+    <!-- HUD Control Panel (Overlay at bottom on Mobile) -->
     <aside class="controls">
       <h2>System Controls</h2>
       
-      <div class="panel-section" style="padding: 10px; background: transparent; border: none;">
+      <div class="panel-section">
         <div class="tool-row">
           <button class="tool-btn active" id="btnConvex">◖ Convex ◗</button>
           <button class="tool-btn" id="btnConcave">◗ Concave ◖</button>
@@ -455,6 +473,20 @@
         </div>
       </div>
 
+      <!-- Duplicate Stats + Formula for Desktop only -->
+      <div class="panel-section" style="margin-top: auto; padding-bottom: 0;">
+        <div class="stat-grid">
+          <div class="stat"><strong>Image Dist (v)</strong><span id="vOutDesk">0 cm</span></div>
+          <div class="stat"><strong>Magnification (m)</strong><span id="mOutDesk">0.00</span></div>
+          <div class="stat" style="grid-column: span 2;"><strong>Nature of Image</strong><span id="natureOutDesk">Real & Inverted</span></div>
+        </div>
+        
+        <div class="formula-panel" id="formulas">
+          \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad u = \frac{vf}{f-v} \]
+          \[ m = \frac{v}{u} = \frac{f}{f+u} \]
+        </div>
+      </div>
+
     </aside>
 
   </div>
@@ -472,15 +504,19 @@
     const uVal = document.getElementById("uVal");
     const fVal = document.getElementById("fVal");
     const hVal = document.getElementById("hVal");
+    
+    // Outputs (Mobile Overlay & Desktop Panel)
     const vOut = document.getElementById("vOut");
     const mOut = document.getElementById("mOut");
     const natureOut = document.getElementById("natureOut");
+    const vOutDesk = document.getElementById("vOutDesk");
+    const mOutDesk = document.getElementById("mOutDesk");
+    const natureOutDesk = document.getElementById("natureOutDesk");
     const canvasTitle = document.getElementById("canvasTitle");
 
     // Color definitions
     const colorRay1 = "#ff3366"; // Pink (Parallel Ray)
     const colorRay2 = "#ffffff"; // White (Center Ray)
-    const extColor = "rgba(255, 255, 255, 0.4)"; // Faint white for virtual
     const objColor = "#ffd166";  // Yellow
     const realImgColor = "#00ffaa"; // Green
     const virtImgColor = "#c7a6ff"; // Purple
@@ -564,7 +600,7 @@
     canvas.addEventListener("mouseup", () => isDragging = false);
     canvas.addEventListener("mouseleave", () => isDragging = false);
     
-    // Touch support for dragging object smoothly
+    // Touch support for dragging object
     canvas.addEventListener("touchstart", (e) => {
       if(e.target === canvas) {
         const cx = W / 2;
@@ -606,13 +642,11 @@
       ctx.fillStyle = color;
       ctx.lineWidth = 4;
       
-      // Stem
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x, y - height);
       ctx.stroke();
       
-      // Arrowhead
       ctx.beginPath();
       const headDir = height > 0 ? 1 : -1;
       ctx.moveTo(x, y - height);
@@ -621,7 +655,6 @@
       ctx.closePath();
       ctx.fill();
 
-      // Label
       ctx.fillStyle = color;
       ctx.font = "bold 15px 'Segoe UI'";
       ctx.fillText(label, x - 22, y - height - (10 * headDir));
@@ -667,12 +700,10 @@
       
       ctx.beginPath();
       if (isConvex) {
-        // Double Convex
         ctx.moveTo(cx, cy - height/2);
         ctx.quadraticCurveTo(cx + 30, cy, cx, cy + height/2);
         ctx.quadraticCurveTo(cx - 30, cy, cx, cy - height/2);
       } else {
-        // Double Concave
         ctx.moveTo(cx - 15, cy - height/2);
         ctx.lineTo(cx + 15, cy - height/2);
         ctx.quadraticCurveTo(cx - 10, cy, cx + 15, cy + height/2);
@@ -682,7 +713,6 @@
       ctx.fill();
       ctx.stroke();
 
-      // Optical center dashed line
       ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -692,21 +722,19 @@
       ctx.restore();
     }
 
-    // Graph Drawing inside Canvas
+    // v-u Graph Drawing
     function drawGraphOverlay(cx, cy, u, v, f) {
       const isMobile = W <= 900;
-      // Dynamically size graph to fit screen safely
-      const gWidth = isMobile ? Math.min(100, W * 0.28) : Math.min(180, W * 0.25);
+      const gWidth = isMobile ? Math.min(110, W * 0.28) : Math.min(180, W * 0.25);
       const gHeight = gWidth;
       
-      // Top-Right on mobile, Top-Left on desktop (to avoid stats overlay)
-      const gX = isMobile ? (W - gWidth - 10) : 20; 
-      const gY = 45; // Clears the canvas header safely
+      // Right side. On mobile it tucks in the top right.
+      const gX = W - gWidth - 15; 
+      const gY = 45; 
       
       ctx.save();
       
-      // Graph Background
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillStyle = "rgba(0,0,0,0.65)";
       ctx.fillRect(gX, gY, gWidth, gHeight);
       ctx.strokeStyle = "rgba(255,255,255,0.15)";
       ctx.lineWidth = 1;
@@ -715,21 +743,18 @@
       const orgX = gX + gWidth / 2;
       const orgY = gY + gHeight / 2;
 
-      // Axes
       ctx.strokeStyle = "rgba(255,255,255,0.4)";
       ctx.beginPath();
-      ctx.moveTo(gX, orgY); ctx.lineTo(gX + gWidth, orgY); // u axis
-      ctx.moveTo(orgX, gY); ctx.lineTo(orgX, gY + gHeight); // v axis
+      ctx.moveTo(gX, orgY); ctx.lineTo(gX + gWidth, orgY); 
+      ctx.moveTo(orgX, gY); ctx.lineTo(orgX, gY + gHeight); 
       ctx.stroke();
 
-      // Scale factor: let 2f physical distance = half graph width
       const scale = (gWidth / 4) / Math.abs(f);
 
-      // Asymptotes at u = -f, v = f
       const uAsym = orgX + (-f) * scale;
-      const vAsym = orgY - (f) * scale; // Y is inverted on canvas
+      const vAsym = orgY - (f) * scale;
 
-      ctx.strokeStyle = "rgba(255, 209, 102, 0.6)"; // Gold dashed
+      ctx.strokeStyle = "rgba(255, 209, 102, 0.6)"; 
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
       ctx.moveTo(uAsym, gY); ctx.lineTo(uAsym, gY + gHeight);
@@ -737,7 +762,6 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Draw Hyperbola Curve: v = (uf)/(u+f)
       ctx.strokeStyle = "#00e5ff";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -745,12 +769,12 @@
       let first1 = true, first2 = true;
       for (let pxU = -gWidth/2; pxU <= gWidth/2; pxU++) {
         const realU = pxU / scale;
-        if (Math.abs(realU + f) < 0.5) continue; // Skip asymptote singularity
+        if (Math.abs(realU + f) < 0.5) continue; 
         
         const realV = (realU * f) / (realU + f);
-        const pxV = -realV * scale; // Invert Y
+        const pxV = -realV * scale; 
         
-        if (Math.abs(pxV) > gHeight/2) continue; // Clip to box bounds
+        if (Math.abs(pxV) > gHeight/2) continue; 
         
         if (realU < -f) {
           if (first1) { ctx.moveTo(orgX + pxU, orgY + pxV); first1 = false; }
@@ -762,17 +786,15 @@
       }
       ctx.stroke();
 
-      // Current Point Marker
       const ptU = u * scale;
       const ptV = -v * scale;
       if (Math.abs(ptU) <= gWidth/2 && Math.abs(ptV) <= gHeight/2) {
-        ctx.fillStyle = "#ff007f"; // Bright pink dot for visibility
+        ctx.fillStyle = "#ff007f"; 
         ctx.beginPath();
         ctx.arc(orgX + ptU, orgY + ptV, 4, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Labels
       ctx.fillStyle = "#ffffff";
       ctx.font = "10px 'Segoe UI'";
       ctx.fillText("u", gX + gWidth - 12, orgY - 6);
@@ -791,11 +813,9 @@
       const f_mag = parseFloat(fSlider.value);
       const ho = parseFloat(hSlider.value);
 
-      // Cartesian Sign Convention
       const u = -U; 
       const f = isConvex ? f_mag : -f_mag;
 
-      // Lens Equation: 1/v = 1/f + 1/u => v = uf/(u+f)
       let v = (u * f) / (u + f);
       let m = v / u;
       
@@ -811,30 +831,34 @@
       fVal.textContent = `${f_mag.toFixed(0)} cm`;
       hVal.textContent = `${ho.toFixed(0)} cm`;
 
-      if (isInfinity) {
-        vOut.textContent = "∞";
-        mOut.textContent = "∞";
-        natureOut.textContent = "Real & Highly Enlarged";
-        natureOut.style.color = realImgColor;
-      } else {
-        vOut.textContent = `${Math.abs(v).toFixed(1)} cm`;
-        mOut.textContent = `${m.toFixed(2)}`;
-        
-        if (v > 0) {
-          natureOut.textContent = "Real & Inverted";
-          natureOut.style.color = realImgColor;
+      const setOutputs = (vElem, mElem, nElem) => {
+        if (!vElem) return;
+        if (isInfinity) {
+          vElem.textContent = "∞";
+          mElem.textContent = "∞";
+          nElem.textContent = "Real & Highly Enlarged";
+          nElem.style.color = realImgColor;
         } else {
-          natureOut.textContent = "Virtual & Erect";
-          natureOut.style.color = virtImgColor;
+          vElem.textContent = `${Math.abs(v).toFixed(1)} cm`;
+          mElem.textContent = `${m.toFixed(2)}`;
+          if (v > 0) {
+            nElem.textContent = "Real & Inverted";
+            nElem.style.color = realImgColor;
+          } else {
+            nElem.textContent = "Virtual & Erect";
+            nElem.style.color = virtImgColor;
+          }
         }
-      }
+      };
+
+      setOutputs(vOut, mOut, natureOut);
+      setOutputs(vOutDesk, mOutDesk, natureOutDesk);
 
       // Drawing Setup
       ctx.clearRect(0, 0, W, H);
       const cx = W / 2;
-      const cy = H / 2; // Center axis horizontally
+      const cy = H / 2; 
       
-      // Draw Principal Axis
       ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -842,18 +866,15 @@
       ctx.lineTo(W, cy);
       ctx.stroke();
 
-      // Draw Focus Points
       drawPoint(cx - f_mag, cy, "F₁", true);
       drawPoint(cx + f_mag, cy, "F₂", true);
       drawPoint(cx - 2*f_mag, cy, "2F₁");
       drawPoint(cx + 2*f_mag, cy, "2F₂");
       drawPoint(cx, cy, "O");
 
-      // Draw Lens (Dynamically scale height to not overlap UI too much)
-      const lensHeight = W <= 900 ? Math.max(H * 0.6, ho * 2 + 30) : Math.max(250, ho * 2 + 50);
+      const lensHeight = W <= 900 ? Math.max(H * 0.45, ho * 2 + 30) : Math.max(250, ho * 2 + 50);
       drawLens(cx, cy, lensHeight);
 
-      // Coordinate mapping
       const objX = cx + u; 
       const objY = cy;
       const tipX = objX;
@@ -863,11 +884,9 @@
       const hi = m * ho;
       const imgTipY = cy - hi;
 
-      // Draw Object
       drawObjectArrow(objX, objY, ho, objColor, "O");
 
       if (isConvex) {
-        // Ray 1: Parallel to principal axis -> passes through F2
         drawRay(tipX, tipY, cx, tipY, colorRay1); 
         if (!isInfinity) {
           drawRay(cx, tipY, cx + (W/2), tipY + ((cy - tipY)/f_mag) * (W/2), colorRay1); 
@@ -875,50 +894,38 @@
           drawRay(cx, tipY, W, tipY + ((cy - tipY)/f_mag) * (W/2), colorRay1);
         }
 
-        // Ray 2: Passes through Optical Center
         const dx2 = cx - tipX;
         const dy2 = cy - tipY;
         drawRay(tipX, tipY, cx + (W/2), cy + (W/2) * (dy2 / dx2), colorRay2);
 
-        // Virtual extensions for Convex (when object is inside focus v < 0)
         if (v < 0 && !isInfinity) {
           drawRay(cx, tipY, imgX, imgTipY, colorRay1, true, false);
           drawRay(cx, cy, imgX, imgTipY, colorRay2, true, false);
         }
 
       } else {
-        // Concave Lens (Diverging)
-        
-        // Ray 1: Incident parallel
         drawRay(tipX, tipY, cx, tipY, colorRay1);
         
-        // Ray 1 Refracted: Diverges, appearing to come from F1
         const slope = (tipY - cy) / f_mag;
         drawRay(cx, tipY, W, tipY + slope * (W - cx), colorRay1);
         
-        // Ray 1 Virtual Extension: Traces back to F1 and Image
         drawRay(cx, tipY, cx - f_mag, cy, colorRay1, true, false);
 
-        // Ray 2: Passes through Optical Center
         const dx2 = cx - tipX;
         const dy2 = cy - tipY;
         drawRay(tipX, tipY, W, cy + (W - cx) * (dy2 / dx2), colorRay2);
         
-        // Virtual extension of Ray 2 back to image
         drawRay(cx, cy, imgX, imgTipY, colorRay2, true, false);
       }
 
-      // Draw Image
       if (!isInfinity) {
         const imgColor = v > 0 ? realImgColor : virtImgColor;
         drawObjectArrow(imgX, objY, hi, imgColor, "I");
       }
 
-      // Draw v-u Graph Overlay
       drawGraphOverlay(cx, cy, u, v, f);
     }
 
-    // Event Listeners
     [uSlider, fSlider, hSlider].forEach(slider => {
       slider.addEventListener('input', draw);
     });
