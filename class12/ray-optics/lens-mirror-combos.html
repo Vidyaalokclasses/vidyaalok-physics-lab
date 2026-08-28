@@ -23,6 +23,8 @@
             --text-main: #ffffff;
             --text-muted: #a0aabf;
             --gold: #ffd166;
+            --real-img: #00ffaa;
+            --virtual-img: #c7a6ff;
             --border: rgba(0, 229, 255, 0.2);
         }
 
@@ -162,9 +164,11 @@
     </nav>
 
     <div class="workspace">
+        <!-- Canvas Layer -->
         <div class="watermark"></div>
         <canvas id="comboCanvas"></canvas>
 
+        <!-- Floating HUD Panel -->
         <div class="hud-panel" id="hudPanel">
             <div class="hud-header">
                 <h2>System Controls</h2>
@@ -231,6 +235,7 @@
         const canvas = document.getElementById("comboCanvas");
         const ctx = canvas.getContext("2d");
         
+        // UI Elements
         const objXSlider = document.getElementById("objX");
         const objYSlider = document.getElementById("objY");
         const elXSlider = document.getElementById("elX");
@@ -244,6 +249,7 @@
         let W = 0, H = 0, originX = 0, originY = 0;
         let initialized = false;
 
+        // Interactive State
         let isDragging = false;
         let dragTarget = null; 
         let dragOffsetX = 0, dragOffsetY = 0;
@@ -254,6 +260,7 @@
         let selectedId = null;
         let nextId = 1;
 
+        // --- RESIZE OBSERVER & DYNAMIC ORIGIN ---
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 W = Math.floor(entry.contentRect.width);
@@ -289,6 +296,7 @@
             draw();
         }
 
+        // --- HUD UI LOGIC ---
         function updateUI() {
             document.getElementById("objXVal").textContent = `${Math.round(object.x)} px`;
             document.getElementById("objYVal").textContent = `${Math.round(object.y)} px`;
@@ -297,7 +305,9 @@
             
             const sorted = [...elements].sort((a,b) => a.x - b.x);
             elementListUI.innerHTML = "";
-            if(sorted.length === 0) elementListUI.innerHTML = "<div style='color:var(--text-muted); font-size:0.8rem; text-align:center; padding: 10px;'>No elements in path.</div>";
+            if(sorted.length === 0) {
+                elementListUI.innerHTML = "<div style='color:var(--text-muted); font-size:0.8rem; text-align:center; padding: 10px;'>No elements in path.</div>";
+            }
             
             sorted.forEach(el => {
                 const div = document.createElement("div");
@@ -344,6 +354,7 @@
         elYSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
         elFSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.f = parseFloat(e.target.value); updateUI(); draw(); }});
 
+        // --- INTERACTION / DRAGGING ---
         function getEventX(e) {
             const rect = canvas.getBoundingClientRect();
             let clientX = e.clientX;
@@ -391,10 +402,6 @@
             const simX = cx - originX; const simY = originY - cy;
             
             let newX = simX + dragOffsetX; let newY = simY + dragOffsetY;
-            if (newX < -W/2 + 20) newX = -W/2 + 20;
-            if (newX > W/2 - 20) newX = W/2 - 20;
-            if (newY < -H/2 + 20) newY = -H/2 + 20;
-            if (newY > H/2 - 20) newY = H/2 - 20;
 
             if (dragTarget === 'object') {
                 object.x = newX; object.y = newY;
@@ -414,110 +421,107 @@
         canvas.addEventListener("mousedown", handleInputStart);
         canvas.addEventListener("mousemove", handleInputMove);
         window.addEventListener("mouseup", handleInputEnd);
+
         canvas.addEventListener("touchstart", handleInputStart, {passive: false});
         canvas.addEventListener("touchmove", handleInputMove, {passive: false});
         window.addEventListener("touchend", handleInputEnd);
 
-        // --- PARAXIAL RAY TRACING & ANALYTICAL IMAGES ---
+        // --- PARAXIAL RAY TRACING ENGINE ---
         function traceSystem() {
-            const slopes = [-0.15, -0.08, 0, 0.08, 0.15];
+            // Increased to 9 rays for clearer visual grouping
+            const slopes = [-0.16, -0.12, -0.08, -0.04, 0, 0.04, 0.08, 0.12, 0.16];
             let allPaths = [];
-            let images = [];
-            let dashedExtensions = [];
+            let imageRays = {}; // Group rays by sequence of hits to calculate images
             
-            // 1. Analytical rays to calculate precise image points irrespective of aperture blocks
-            let ana1 = { x: object.x, y: object.y, dx: 1, dy: 0.05, seq: [] };
-            let ana2 = { x: object.x, y: object.y, dx: 1, dy: -0.05, seq: [] };
-            let bounces = 0;
-            
-            while(bounces < 10) {
-                let nextEl1 = null, minD1 = Infinity;
-                for (let el of elements) { let d = (el.x - ana1.x) * ana1.dx; if (d > 0.001 && d < minD1) { minD1 = d; nextEl1 = el; } }
-                
-                let nextEl2 = null, minD2 = Infinity;
-                for (let el of elements) { let d = (el.x - ana2.x) * ana2.dx; if (d > 0.001 && d < minD2) { minD2 = d; nextEl2 = el; } }
-                
-                if (!nextEl1 || !nextEl2 || nextEl1.id !== nextEl2.id) break; 
-                
-                let hitY1 = ana1.y + minD1 * ana1.dy / ana1.dx;
-                let hitY2 = ana2.y + minD2 * ana2.dy / ana2.dx;
-                
-                let Power = 0;
-                if (nextEl1.type === 'lens') {
-                    Power = nextEl1.subtype === 'convex' ? 1/nextEl1.f : -1/nextEl1.f;
-                    ana1.dy -= (hitY1 - nextEl1.y) * Power * Math.abs(ana1.dx);
-                    ana2.dy -= (hitY2 - nextEl2.y) * Power * Math.abs(ana2.dx);
-                } else {
-                    Power = nextEl1.subtype === 'plane' ? 0 : (nextEl1.subtype === 'concave' ? 1/nextEl1.f : -1/nextEl1.f);
-                    ana1.dy -= (hitY1 - nextEl1.y) * Power * Math.abs(ana1.dx);
-                    ana2.dy -= (hitY2 - nextEl2.y) * Power * Math.abs(ana2.dx);
-                    ana1.dx *= -1; ana2.dx *= -1;
-                }
-                
-                ana1.x = nextEl1.x; ana1.y = hitY1; ana1.seq.push(`E${nextEl1.id}`);
-                ana2.x = nextEl2.x; ana2.y = hitY2; ana2.seq.push(`E${nextEl2.id}`);
-                
-                let cross = ana1.dx * ana2.dy - ana1.dy * ana2.dx;
-                if (Math.abs(cross) > 1e-6) {
-                    let t = ((ana2.x - ana1.x) * ana2.dy - (ana2.y - ana1.y) * ana2.dx) / cross;
-                    images.push({
-                        x: ana1.x + t * ana1.dx, 
-                        y: ana1.y + t * ana1.dy,
-                        color: rayColors[(bounces + 1) % rayColors.length],
-                        label: `I${bounces+1}`,
-                        desc: `(via ${ana1.seq.join('→')})`
-                    });
-                }
-                bounces++;
-            }
-
-            // 2. Visual rays to draw the actual path (with aperture constraints)
             for (let i = 0; i < slopes.length; i++) {
                 let r = { x: object.x, y: object.y, dx: 1, dy: slopes[i] };
                 let path = [{ x: r.x, y: r.y }];
+                let bounces = 0;
                 let active = true;
-                let b = 0;
+                let hitSequence = [];
                 
-                while (active && b < 10) {
+                while (active && bounces < 10) {
                     let nextEl = null; let minDist = Infinity;
+                    
+                    // Look for the next element the ray will hit
                     for (let el of elements) {
                         let d = (el.x - r.x) * r.dx;
-                        if (d > 0.001 && d < minDist) { minDist = d; nextEl = el; }
+                        if (d > 0.001 && d < minDist) { 
+                            let hitY = r.y + d * r.dy / r.dx;
+                            // Strictly enforce Aperture Check (prevents rays from passing through mirrors)
+                            if (Math.abs(hitY - el.y) <= 100) {
+                                minDist = d; nextEl = el; 
+                            }
+                        }
                     }
+                    
                     if (!nextEl) {
-                        path.push({ x: r.x + r.dx * 3000, y: r.y + r.dy * 3000 });
+                        let endX = r.x + r.dx * 3000;
+                        let endY = r.y + r.dy * 3000;
+                        path.push({ x: endX, y: endY });
+                        
+                        // Register this ray for image formation calculation
+                        const seqStr = hitSequence.join('→');
+                        if (seqStr) {
+                            if (!imageRays[seqStr]) imageRays[seqStr] = [];
+                            imageRays[seqStr].push({ x: r.x, y: r.y, dx: r.dx, dy: r.dy, bounceCount: bounces });
+                        }
+                        active = false;
                         break;
                     }
                     
                     let hitY = r.y + minDist * r.dy / r.dx;
-                    if(Math.abs(hitY - nextEl.y) > 100) { 
-                        path.push({ x: r.x + r.dx * 3000, y: r.y + r.dy * 3000 });
-                        break;
-                    }
-
                     path.push({ x: nextEl.x, y: hitY });
+                    hitSequence.push(`E${nextEl.id}`);
                     
+                    // Unified Matrix Transformation
                     let Power = 0;
                     if (nextEl.type === 'lens') {
                         Power = nextEl.subtype === 'convex' ? 1/nextEl.f : -1/nextEl.f;
-                        r.dy -= (hitY - nextEl.y) * Power * Math.abs(r.dx);
+                        r.dy = r.dy - (hitY - nextEl.y) * Power * Math.abs(r.dx);
                     } else {
                         Power = nextEl.subtype === 'plane' ? 0 : (nextEl.subtype === 'concave' ? 1/nextEl.f : -1/nextEl.f);
-                        r.dy -= (hitY - nextEl.y) * Power * Math.abs(r.dx);
+                        r.dy = r.dy - (hitY - nextEl.y) * Power * Math.abs(r.dx);
                         r.dx *= -1; 
                     }
                     r.x = nextEl.x; r.y = hitY;
+                    bounces++;
                     
-                    if (images[b] && (i === 0 || i === slopes.length - 1)) {
-                        dashedExtensions.push({
-                            x1: nextEl.x, y1: hitY,
-                            x2: images[b].x, y2: images[b].y,
-                            color: rayColors[(b+1) % rayColors.length]
-                        });
-                    }
-                    b++;
+                    const seqStr = hitSequence.join('→');
+                    if (!imageRays[seqStr]) imageRays[seqStr] = [];
+                    imageRays[seqStr].push({ x: r.x, y: r.y, dx: r.dx, dy: r.dy, bounceCount: bounces });
                 }
                 allPaths.push(path);
+            }
+
+            // Calculate precise images based solely on valid grouped rays
+            let images = [];
+            let dashedExtensions = [];
+            let bCount = 1;
+
+            for (let seq in imageRays) {
+                let rays = imageRays[seq];
+                if (rays.length >= 2) {
+                    let r1 = rays[0];
+                    let r2 = rays[rays.length - 1]; // Use outermost rays for precision
+                    
+                    let cross = r1.dx * r2.dy - r1.dy * r2.dx;
+                    if (Math.abs(cross) > 1e-6) {
+                        let t = ((r2.x - r1.x) * r2.dy - (r2.y - r1.y) * r2.dx) / cross;
+                        let imgX = r1.x + t * r1.dx;
+                        let imgY = r1.y + t * r1.dy;
+                        
+                        let color = rayColors[(r1.bounceCount) % rayColors.length];
+                        images.push({
+                            x: imgX, y: imgY, color: color,
+                            label: `I${bCount}`, desc: `(via ${seq})`
+                        });
+
+                        dashedExtensions.push({ x1: r1.x, y1: r1.y, x2: imgX, y2: imgY, color });
+                        dashedExtensions.push({ x1: r2.x, y1: r2.y, x2: imgX, y2: imgY, color });
+                    }
+                }
+                bCount++;
             }
             return { paths: allPaths, images, dashedExtensions };
         }
@@ -530,20 +534,34 @@
             ctx.save();
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
-            if (dashed) { ctx.setLineDash([4, 4]); ctx.globalAlpha = 0.5; }
-            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            if (dashed) {
+                ctx.setLineDash([4, 4]);
+                ctx.globalAlpha = 0.5;
+            }
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
             ctx.setLineDash([]);
             
             if (showArrow) {
-                const dx = x2 - x1; const dy = y2 - y1; const len = Math.hypot(dx, dy);
+                const dx = x2 - x1;
+                const dy = y2 - y1;
+                const len = Math.hypot(dx, dy);
                 if (len > 30) {
                     const angle = Math.atan2(dy, dx);
-                    const midX = x1 + dx * 0.55; const midY = y1 + dy * 0.55;
-                    ctx.beginPath(); ctx.fillStyle = color;
+                    // Force arrowhead to stay on screen by capping the projection distance
+                    let arrowDist = Math.min(len * 0.55, 120); 
+                    const midX = x1 + (dx / len) * arrowDist;
+                    const midY = y1 + (dy / len) * arrowDist;
+
+                    ctx.beginPath();
+                    ctx.fillStyle = color;
                     ctx.moveTo(midX, midY);
-                    ctx.lineTo(midX - 10 * Math.cos(angle - 0.4), midY - 10 * Math.sin(angle - 0.4));
-                    ctx.lineTo(midX - 10 * Math.cos(angle + 0.4), midY - 10 * Math.sin(angle + 0.4));
-                    ctx.closePath(); ctx.fill();
+                    ctx.lineTo(midX - 12 * Math.cos(angle - 0.4), midY - 12 * Math.sin(angle - 0.4));
+                    ctx.lineTo(midX - 12 * Math.cos(angle + 0.4), midY - 12 * Math.sin(angle + 0.4));
+                    ctx.closePath();
+                    ctx.fill();
                 }
             }
             ctx.restore();
@@ -552,13 +570,17 @@
         function drawElementGeometry(el) {
             const cx = mapX(el.x);
             const cy = mapY(el.y);
-            const h = 200; 
+            const h = 200; // 100px radius aperture
             ctx.save();
             
-            if (el.id === selectedId) { ctx.shadowBlur = 15; ctx.shadowColor = "var(--primary)"; }
+            if (el.id === selectedId) {
+                ctx.shadowBlur = 15; ctx.shadowColor = "var(--primary)";
+            }
 
             if (el.type === 'lens') {
-                ctx.strokeStyle = "#00e5ff"; ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.lineWidth = 3;
+                ctx.strokeStyle = "#00e5ff"; 
+                ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; 
+                ctx.lineWidth = 3;
                 ctx.beginPath();
                 if (el.subtype === 'convex') {
                     ctx.moveTo(cx, cy - h/2);
@@ -612,7 +634,7 @@
             if(!initialized) return;
             ctx.clearRect(0, 0, W, H);
             
-            // Optical Grid (Central Axis)
+            // Optical Axis
             ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
             ctx.lineWidth = 1;
             ctx.setLineDash([5, 5]);
@@ -625,7 +647,7 @@
             // Execute Ray Tracing
             const { paths, images, dashedExtensions } = traceSystem();
             
-            // Draw Virtual Extensions to Image Points
+            // Draw Virtual Extensions to Image Points First
             dashedExtensions.forEach(ext => {
                 if (ext.x2 > -W && ext.x2 < W*2) { 
                     drawRaySegment(mapX(ext.x1), mapY(ext.y1), mapX(ext.x2), mapY(ext.y2), ext.color, true, false);
@@ -642,7 +664,7 @@
                 }
             });
 
-            // Draw Point Object (O)
+            // Draw Fixed Point Object (O)
             const ox = mapX(object.x);
             const oy = mapY(object.y);
             ctx.save();
