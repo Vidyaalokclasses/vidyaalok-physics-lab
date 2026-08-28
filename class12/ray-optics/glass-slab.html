@@ -292,7 +292,7 @@
 
       <!-- Formula Overlay -->
       <div id="formulaOverlay" class="formula-overlay">
-        \[ d = \frac{t \sin(i - r)}{\cos r} \]
+        \[ d = \frac{t \sin(i - r_1)}{\cos r_1} \]
         <div class="condition-text" id="conditionText">Valid when emergent ray is parallel to incident ray (n₁ = n₃).</div>
       </div>
     </div>
@@ -423,6 +423,27 @@
       ctx.restore();
     }
 
+    function drawAngleArc(cx, cy, radius, startAngle, endAngle, label, color) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, startAngle, endAngle, false);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Calculate label position slightly outside the arc
+      const midAngle = (startAngle + endAngle) / 2;
+      const lx = cx + (radius + 15) * Math.cos(midAngle);
+      const ly = cy + (radius + 15) * Math.sin(midAngle);
+      
+      ctx.fillStyle = color;
+      ctx.font = "italic 16px 'Segoe UI'";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, lx, ly);
+      ctx.restore();
+    }
+
     function drawNormal(x, y1, y2) {
       ctx.save();
       ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
@@ -436,29 +457,51 @@
     }
 
     function drawMediums(n1, n2, n3, yTop, yBottom) {
-      // Background colors mapping to refractive index density
-      const getBg = (n) => `rgba(0, 229, 255, ${Math.min((n - 1) * 0.15, 0.4)})`;
-
-      ctx.fillStyle = getBg(n1);
+      // Medium 1
+      ctx.fillStyle = `rgba(0, 229, 255, ${Math.min((n1 - 1) * 0.15, 0.3)})`;
       ctx.fillRect(0, 0, W, yTop);
 
-      ctx.fillStyle = getBg(n2);
+      // Glass Slab (Medium 2) - Enhanced 3D Glass Look
+      const slabGrad = ctx.createLinearGradient(0, yTop, 0, yBottom);
+      const alpha = Math.min((n2 - 1) * 0.25, 0.7);
+      slabGrad.addColorStop(0, `rgba(0, 255, 200, ${alpha + 0.15})`);
+      slabGrad.addColorStop(0.1, `rgba(0, 200, 255, ${alpha})`);
+      slabGrad.addColorStop(0.9, `rgba(0, 150, 255, ${alpha})`);
+      slabGrad.addColorStop(1, `rgba(0, 100, 255, ${alpha + 0.2})`);
+      ctx.fillStyle = slabGrad;
       ctx.fillRect(0, yTop, W, yBottom - yTop);
 
-      ctx.fillStyle = getBg(n3);
-      ctx.fillRect(0, yBottom, W, H - yBottom);
-
-      // Boundaries
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      // Glass Edge Highlights
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, yTop); ctx.lineTo(W, yTop);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      ctx.beginPath();
       ctx.moveTo(0, yBottom); ctx.lineTo(W, yBottom);
       ctx.stroke();
 
+      // Faint diagonal glass glare
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(W * 0.1, yTop);
+      ctx.lineTo(W * 0.2, yBottom);
+      ctx.moveTo(W * 0.8, yTop);
+      ctx.lineTo(W * 0.9, yBottom);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.lineWidth = 40;
+      ctx.stroke();
+      ctx.restore();
+
+      // Medium 3
+      ctx.fillStyle = `rgba(0, 229, 255, ${Math.min((n3 - 1) * 0.15, 0.3)})`;
+      ctx.fillRect(0, yBottom, W, H - yBottom);
+
       // Labels
-      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-      ctx.font = "13px 'Segoe UI'";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      ctx.font = "bold 13px 'Segoe UI'";
       ctx.fillText(`Medium 1 (n₁ = ${n1.toFixed(2)})`, 15, 25);
       ctx.fillText(`Glass Slab (n₂ = ${n2.toFixed(2)})`, 15, yTop + 25);
       ctx.fillText(`Medium 3 (n₃ = ${n3.toFixed(2)})`, 15, yBottom + 25);
@@ -493,12 +536,15 @@
 
       ctx.clearRect(0, 0, W, H);
       drawMediums(n1, n2, n3, yTop, yBottom);
+      drawNormal(p1x, 0, yBottom + 40);
 
       // 1. Incident Ray
       const incX = p1x - rayLen * Math.sin(i_rad);
       const incY = p1y - rayLen * Math.cos(i_rad);
       drawRay(incX, incY, p1x, p1y, "#ffffff", false, 1.0);
-      drawNormal(p1x, 0, yBottom + 40);
+
+      // Angle of Incidence Arc
+      drawAngleArc(p1x, p1y, 35, -Math.PI/2 - i_rad, -Math.PI/2, "i", "#ffffff");
 
       let stateMsg = "Double Refraction";
       let stateColor = "var(--primary)";
@@ -519,6 +565,10 @@
         const refX = p1x + rayLen * Math.sin(i_rad);
         const refY = p1y - rayLen * Math.cos(i_rad);
         drawRay(p1x, p1y, refX, refY, "#ffffff", false, 1.0);
+        
+        // Reflection Angle Arc
+        drawAngleArc(p1x, p1y, 45, -Math.PI/2, -Math.PI/2 + i_rad, "r'", "#ffffff");
+
       } else {
         r1_rad = Math.asin(sin_r1);
         r1_deg = r1_rad * 180 / Math.PI;
@@ -529,14 +579,21 @@
         const p2y = yBottom;
         drawRay(p1x, p1y, p2x, p2y, "#ffd166", false, 1.0);
         
+        // Angle of Refraction 1 Arc
+        drawAngleArc(p1x, p1y, 40, Math.PI/2 - r1_rad, Math.PI/2, "r₁", "#ffd166");
+
         // Partial reflection at top boundary
         const prefX = p1x + rayLen * Math.sin(i_rad);
         const prefY = p1y - rayLen * Math.cos(i_rad);
-        drawRay(p1x, p1y, prefX, prefY, "#ffffff", true, 0.2, false);
+        drawRay(p1x, p1y, prefX, prefY, "#ffffff", true, 0.25, false);
+        drawAngleArc(p1x, p1y, 45, -Math.PI/2, -Math.PI/2 + i_rad, "r'", "rgba(255,255,255,0.5)");
 
         // Second Boundary Refraction (Incident angle is r1_rad)
         const sin_r2 = (n2 / n3) * Math.sin(r1_rad);
         drawNormal(p2x, yTop - 40, H);
+
+        // Angle of Incidence 2 Arc (inside slab at bottom boundary)
+        drawAngleArc(p2x, p2y, 35, -Math.PI/2 - r1_rad, -Math.PI/2, "r₂", "#ffd166");
 
         if (sin_r2 > 1.0) {
           // TIR at Bottom Boundary
@@ -550,6 +607,10 @@
           const ref2X = p2x + rayLen * Math.sin(r1_rad);
           const ref2Y = p2y - rayLen * Math.cos(r1_rad);
           drawRay(p2x, p2y, ref2X, ref2Y, "#ffd166", false, 1.0);
+          
+          // Internal Reflection Arc
+          drawAngleArc(p2x, p2y, 45, -Math.PI/2, -Math.PI/2 + r1_rad, "r'", "#ffd166");
+
         } else {
           // Ray emerges
           shiftCard.classList.remove("alert");
@@ -560,11 +621,14 @@
           const emX = p2x + rayLen * Math.sin(r2_rad);
           const emY = p2y + rayLen * Math.cos(r2_rad);
           drawRay(p2x, p2y, emX, emY, "#00ffaa", false, 1.0);
+          
+          // Angle of Emergence Arc
+          drawAngleArc(p2x, p2y, 40, Math.PI/2 - r2_rad, Math.PI/2, "e", "#00ffaa");
 
           // Partial reflection inside slab at bottom boundary
           const pref2X = p2x + rayLen * Math.sin(r1_rad);
           const pref2Y = p2y - rayLen * Math.cos(r1_rad);
-          drawRay(p2x, p2y, pref2X, pref2Y, "#ffd166", true, 0.2, false);
+          drawRay(p2x, p2y, pref2X, pref2Y, "#ffd166", true, 0.25, false);
 
           // Lateral Shift Calculation & Drawing
           // Extended incident ray path
@@ -577,8 +641,6 @@
           drawRay(extXBottom, yBottom, extEndX, extEndY, "rgba(255,255,255,0.15)", true, 0.5, false);
 
           // Perpendicular distance calculation
-          // Shift is exactly defined when n1 == n3 (rays are parallel).
-          // We calculate the horizontal gap at the exit plane and project it.
           const dx = extXBottom - p2x; 
           const shift = Math.abs(dx * Math.cos(i_rad));
           
@@ -595,8 +657,6 @@
               ctx.setLineDash([4, 4]);
               ctx.lineWidth = 2;
               ctx.beginPath();
-              // Drop perpendicular from p2 to extended line
-              // Direction of extended line is (sin i, cos i). Normal is (cos i, -sin i)
               const perpX = p2x + shift * Math.cos(i_rad) * Math.sign(dx);
               const perpY = p2y - shift * Math.sin(i_rad) * Math.sign(dx);
               ctx.moveTo(p2x, p2y);
