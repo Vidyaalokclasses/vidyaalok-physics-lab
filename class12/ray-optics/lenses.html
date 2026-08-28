@@ -31,13 +31,14 @@
       --panel-bg: rgba(255, 255, 255, 0.03);
       --text-main: #ffffff;
       --text-muted: #a0aabf;
+      --gold: #ffd166;
       --border: rgba(255, 255, 255, 0.1);
       
-      --ray-1: #ff3366;        
-      --ray-2: #ffffff;        
-      --obj-color: #ffd166;    
-      --real-img: #00ffaa;     
-      --virtual-img: #c7a6ff;  
+      --ray-1: #ff3366;        /* Parallel Ray */
+      --ray-2: #ffffff;        /* Center Ray */
+      --obj-color: #ffd166;    /* Object */
+      --real-img: #00ffaa;     /* Real Image */
+      --virtual-img: #c7a6ff;  /* Virtual Image */
     }
 
     * { box-sizing: border-box; }
@@ -46,7 +47,8 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100dvh; /* Modern viewport height for mobile browsers */
+      height: 100vh;
+      height: 100dvh; /* Dynamic viewport height for mobile */
       font-family: 'Segoe UI', system-ui, sans-serif;
       background-color: var(--bg-dark);
       color: var(--text-main);
@@ -96,7 +98,6 @@
       padding: 1.5rem;
       gap: 1.5rem;
       height: calc(100dvh - 50px);
-      position: relative;
     }
 
     /* Left Control Panel */
@@ -161,22 +162,13 @@
       text-align: center;
     }
 
-    .tool-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: var(--primary);
-    }
-
-    .tool-btn.active {
-      border-color: var(--gold);
-      background: rgba(255, 209, 102, 0.15);
-      color: var(--gold);
-    }
+    .tool-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--primary); }
+    .tool-btn.active { border-color: var(--gold); background: rgba(255, 209, 102, 0.15); color: var(--gold); }
 
     /* Sliders */
     .control-group {
       margin-top: 10px;
     }
-
     .control-group label {
       display: flex;
       justify-content: space-between;
@@ -187,13 +179,11 @@
       letter-spacing: 1px;
       margin-bottom: 5px;
     }
-
     .control-group span {
       color: var(--text-main);
       font-family: monospace;
       font-size: 0.9rem;
     }
-
     input[type=range] {
       -webkit-appearance: none;
       width: 100%;
@@ -217,55 +207,6 @@
       border-radius: 2px;
     }
 
-    /* Stats Grid */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .stat {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 10px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .stat strong {
-      color: var(--secondary);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-
-    .stat span {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: var(--text-main);
-      font-family: monospace;
-    }
-
-    /* Formula Panel */
-    .formula-panel {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(0, 229, 255, 0.2);
-      text-align: center;
-      margin-top: 15px;
-      color: var(--primary);
-      font-weight: bold;
-    }
-
-    .formula-panel mjx-container {
-      font-size: 1.05rem;
-    }
-
     /* Right Panel Layout (Canvas) */
     .right-panel {
       flex-grow: 1;
@@ -283,6 +224,10 @@
     }
 
     .canvas-head {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
       padding: 12px 18px;
       display: flex;
       justify-content: space-between;
@@ -291,11 +236,8 @@
       font-size: 0.9rem;
       font-weight: bold;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0,0,0,0.2);
-      z-index: 2;
-      position: absolute;
-      top: 0;
-      width: 100%;
+      background: rgba(0,0,0,0.3);
+      z-index: 15;
     }
 
     .canvas-head span:first-child { color: var(--primary); }
@@ -338,6 +280,27 @@
       touch-action: none; 
     }
 
+    /* Floating Stats Overlay */
+    .stats-overlay {
+      position: absolute;
+      top: 50px; /* Below canvas head */
+      right: 15px; /* Default desktop position */
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px 15px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      pointer-events: none;
+    }
+    .stat-mini { display: flex; flex-direction: column; }
+    .stat-mini strong { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .stat-mini span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
+
     /* Legend */
     .legend {
       position: absolute;
@@ -347,74 +310,77 @@
       flex-wrap: wrap;
       gap: 15px;
       padding: 12px 18px;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0,0,0,0.65);
+      border: 1px solid var(--border);
       border-radius: 8px;
+      backdrop-filter: blur(8px);
       font-size: 0.85rem;
       color: var(--text-muted);
-      z-index: 2;
+      z-index: 10;
       pointer-events: none;
     }
+    .leg { display: flex; align-items: center; gap: 6px; }
+    .leg-line { width: 16px; height: 3px; border-radius: 2px; }
+    .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
 
-    .leg {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    /* Formula Overlay */
+    .formula-overlay {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 10px 20px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+      color: var(--primary);
+      pointer-events: none; 
+      text-align: center;
     }
+    .formula-overlay mjx-container { font-size: 0.95rem; }
 
-    .leg-line {
-      width: 20px;
-      height: 3px;
-      border-radius: 2px;
-    }
-    .leg-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-    }
-
-    /* Mobile & Tablet Responsive Layout - HUD Style */
+    /* Mobile & Tablet Responsive Layout */
     @media (max-width: 900px) {
       .workspace {
+        flex-direction: column; /* Stack vertically */
         padding: 0;
         gap: 0;
       }
       .right-panel {
         border-radius: 0;
         border: none;
-        height: 100% !important;
-        flex-grow: 1;
-      }
-      .canvas-head {
-        background: rgba(0,0,0,0.5);
+        flex: 1 1 55%; /* Canvas takes top ~55% */
+        height: auto !important; 
+        width: 100%;
       }
       .controls {
-        position: absolute;
-        bottom: 0;
-        left: 0;
+        position: relative;
         width: 100%;
-        max-height: 45vh; /* Covers bottom half of screen */
-        border-radius: 24px 24px 0 0;
-        background: rgba(7, 11, 25, 0.85); /* Semi-transparent HUD */
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
-        padding: 1.2rem;
+        flex: 1 1 45%; /* Controls take bottom ~45% */
+        border-radius: 20px 20px 0 0;
+        background: rgba(7, 11, 25, 0.95);
+        padding: 1rem 1.5rem;
         border-top: 1px solid rgba(0, 229, 255, 0.3);
-        border-left: none;
-        border-right: none;
-        border-bottom: none;
+        border-left: none; border-right: none; border-bottom: none;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
       }
-      .controls h2, .formula-panel {
-        display: none; /* Hidden on mobile to save space */
+      .controls h2 { display: none; } /* Hide title to save space */
+      
+      .canvas-head { padding: 8px 12px; font-size: 0.75rem; }
+      
+      /* Reposition Overlays for Mobile */
+      .stats-overlay {
+        top: 40px; /* Below canvas head */
+        left: 10px; /* Force to Top-Left */
+        right: auto;
+        padding: 8px 12px;
+        gap: 8px;
       }
-      .panel-section {
-        padding: 10px;
-        background: transparent;
-        border: none;
-      }
-      .legend { display: none; }
-      .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-      .stat { padding: 8px; background: rgba(255,255,255,0.05); border: none; }
-      .stat strong { font-size: 0.6rem; margin-bottom: 2px; }
-      .stat span { font-size: 0.9rem; }
-      .stat:last-child { grid-column: span 3; text-align: center; }
+      .stat-mini strong { font-size: 0.55rem; margin-bottom: 2px; }
+      .stat-mini span { font-size: 0.9rem; }
+      
+      .legend, .formula-overlay { display: none; } /* Hide secondary elements to maximize view */
     }
   </style>
 </head>
@@ -427,7 +393,7 @@
 
   <div class="workspace">
     
-    <!-- Simulation Area -->
+    <!-- Simulation Area (Top on Mobile) -->
     <div class="right-panel">
       <div class="canvas-wrapper" id="simWrapper">
         <div class="canvas-head">
@@ -438,6 +404,20 @@
         <div class="watermark"></div>
         <canvas id="lensCanvas"></canvas>
 
+        <!-- Stats Overlay (Top-Left on Mobile, Top-Right on Desktop) -->
+        <div class="stats-overlay">
+          <div class="stat-mini"><strong>Image Dist (v)</strong><span id="vOut">0 cm</span></div>
+          <div class="stat-mini"><strong>Magnification (m)</strong><span id="mOut">0.00</span></div>
+          <div class="stat-mini" style="grid-column: span 2;"><strong>Nature</strong><span id="natureOut">Real & Inverted</span></div>
+        </div>
+
+        <!-- Formula Overlay (Hidden on Mobile) -->
+        <div class="formula-overlay" id="formulas">
+          \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad u = \frac{vf}{f-v} \]
+          \[ m = \frac{v}{u} = \frac{f}{f+u} \]
+        </div>
+
+        <!-- Legend Overlay (Hidden on Mobile) -->
         <div class="legend">
           <div class="leg"><div class="leg-line" style="background: var(--ray-1);"></div> Parallel Ray</div>
           <div class="leg"><div class="leg-line" style="background: var(--ray-2);"></div> Center Ray</div>
@@ -449,11 +429,11 @@
       </div>
     </div>
 
-    <!-- HUD Control Panel (Overlay on Mobile) -->
+    <!-- Bottom/Left: Controls Area -->
     <aside class="controls">
       <h2>System Controls</h2>
       
-      <div class="panel-section">
+      <div class="panel-section" style="padding: 10px; background: transparent; border: none;">
         <div class="tool-row">
           <button class="tool-btn active" id="btnConvex">◖ Convex ◗</button>
           <button class="tool-btn" id="btnConcave">◗ Concave ◖</button>
@@ -472,19 +452,6 @@
         <div class="control-group">
           <label>Object Height (hₒ) <span id="hVal">50 cm</span></label>
           <input id="hSlider" type="range" min="10" max="100" step="1" value="50">
-        </div>
-      </div>
-
-      <div class="panel-section" style="margin-top: auto; padding-bottom: 0;">
-        <div class="stat-grid">
-          <div class="stat"><strong>Image Dist (v)</strong><span id="vOut">0 cm</span></div>
-          <div class="stat"><strong>Magnification (m)</strong><span id="mOut">0.00</span></div>
-          <div class="stat" style="grid-column: span 2;"><strong>Nature of Image</strong><span id="natureOut">Real & Inverted</span></div>
-        </div>
-        
-        <div class="formula-panel" id="formulas">
-          \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad u = \frac{vf}{f-v} \]
-          \[ m = \frac{v}{u} = \frac{f}{f+u} \]
         </div>
       </div>
 
@@ -510,7 +477,7 @@
     const natureOut = document.getElementById("natureOut");
     const canvasTitle = document.getElementById("canvasTitle");
 
-    // Color definitions mapped to CSS variables
+    // Color definitions
     const colorRay1 = "#ff3366"; // Pink (Parallel Ray)
     const colorRay2 = "#ffffff"; // White (Center Ray)
     const extColor = "rgba(255, 255, 255, 0.4)"; // Faint white for virtual
@@ -597,7 +564,7 @@
     canvas.addEventListener("mouseup", () => isDragging = false);
     canvas.addEventListener("mouseleave", () => isDragging = false);
     
-    // Touch support for dragging object smoothly behind HUD
+    // Touch support for dragging object smoothly
     canvas.addEventListener("touchstart", (e) => {
       if(e.target === canvas) {
         const cx = W / 2;
@@ -727,18 +694,21 @@
 
     // Graph Drawing inside Canvas
     function drawGraphOverlay(cx, cy, u, v, f) {
-      // Draw Graph in top left
-      const gWidth = Math.min(180, W * 0.25);
+      const isMobile = W <= 900;
+      // Dynamically size graph to fit screen safely
+      const gWidth = isMobile ? Math.min(100, W * 0.28) : Math.min(180, W * 0.25);
       const gHeight = gWidth;
-      const gX = 20; 
-      const gY = W > 900 ? 60 : 40; // Avoid top nav/title
+      
+      // Top-Right on mobile, Top-Left on desktop (to avoid stats overlay)
+      const gX = isMobile ? (W - gWidth - 10) : 20; 
+      const gY = 45; // Clears the canvas header safely
       
       ctx.save();
       
       // Graph Background
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
       ctx.fillRect(gX, gY, gWidth, gHeight);
-      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.strokeStyle = "rgba(255,255,255,0.15)";
       ctx.lineWidth = 1;
       ctx.strokeRect(gX, gY, gWidth, gHeight);
 
@@ -759,7 +729,7 @@
       const uAsym = orgX + (-f) * scale;
       const vAsym = orgY - (f) * scale; // Y is inverted on canvas
 
-      ctx.strokeStyle = "rgba(255, 209, 102, 0.5)"; // Gold dashed
+      ctx.strokeStyle = "rgba(255, 209, 102, 0.6)"; // Gold dashed
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
       ctx.moveTo(uAsym, gY); ctx.lineTo(uAsym, gY + gHeight);
@@ -780,7 +750,7 @@
         const realV = (realU * f) / (realU + f);
         const pxV = -realV * scale; // Invert Y
         
-        if (Math.abs(pxV) > gHeight/2) continue; // Clip to box
+        if (Math.abs(pxV) > gHeight/2) continue; // Clip to box bounds
         
         if (realU < -f) {
           if (first1) { ctx.moveTo(orgX + pxU, orgY + pxV); first1 = false; }
@@ -796,7 +766,7 @@
       const ptU = u * scale;
       const ptV = -v * scale;
       if (Math.abs(ptU) <= gWidth/2 && Math.abs(ptV) <= gHeight/2) {
-        ctx.fillStyle = "#ff007f";
+        ctx.fillStyle = "#ff007f"; // Bright pink dot for visibility
         ctx.beginPath();
         ctx.arc(orgX + ptU, orgY + ptV, 4, 0, Math.PI * 2);
         ctx.fill();
@@ -807,7 +777,7 @@
       ctx.font = "10px 'Segoe UI'";
       ctx.fillText("u", gX + gWidth - 12, orgY - 6);
       ctx.fillText("v", orgX + 6, gY + 12);
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
       ctx.fillText("v-u Graph", gX + 6, gY + 14);
 
       ctx.restore();
@@ -862,7 +832,7 @@
       // Drawing Setup
       ctx.clearRect(0, 0, W, H);
       const cx = W / 2;
-      const cy = H / 2; // Center based on full canvas height
+      const cy = H / 2; // Center axis horizontally
       
       // Draw Principal Axis
       ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
@@ -877,10 +847,11 @@
       drawPoint(cx + f_mag, cy, "F₂", true);
       drawPoint(cx - 2*f_mag, cy, "2F₁");
       drawPoint(cx + 2*f_mag, cy, "2F₂");
-      drawPoint(cx, cy, "P");
+      drawPoint(cx, cy, "O");
 
-      // Draw Lens
-      drawLens(cx, cy, Math.max(250, ho * 2 + 50));
+      // Draw Lens (Dynamically scale height to not overlap UI too much)
+      const lensHeight = W <= 900 ? Math.max(H * 0.6, ho * 2 + 30) : Math.max(250, ho * 2 + 50);
+      drawLens(cx, cy, lensHeight);
 
       // Coordinate mapping
       const objX = cx + u; 
