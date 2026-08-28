@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lens & Mirror Combos | Vidyaalok Lab</title>
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L8DFSQTR66');
+  </script>
+
+  <style>
+    :root {
+      --primary: #00e5ff;
+      --secondary: #ff007f;
+      --bg-dark: #070b19;
+      --panel-bg: rgba(7, 11, 25, 0.85);
+      --text-main: #ffffff;
+      --text-muted: #a0aabf;
+      --gold: #ffd166;
+      --border: rgba(0, 229, 255, 0.2);
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100vh;
+      background-color: var(--bg-dark); color: var(--text-main);
+      overflow: hidden; 
+    }
+    
+    /* Top Navbar */
+    .navbar {
+      padding: 12px 20px;
+      background: rgba(7, 11, 25, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 100; position: relative;
+    }
+    .back-btn {
+      color: var(--primary); text-decoration: none; font-weight: 600;
+      text-transform: uppercase; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;
+    }
+    .navbar h1 { margin: 0; font-size: 1.1rem; color: rgba(255,255,255,0.9); }
+
+    /* Simulator Workspace */
+    .workspace {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 45px);
+      display: flex;
+    }
+
+    /* Canvas Area */
+    .canvas-wrapper {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%);
+      z-index: 1;
+    }
+    canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+    
+    .watermark {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 60%; height: 60%;
+      background-image: url('../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center;
+      opacity: 0.06; pointer-events: none; z-index: 0;
+    }
+
+    /* HUD Controls Panel */
+    .hud-panel {
+      position: absolute;
+      z-index: 50;
+      background: var(--panel-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    }
+
+    /* Desktop HUD positioning */
+    @media (min-width: 901px) {
+      .hud-panel {
+        top: 20px; left: 20px;
+        width: 360px; max-height: calc(100% - 40px);
+        border-radius: 16px;
+      }
+    }
+
+    /* Mobile HUD positioning (Overlay inside Simulator) */
+    @media (max-width: 900px) {
+      .hud-panel {
+        bottom: 0; left: 0;
+        width: 100%; height: 45vh;
+        border-radius: 20px 20px 0 0;
+        border-bottom: none;
+      }
+    }
+
+    .hud-header {
+      padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0;
+    }
+    .hud-header h2 { margin: 0; font-size: 1.1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;}
+    
+    .hud-content {
+      padding: 15px; overflow-y: auto; flex-grow: 1;
+      display: flex; flex-direction: column; gap: 15px;
+    }
+
+    /* UI Components */
+    .section-title { font-size: 0.75rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold;}
+    
+    .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .btn {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; padding: 8px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
+    .btn.danger { border-color: rgba(255,51,102,0.4); color: #ff3366; }
+    
+    .element-list { display: flex; flex-direction: column; gap: 6px; }
+    .element-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+    }
+    .element-item.active { border-color: var(--gold); background: rgba(255, 209, 102, 0.15); }
+    
+    /* Sliders */
+    .control-group { margin-bottom: 12px; }
+    .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: bold; margin-bottom: 6px;}
+    .control-group span { color: var(--primary); font-family: monospace; }
+    
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+
+    .editor-panel {
+      background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="back-btn">← Chapter 09</a>
+    <h1>Lens & Mirror Combos</h1>
+  </nav>
+
+  <div class="workspace">
+    <!-- Simulator Canvas Area -->
+    <div class="canvas-wrapper" id="simWrapper">
+      <div class="watermark"></div>
+      <canvas id="simCanvas"></canvas>
+    </div>
+
+    <!-- HUD Controls Panel (Inside Simulator) -->
+    <div class="hud-panel">
+      <div class="hud-header">
+        <h2>System Controls</h2>
+      </div>
+      
+      <div class="hud-content">
+        <!-- Object Controls -->
+        <div>
+          <div class="section-title">Object Settings</div>
+          <div class="control-group">
+            <label>Position (X) <span id="objXVal">-200</span></label>
+            <input id="objX" type="range" min="-400" max="400" step="5" value="-200">
+          </div>
+          <div class="control-group">
+            <label>Height (h) <span id="objHVal">40</span></label>
+            <input id="objH" type="range" min="10" max="100" step="5" value="40">
+          </div>
+        </div>
+
+        <!-- Add Elements -->
+        <div>
+          <div class="section-title">Add Optical Element</div>
+          <div class="toolbar">
+            <button class="btn" onclick="addElement('lens', 'convex')">+ Convex Lens</button>
+            <button class="btn" onclick="addElement('lens', 'concave')">+ Concave Lens</button>
+            <button class="btn" onclick="addElement('mirror', 'concave')">+ Concave Mirror</button>
+            <button class="btn" onclick="addElement('mirror', 'convex')">+ Convex Mirror</button>
+            <button class="btn" onclick="addElement('mirror', 'plane')" style="grid-column: span 2;">+ Plane Mirror</button>
+          </div>
+        </div>
+
+        <!-- Active Elements List -->
+        <div>
+          <div class="section-title">Optical Path</div>
+          <div class="element-list" id="elementList"></div>
+        </div>
+
+        <!-- Selected Element Editor -->
+        <div id="editorPanel" class="editor-panel" style="display: none;">
+          <div class="section-title" id="editorTitle">Edit Element</div>
+          <div class="control-group">
+            <label>Position (X) <span id="elXVal">0</span></label>
+            <input id="elX" type="range" min="-400" max="400" step="5" value="0">
+          </div>
+          <div class="control-group" id="focalGroup">
+            <label>Focal Length (f) <span id="elFVal">100</span></label>
+            <input id="elF" type="range" min="20" max="300" step="5" value="100">
+          </div>
+          <button class="btn danger" style="width: 100%; margin-top: 5px;" onclick="deleteSelected()">Remove Element</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("simCanvas");
+    const ctx = canvas.getContext("2d");
+    
+    // UI Elements
+    const objXSlider = document.getElementById("objX");
+    const objHSlider = document.getElementById("objH");
+    const elXSlider = document.getElementById("elX");
+    const elFSlider = document.getElementById("elF");
+    const elementListUI = document.getElementById("elementList");
+    const editorPanel = document.getElementById("editorPanel");
+    
+    let W = 0, H = 0;
+    let initialized = false;
+
+    // Physics State
+    let object = { x: -200, h: 40 };
+    let elements = [
+      { id: 1, type: 'lens', subtype: 'convex', x: 0, f: 100 },
+      { id: 2, type: 'mirror', subtype: 'concave', x: 250, f: 150 }
+    ];
+    let selectedId = null;
+    let nextId = 3;
+
+    // --- RESIZE OBSERVER ---
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        if (entry.target.id === 'simWrapper') {
+          W = Math.floor(entry.contentRect.width);
+          H = Math.floor(entry.contentRect.height);
+          canvas.width = W;
+          canvas.height = H;
+          if (!initialized && W > 10 && H > 10) {
+            initialized = true; draw();
+          } else if (initialized) { draw(); }
+        }
+      }
+    });
+    resizeObserver.observe(document.getElementById('simWrapper'));
+    
+    setTimeout(() => {
+      if (!initialized && canvas.parentElement.clientWidth > 10) {
+        W = canvas.parentElement.clientWidth; H = canvas.parentElement.clientHeight || 500; 
+        canvas.width = W; canvas.height = H; initialized = true; draw();
+      }
+    }, 300);
+
+    // --- LOGIC & UI UPDATES ---
+    function updateUI() {
+      document.getElementById("objXVal").textContent = object.x;
+      document.getElementById("objHVal").textContent = object.h;
+      
+      // Sort elements physically left to right for the UI list
+      const sorted = [...elements].sort((a,b) => a.x - b.x);
+      
+      elementListUI.innerHTML = "";
+      if(sorted.length === 0) elementListUI.innerHTML = "<div style='color:var(--text-muted); font-size:0.8rem;'>No elements in path.</div>";
+      
+      sorted.forEach(el => {
+        const div = document.createElement("div");
+        div.className = "element-item" + (el.id === selectedId ? " active" : "");
+        let name = el.subtype.charAt(0).toUpperCase() + el.subtype.slice(1) + " " + el.type.charAt(0).toUpperCase() + el.type.slice(1);
+        div.innerHTML = `<span>${name}</span> <span>x: ${el.x}</span>`;
+        div.onclick = () => selectElement(el.id);
+        elementListUI.appendChild(div);
+      });
+
+      const sel = elements.find(e => e.id === selectedId);
+      if (sel) {
+        editorPanel.style.display = "block";
+        document.getElementById("editorTitle").textContent = `Edit ${sel.subtype} ${sel.type}`;
+        elXSlider.value = sel.x;
+        document.getElementById("elXVal").textContent = sel.x;
+        
+        if (sel.subtype === 'plane') {
+          document.getElementById("focalGroup").style.display = "none";
+        } else {
+          document.getElementById("focalGroup").style.display = "block";
+          elFSlider.value = sel.f;
+          document.getElementById("elFVal").textContent = sel.f;
+        }
+      } else {
+        editorPanel.style.display = "none";
+      }
+    }
+
+    function addElement(type, subtype) {
+      elements.push({ id: nextId++, type, subtype, x: 100, f: 100 });
+      selectedId = nextId - 1;
+      updateUI(); draw();
+    }
+
+    function selectElement(id) {
+      selectedId = id;
+      updateUI(); draw();
+    }
+
+    function deleteSelected() {
+      elements = elements.filter(e => e.id !== selectedId);
+      selectedId = null;
+      updateUI(); draw();
+    }
+
+    // Input Listeners
+    objXSlider.addEventListener("input", (e) => { object.x = parseFloat(e.target.value); updateUI(); draw(); });
+    objHSlider.addEventListener("input", (e) => { object.h = parseFloat(e.target.value); updateUI(); draw(); });
+    elXSlider.addEventListener("input", (e) => {
+      const sel = elements.find(el => el.id === selectedId);
+      if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }
+    });
+    elFSlider.addEventListener("input", (e) => {
+      const sel = elements.find(el => el.id === selectedId);
+      if(sel) { sel.f = parseFloat(e.target.value); updateUI(); draw(); }
+    });
+
+    // --- PARAXIAL RAY TRACING ENGINE ---
+    function traceRays() {
+      const rays = [];
+      // Shoot rays with slight vertical spread to form accurate focal/image intersections
+      const initialSlopes = [-0.08, -0.04, 0, 0.04, 0.08];
+      
+      for (let m of initialSlopes) {
+        let ray = { x: object.x, y: object.h, dx: 1, dy: m };
+        let path = [{ x: ray.x, y: ray.y }];
+        let bounces = 0;
+        
+        while (bounces < 10) {
+          let nextEl = null;
+          let minDist = Infinity;
+          
+          // Find the next optical element in the ray's path
+          for (let el of elements) {
+            let dist = (el.x - ray.x) * ray.dx;
+            if (dist > 0.01 && dist < minDist) {
+              minDist = dist;
+              nextEl = el;
+            }
+          }
+          
+          if (!nextEl) {
+            // Ray shoots off to infinity
+            path.push({ x: ray.x + ray.dx * 3000, y: ray.y + ray.dy * 3000 });
+            break;
+          }
+          
+          // Calculate intersection height on the element's plane
+          let hitY = ray.y + (nextEl.x - ray.x) * (ray.dy / Math.abs(ray.dx));
+          path.push({ x: nextEl.x, y: hitY });
+          
+          // Unified Paraxial Transformation
+          // dy conceptually represents the vertical slope relative to the horizontal travel direction
+          let f_val;
+          if (nextEl.type === 'lens') {
+            f_val = nextEl.subtype === 'convex' ? nextEl.f : -nextEl.f;
+            ray.dy += -hitY / f_val; // Bends ray without changing horizontal direction
+          } else if (nextEl.type === 'mirror') {
+            if (nextEl.subtype === 'plane') f_val = Infinity;
+            else if (nextEl.subtype === 'concave') f_val = nextEl.f; // Converging
+            else f_val = -nextEl.f; // Diverging (Convex mirror)
+            
+            ray.dy += -hitY / f_val; 
+            ray.dx = -ray.dx; // Reverses horizontal direction
+          }
+          
+          ray.x = nextEl.x;
+          ray.y = hitY;
+          bounces++;
+        }
+        rays.push(path);
+      }
+      return rays;
+    }
+
+    // --- DRAWING UTILS ---
+    function mapX(x) { return W / 2 + x; }
+    function mapY(y) { return H / 2 - y; }
+
+    function drawElementGeometry(el) {
+      const cx = mapX(el.x);
+      const cy = H / 2;
+      const h = 140; // visual height
+      ctx.save();
+      
+      if (el.id === selectedId) {
+        ctx.shadowBlur = 15; ctx.shadowColor = "var(--gold)";
+      }
+
+      if (el.type === 'lens') {
+        ctx.strokeStyle = "#00e5ff"; ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.lineWidth = 3;
+        ctx.beginPath();
+        if (el.subtype === 'convex') {
+          ctx.moveTo(cx, cy - h/2);
+          ctx.quadraticCurveTo(cx + 25, cy, cx, cy + h/2);
+          ctx.quadraticCurveTo(cx - 25, cy, cx, cy - h/2);
+        } else {
+          ctx.moveTo(cx - 15, cy - h/2); ctx.lineTo(cx + 15, cy - h/2);
+          ctx.quadraticCurveTo(cx - 5, cy, cx + 15, cy + h/2); ctx.lineTo(cx - 15, cy + h/2);
+          ctx.quadraticCurveTo(cx + 5, cy, cx - 15, cy - h/2);
+        }
+        ctx.fill(); ctx.stroke();
+      } 
+      else if (el.type === 'mirror') {
+        ctx.lineWidth = 4;
+        
+        // Assume default orientation: Reflective side faces the origin/object
+        const facesRight = el.x < object.x; 
+        const curveDir = facesRight ? -1 : 1; 
+
+        if (el.subtype === 'plane') {
+          ctx.strokeStyle = "#8de5ff";
+          ctx.beginPath(); ctx.moveTo(cx, cy - h/2); ctx.lineTo(cx, cy + h/2); ctx.stroke();
+          // Hatch marks on back
+          ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
+          for(let y = cy - h/2 + 5; y < cy + h/2; y += 10) {
+            ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 8 * curveDir, y + 8); ctx.stroke();
+          }
+        } 
+        else {
+          // Curved Mirrors
+          ctx.strokeStyle = "#ff007f";
+          ctx.beginPath();
+          const bulge = el.subtype === 'concave' ? 25 * curveDir : -25 * curveDir;
+          ctx.moveTo(cx, cy - h/2);
+          ctx.quadraticCurveTo(cx + bulge, cy, cx, cy + h/2);
+          ctx.stroke();
+          
+          // Hatch marks
+          ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
+          for(let t = 0.1; t < 1; t += 0.08) {
+            // Parametric quadratic bezier evaluation
+            const px = cx + bulge * 2 * (1 - t) * t;
+            const py = (cy - h/2) * Math.pow(1 - t, 2) + cy * 2 * (1 - t) * t + (cy + h/2) * Math.pow(t, 2);
+            ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 8 * curveDir, py + 8); ctx.stroke();
+          }
+        }
+      }
+      ctx.restore();
+      
+      // Label
+      ctx.fillStyle = el.id === selectedId ? "var(--gold)" : "#fff";
+      ctx.font = "bold 12px 'Segoe UI'";
+      ctx.fillText(`E${el.id}`, cx - 8, cy + h/2 + 20);
+    }
+
+    function draw() {
+      if(!initialized) return;
+      ctx.clearRect(0, 0, W, H);
+      
+      // Principal Axis
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+
+      // Draw Elements
+      elements.forEach(drawElementGeometry);
+
+      // Draw Object
+      const ox = mapX(object.x);
+      const oy = mapY(0);
+      const tipY = mapY(object.h);
+      
+      ctx.strokeStyle = "var(--gold)"; ctx.fillStyle = "var(--gold)"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, tipY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(ox, tipY); ctx.lineTo(ox - 6, tipY + 10); ctx.lineTo(ox + 6, tipY + 10); ctx.fill();
+      ctx.font = "bold 14px 'Segoe UI'"; ctx.fillText("O", ox - 18, tipY - 5);
+
+      // Trace & Draw Rays
+      const paths = traceRays();
+      
+      paths.forEach((path, idx) => {
+        for(let i = 0; i < path.length - 1; i++) {
+          let p1 = path[i];
+          let p2 = path[i+1];
+          
+          // Solid Real Ray
+          ctx.strokeStyle = "rgba(0, 229, 255, 0.75)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(mapX(p1.x), mapY(p1.y));
+          ctx.lineTo(mapX(p2.x), mapY(p2.y));
+          ctx.stroke();
+
+          // Draw dashed virtual extension backwards from the outgoing bounce
+          if (i > 0 || elements.length === 0) {
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(mapX(p1.x), mapY(p1.y));
+            // Extend backwards deeply into the virtual space
+            ctx.lineTo(mapX(p1.x - dx * 10), mapY(p1.y - dy * 10));
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        }
+      });
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
