@@ -25,16 +25,20 @@
 
   <style>
     :root {
-      --primary: #00e5ff;      /* Center Ray */
-      --secondary: #ff007f;    /* Parallel Ray */
+      --primary: #00e5ff;      /* Lens/Glass */
+      --secondary: #ff007f;    /* UI Accents */
       --bg-dark: #070b19;
       --panel-bg: rgba(255, 255, 255, 0.03);
       --text-main: #ffffff;
       --text-muted: #a0aabf;
-      --gold: #ffd166;         /* Object */
       --border: rgba(255, 255, 255, 0.1);
-      --real-img: #00ffaa;     /* Real Image */
-      --virtual-img: #c7a6ff;  /* Virtual Image */
+      
+      /* Simulation specific colors */
+      --ray-1: #ff3366;        /* Parallel Ray */
+      --ray-2: #ffffff;        /* Center Ray */
+      --obj-color: #ffd166;    /* Object (Yellow) */
+      --real-img: #00ffaa;     /* Real Image (Green) */
+      --virtual-img: #c7a6ff;  /* Virtual Image (Purple) */
     }
 
     * { box-sizing: border-box; }
@@ -83,220 +87,28 @@
       font-size: 1.1rem;
       letter-spacing: 1px;
       color: rgba(255,255,255,0.8);
+      text-transform: uppercase;
     }
 
     /* Main Workspace Layout */
-    .workspace {
-      display: flex;
+    .main-panel {
       flex-grow: 1;
-      padding: 1.5rem;
-      gap: 1.5rem;
-      height: calc(100vh - 60px);
-    }
-
-    /* Left Control Panel */
-    .controls {
-      width: 380px;
-      flex-shrink: 0; 
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.2rem;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      overflow-y: auto;
-    }
-
-    .controls h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: var(--primary);
-      border-bottom: 1px solid rgba(0, 229, 255, 0.2);
-      padding-bottom: 0.5rem;
-    }
-
-    .panel-section {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .panel-title {
-      font-size: 0.85rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 10px;
-    }
-
-    .tool-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-
-    .tool-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: var(--text-main);
-      padding: 10px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: center;
-    }
-
-    .tool-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: var(--primary);
-    }
-
-    .tool-btn.active {
-      border-color: var(--gold);
-      background: rgba(255, 209, 102, 0.15);
-      color: var(--gold);
-    }
-
-    /* Sliders */
-    .control-group {
-      margin-top: 10px;
-    }
-
-    .control-group label {
-      display: flex;
-      justify-content: space-between;
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
-
-    .control-group span {
-      color: var(--text-main);
-      font-family: monospace;
-      font-size: 0.9rem;
-    }
-
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%;
-      background: transparent;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 16px;
-      width: 16px;
-      border-radius: 50%;
-      background: var(--primary);
-      cursor: pointer;
-      margin-top: -6px;
-      box-shadow: 0 0 10px var(--primary);
-    }
-    input[type=range]::-webkit-slider-runnable-track {
-      width: 100%;
-      height: 4px;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 2px;
-    }
-
-    /* Stats Grid */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .stat {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 10px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .stat strong {
-      color: var(--secondary);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-
-    .stat span {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: var(--text-main);
-      font-family: monospace;
-    }
-
-    /* Formula Panel */
-    .formula-panel {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(0, 229, 255, 0.2);
-      text-align: center;
-      margin-top: 15px;
-      color: var(--primary);
-      font-weight: bold;
-    }
-
-    .formula-panel mjx-container {
-      font-size: 1.05rem;
-    }
-
-    /* Right Panel Layout (Canvas) */
-    .right-panel {
-      flex-grow: 1;
-      min-width: 0; 
-      display: flex;
-      flex-direction: column;
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
-      overflow: hidden;
       position: relative;
-    }
-
-    .canvas-head {
-      padding: 12px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      font-weight: bold;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0,0,0,0.2);
-      z-index: 2;
-    }
-
-    .canvas-head span:first-child { color: var(--primary); }
-
-    .canvas-wrapper {
-      position: relative;
-      flex-grow: 1;
-      width: 100%;
       overflow: hidden;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Top: Canvas Area */
+    .canvas-area {
+      flex-grow: 1;
+      position: relative;
+      width: 100%;
       background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
+      overflow: hidden;
     }
 
     .watermark {
@@ -304,8 +116,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 75%; 
-      height: 75%;
+      width: 70%; 
+      height: 70%;
       background-image: url('../../logo.png'); 
       background-size: contain;
       background-repeat: no-repeat;
@@ -322,65 +134,196 @@
       display: block;
       width: 100%;
       height: 100%;
-      cursor: crosshair;
       z-index: 1;
-      touch-action: none; 
+      touch-action: none;
     }
 
-    /* Legend */
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
+    .canvas-head {
       padding: 12px 18px;
-      background: rgba(0,0,0,0.3);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: bold;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0,0,0,0.2);
+      position: relative;
       z-index: 2;
     }
 
-    .leg {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .canvas-head span:first-child { color: var(--primary); }
+
+    /* Floating Stats Overlay */
+    .stats-overlay {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px 15px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      pointer-events: none;
     }
 
-    .leg-line {
-      width: 20px;
-      height: 3px;
+    .stat-mini {
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-mini strong {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .stat-mini span {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--text-main);
+      font-family: monospace;
+    }
+
+    /* Formula Overlay */
+    .formula-overlay {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 10px 20px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10;
+      color: var(--primary);
+      pointer-events: none; 
+      text-align: center;
+    }
+
+    .formula-overlay mjx-container { font-size: 0.95rem; }
+
+    /* Legend Overlay */
+    .legend {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 10px 15px;
+      background: rgba(0,0,0,0.65);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      font-size: 0.8rem;
+      color: var(--text-main);
+      z-index: 10;
+      pointer-events: none;
+    }
+    .leg { display: flex; align-items: center; gap: 6px; }
+    .leg-line { width: 16px; height: 3px; border-radius: 2px; }
+    .leg-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Bottom: Controls Area */
+    .controls-area {
+      background: rgba(7, 11, 25, 0.95);
+      border-top: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 15px 25px;
+      flex-shrink: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      z-index: 20;
+      box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+    }
+
+    .tool-row {
+      display: flex;
+      gap: 8px;
+      grid-column: 1 / -1; /* spans full width */
+    }
+
+    .tool-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-main);
+      padding: 8px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+    .tool-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--primary); }
+    .tool-btn.active { border-color: var(--gold); background: rgba(255, 209, 102, 0.15); color: var(--gold); }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .control-group span {
+      color: var(--primary);
+      font-family: monospace;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      margin-top: -7px;
+      box-shadow: 0 0 10px var(--primary);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
       border-radius: 2px;
     }
-    .leg-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-    }
 
-    /* Mobile & Tablet Responsive Layout */
+    /* Mobile overrides */
     @media (max-width: 900px) {
-      * { box-sizing: border-box !important; }
-      body, html { 
-        overflow-x: hidden !important; 
-        overflow-y: auto !important; 
-        height: auto !important; 
+      .controls-area {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 12px 15px;
+        max-height: 38vh;
+        overflow-y: auto;
       }
-      .workspace {
-        flex-direction: column;
-        overflow-y: visible;
-        height: auto;
-        padding: 1rem;
+      .stats-overlay {
+        top: 5px; right: 5px; padding: 8px; gap: 8px;
+        grid-template-columns: 1fr 1fr;
       }
-      .controls {
-        width: 100%;
-      }
-      .right-panel {
-        height: auto !important;
-        flex-grow: 0;
-        margin-top: 1rem;
-      }
-      .canvas-wrapper {
-        min-height: 400px;
-        height: 400px;
-      }
+      .stat-mini span { font-size: 0.95rem; }
+      .formula-overlay { display: none; }
+      .legend { display: none; } /* Hidden on mobile to maximize view space */
+      .canvas-head { padding: 8px 12px; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -391,76 +334,65 @@
     <h1>Spherical Lenses</h1>
   </nav>
 
-  <div class="workspace">
+  <div class="main-panel">
     
-    <!-- Control Panel -->
-    <aside class="controls">
-      <h2>System Controls</h2>
-      
-      <div class="panel-section">
-        <div class="panel-title">1. Lens Type</div>
-        <div class="tool-row">
-          <button class="tool-btn active" id="btnConvex">◖ Convex ◗</button>
-          <button class="tool-btn" id="btnConcave">◗ Concave ◖</button>
-        </div>
-      </div>
-
-      <div class="panel-section">
-        <div class="panel-title">2. Modify Properties</div>
-        
-        <div class="control-group">
-          <label>Focal Length (f) <span id="fVal">100 px</span></label>
-          <input id="fSlider" type="range" min="40" max="250" step="1" value="100">
-        </div>
-        
-        <div class="control-group">
-          <label>Object Distance (u) <span id="uVal">150 px</span></label>
-          <input id="uSlider" type="range" min="20" max="400" step="1" value="150">
-        </div>
-
-        <div class="control-group">
-          <label>Object Height (hₒ) <span id="hVal">50 px</span></label>
-          <input id="hSlider" type="range" min="10" max="100" step="1" value="50">
-        </div>
-      </div>
-
-      <div class="panel-section" style="margin-top: auto;">
-        <div class="panel-title">Analysis & Results</div>
-        <div class="stat-grid">
-          <div class="stat"><strong>Image Dist (v)</strong><span id="vOut">0 px</span></div>
-          <div class="stat"><strong>Magnification (m)</strong><span id="mOut">0.00</span></div>
-          <div class="stat" style="grid-column: span 2;"><strong>Nature of Image</strong><span id="natureOut">Real & Inverted</span></div>
-        </div>
-        
-        <div class="formula-panel" id="formulas">
-          \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad v = \frac{uf}{u+f} \]
-          \[ m = \frac{v}{u} = \frac{f}{f+u} \]
-        </div>
-      </div>
-
-    </aside>
-
-    <!-- Simulation Area -->
-    <div class="right-panel">
+    <!-- Top: Canvas Area -->
+    <div class="canvas-area" id="simWrapper">
       <div class="canvas-head">
         <span id="canvasTitle">Convex Lens</span>
-        <span id="dragHint">Drag the object along the axis</span>
+        <span id="dragHint">Drag Object (O) along axis</span>
       </div>
       
-      <div class="canvas-wrapper" id="simWrapper">
-        <div class="watermark"></div>
-        <canvas id="lensCanvas"></canvas>
+      <div class="watermark"></div>
+      <canvas id="lensCanvas"></canvas>
+
+      <!-- Stats Overlay -->
+      <div class="stats-overlay">
+        <div class="stat-mini"><strong>Image Dist (v)</strong><span id="vOut">0 px</span></div>
+        <div class="stat-mini"><strong>Magnification (m)</strong><span id="mOut">0.00</span></div>
+        <div class="stat-mini" style="grid-column: span 2;"><strong>Nature</strong><span id="natureOut">Real & Inverted</span></div>
       </div>
 
+      <!-- Formula Overlay -->
+      <div class="formula-overlay" id="formulas">
+        \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad v = \frac{uf}{u+f} \]
+      </div>
+
+      <!-- Legend Overlay -->
       <div class="legend">
-        <div class="leg"><div class="leg-line" style="background: var(--secondary);"></div> Parallel Ray</div>
-        <div class="leg"><div class="leg-line" style="background: var(--primary);"></div> Center Ray</div>
+        <div class="leg"><div class="leg-line" style="background: var(--ray-1);"></div> Ray 1</div>
+        <div class="leg"><div class="leg-line" style="background: var(--ray-2);"></div> Ray 2</div>
         <div class="leg"><div class="leg-line" style="background: transparent; border-top: 2px dashed rgba(255,255,255,0.4);"></div> Virtual Ext.</div>
-        <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Object</div>
+        <div class="leg"><div class="leg-dot" style="background: var(--obj-color);"></div> Object</div>
         <div class="leg"><div class="leg-dot" style="background: var(--real-img);"></div> Real Image</div>
         <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
       </div>
+
     </div>
+
+    <!-- Bottom: Controls Area -->
+    <div class="controls-area">
+      <div class="tool-row">
+        <button class="tool-btn active" id="btnConvex">◖ Convex ◗</button>
+        <button class="tool-btn" id="btnConcave">◗ Concave ◖</button>
+      </div>
+
+      <div class="control-group">
+        <label>Focal Length (f) <span id="fVal">100 px</span></label>
+        <input id="fSlider" type="range" min="40" max="250" step="1" value="100">
+      </div>
+      
+      <div class="control-group">
+        <label>Object Distance (u) <span id="uVal">150 px</span></label>
+        <input id="uSlider" type="range" min="20" max="400" step="1" value="150">
+      </div>
+
+      <div class="control-group">
+        <label>Object Height (hₒ) <span id="hVal">50 px</span></label>
+        <input id="hSlider" type="range" min="10" max="100" step="1" value="50">
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -480,6 +412,14 @@
     const mOut = document.getElementById("mOut");
     const natureOut = document.getElementById("natureOut");
     const canvasTitle = document.getElementById("canvasTitle");
+
+    // Color definitions mapped to CSS variables
+    const colorRay1 = "#ff3366"; // Pink (Parallel Ray)
+    const colorRay2 = "#ffffff"; // White (Center Ray)
+    const extColor = "rgba(255, 255, 255, 0.4)"; // Faint white for virtual
+    const objColor = "#ffd166";  // Yellow
+    const realImgColor = "#00ffaa"; // Green
+    const virtImgColor = "#c7a6ff"; // Purple
 
     let W = 0, H = 0;
     let initialized = false;
@@ -562,7 +502,7 @@
     canvas.addEventListener("mouseup", () => isDragging = false);
     canvas.addEventListener("mouseleave", () => isDragging = false);
     
-    // Touch support for dragging
+    // Touch support for dragging object
     canvas.addEventListener("touchstart", (e) => {
       const cx = getEventPos(e);
       const originX = W / 2;
@@ -592,10 +532,10 @@
     function drawPoint(x, y, label, isFocal = false) {
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = isFocal ? "#ffffff" : "#ffffff";
+      ctx.fillStyle = "#ffffff";
       ctx.fill();
-      ctx.fillStyle = "#a0aabf";
-      ctx.font = "13px 'Segoe UI'";
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.font = "12px 'Segoe UI'";
       ctx.fillText(label, x - 8, y + 20);
     }
 
@@ -644,8 +584,8 @@
         const len = Math.hypot(dx, dy);
         if(len > 30) {
           const angle = Math.atan2(dy, dx);
-          const midX = x1 + dx * 0.6;
-          const midY = y1 + dy * 0.6;
+          const midX = x1 + dx * 0.55;
+          const midY = y1 + dy * 0.55;
           ctx.beginPath();
           ctx.moveTo(midX, midY);
           ctx.lineTo(midX - 10 * Math.cos(angle - 0.4), midY - 10 * Math.sin(angle - 0.4));
@@ -702,7 +642,7 @@
       const u = -U; 
       const f = isConvex ? f_mag : -f_mag;
 
-      // Lens Equation
+      // Lens Equation: 1/v = 1/f + 1/u
       let v = (u * f) / (u + f);
       let m = v / u;
       
@@ -722,17 +662,17 @@
         vOut.textContent = "∞";
         mOut.textContent = "∞";
         natureOut.textContent = "Real & Highly Enlarged";
-        natureOut.style.color = "var(--primary)";
+        natureOut.style.color = realImgColor;
       } else {
         vOut.textContent = `${Math.abs(v).toFixed(1)} px`;
         mOut.textContent = `${m.toFixed(2)}`;
         
         if (v > 0) {
           natureOut.textContent = "Real & Inverted";
-          natureOut.style.color = "var(--real-img)";
+          natureOut.style.color = realImgColor;
         } else {
           natureOut.textContent = "Virtual & Erect";
-          natureOut.style.color = "var(--virtual-img)";
+          natureOut.style.color = virtImgColor;
         }
       }
 
@@ -754,13 +694,13 @@
       drawPoint(cx + f_mag, cy, "F₂", true);
       drawPoint(cx - 2*f_mag, cy, "2F₁");
       drawPoint(cx + 2*f_mag, cy, "2F₂");
-      drawPoint(cx, cy, "P");
+      drawPoint(cx, cy, "O");
 
       // Draw Lens
       drawLens(cx, cy, Math.max(250, ho * 2 + 50));
 
       // Coordinate mapping
-      const objX = cx + u; 
+      const objX = cx + u; // u is negative
       const objY = cy;
       const tipX = objX;
       const tipY = cy - ho;
@@ -770,71 +710,55 @@
       const imgTipY = cy - hi;
 
       // Draw Object
-      drawObjectArrow(objX, objY, ho, "var(--gold)", "O");
-
-      // Ray Colors
-      const colorRay1 = "#ff007f"; // Pink: Parallel Ray
-      const colorRay2 = "#00e5ff"; // Cyan: Center Ray
-      const extColor = "rgba(255, 255, 255, 0.4)"; // Faint white for virtual extensions
+      drawObjectArrow(objX, objY, ho, objColor, "O");
 
       if (isConvex) {
         // Ray 1: Parallel to principal axis -> passes through F2
-        drawRay(tipX, tipY, cx, tipY, colorRay1);
-        
-        const dx1 = f_mag;
-        const dy1 = cy - tipY;
-        const endX1 = W;
-        const endY1 = tipY + (W - cx) * (dy1 / dx1);
-        
+        drawRay(tipX, tipY, cx, tipY, colorRay1); // Incident parallel
         if (!isInfinity) {
-          drawRay(cx, tipY, endX1, endY1, colorRay1);
+          drawRay(cx, tipY, cx + (W/2), tipY + ((cy - tipY)/f_mag) * (W/2), colorRay1); // Refracted through F2
         } else {
-          drawRay(cx, tipY, W, tipY + (W - cx) * (dy1 / dx1), colorRay1);
+          drawRay(cx, tipY, W, tipY + ((cy - tipY)/f_mag) * (W/2), colorRay1);
         }
 
         // Ray 2: Passes through Optical Center
         const dx2 = cx - tipX;
         const dy2 = cy - tipY;
-        const endX2 = W;
-        const endY2 = cy + (W - cx) * (dy2 / dx2);
-        drawRay(tipX, tipY, endX2, endY2, colorRay2);
+        drawRay(tipX, tipY, cx + (W/2), cy + (W/2) * (dy2 / dx2), colorRay2);
 
-        // Virtual extensions for Convex (when object is inside focus v < 0)
+        // Virtual extensions for Convex (when object is inside focus, v < 0)
         if (v < 0 && !isInfinity) {
           drawRay(cx, tipY, imgX, imgTipY, colorRay1, true, false);
           drawRay(cx, cy, imgX, imgTipY, colorRay2, true, false);
         }
 
       } else {
-        // Concave Lens
-        // Ray 1: Parallel -> diverges, appearing to come from F1
+        // Concave Lens (Diverging)
+        
+        // Ray 1: Incident parallel
         drawRay(tipX, tipY, cx, tipY, colorRay1);
         
-        // Diverging part math (Slope from F1 to incidence point)
-        const dx1 = f_mag; // from cx-f_mag to cx
-        const dy1 = tipY - cy;
-        const endX1 = W;
-        const endY1 = tipY + (W - cx) * (dy1 / dx1);
+        // Ray 1 Refracted: Diverges, appearing to come from F1
+        // Slope = dy/dx. Ray hit lens at (cx, tipY). F1 is at (cx - f_mag, cy).
+        // Vector from F1 to hit point: dx = f_mag, dy = tipY - cy.
+        const slope = (tipY - cy) / f_mag;
+        drawRay(cx, tipY, W, tipY + slope * (W - cx), colorRay1);
         
-        drawRay(cx, tipY, endX1, endY1, colorRay1);
-        
-        // Virtual extension back to F1
+        // Ray 1 Virtual Extension: Traces back to F1 and Image
         drawRay(cx, tipY, cx - f_mag, cy, colorRay1, true, false);
 
         // Ray 2: Passes through Optical Center
         const dx2 = cx - tipX;
         const dy2 = cy - tipY;
-        const endX2 = W;
-        const endY2 = cy + (W - cx) * (dy2 / dx2);
-        drawRay(tipX, tipY, endX2, endY2, colorRay2);
+        drawRay(tipX, tipY, W, cy + (W - cx) * (dy2 / dx2), colorRay2);
         
-        // Virtual extension of Ray 2 to image
+        // Virtual extension of Ray 2 back to image
         drawRay(cx, cy, imgX, imgTipY, colorRay2, true, false);
       }
 
       // Draw Image
       if (!isInfinity) {
-        const imgColor = v > 0 ? "var(--real-img)" : "var(--virtual-img)";
+        const imgColor = v > 0 ? realImgColor : virtImgColor;
         drawObjectArrow(imgX, objY, hi, imgColor, "I");
       }
     }
