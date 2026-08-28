@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Glass Slab Refraction | Vidyaalok Lab</title>
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L8DFSQTR66');
+  </script>
+
+  <!-- MathJax for rendering LaTeX formulas -->
+  <script>
+    window.MathJax = { 
+      tex: { inlineMath: [['\\(', '\\)']] }, 
+      svg: { fontCache: 'global' } 
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root {
+      --primary: #00e5ff;
+      --secondary: #ff007f;
+      --bg-dark: #070b19;
+      --panel-bg: rgba(255, 255, 255, 0.03);
+      --text-main: #ffffff;
+      --text-muted: #a0aabf;
+      --gold: #ffd166;
+      --border: rgba(255, 255, 255, 0.1);
+      --tir-color: #ff3366;
+    }
+
+    * { box-sizing: border-box; }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden; 
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    .navbar {
+      padding: 12px 20px;
+      background: rgba(7, 11, 25, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .back-btn {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Main Workspace Layout */
+    .main-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Top: Canvas Area */
+    .canvas-area {
+      flex-grow: 1;
+      position: relative;
+      width: 100%;
+      background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 70%);
+      overflow: hidden;
+    }
+
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%; 
+      height: 70%;
+      background-image: url('../../logo.png'); 
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.08; 
+      pointer-events: none; 
+      z-index: 0;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+    }
+
+    /* Floating Stats Overlay */
+    .stats-overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      pointer-events: none;
+    }
+
+    .stat-mini {
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    .stat-mini strong {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .stat-mini span {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--primary);
+      font-family: monospace;
+    }
+    .stat-mini.alert span { color: var(--tir-color); }
+
+    .formula-overlay {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 10px 20px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10;
+      color: var(--primary);
+      pointer-events: none; 
+      text-align: center;
+    }
+
+    .formula-overlay mjx-container { font-size: 1.05rem; }
+    
+    .condition-text {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 5px;
+      border-top: 1px dashed rgba(255,255,255,0.2);
+      padding-top: 5px;
+    }
+
+    /* Bottom: Controls Area */
+    .controls-area {
+      background: rgba(7, 11, 25, 0.95);
+      border-top: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 15px 25px;
+      flex-shrink: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      z-index: 20;
+      box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .control-group span {
+      color: var(--gold);
+      font-family: monospace;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      margin-top: -7px;
+      box-shadow: 0 0 10px var(--primary);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+    }
+
+    /* Mobile overrides */
+    @media (max-width: 768px) {
+      .controls-area {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 12px 15px;
+        max-height: 40vh;
+        overflow-y: auto;
+      }
+      .stats-overlay {
+        top: 5px; right: 5px; padding: 8px; gap: 8px;
+        grid-template-columns: 1fr 1fr;
+      }
+      .stat-mini span { font-size: 0.95rem; }
+      .formula-overlay { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="back-btn">← Chapter 09</a>
+    <h1>Glass Slab & Lateral Shift</h1>
+  </nav>
+
+  <div class="main-panel">
+    
+    <!-- Top: Canvas Area -->
+    <div class="canvas-area" id="simWrapper">
+      <div class="watermark"></div>
+      <canvas id="slabCanvas"></canvas>
+      
+      <!-- Stats Overlay -->
+      <div class="stats-overlay">
+        <div class="stat-mini"><strong>Incidence (i)</strong><span id="statI" style="color: var(--text-main);">45.0°</span></div>
+        <div class="stat-mini"><strong>Refract 1 (r₁)</strong><span id="statR1">28.1°</span></div>
+        <div class="stat-mini"><strong>Emergent (e)</strong><span id="statE">45.0°</span></div>
+        <div class="stat-mini" id="shiftCard"><strong>Lateral Shift (d)</strong><span id="statShift" style="color: var(--gold);">2.5 cm</span></div>
+        <div class="stat-mini" style="grid-column: span 2;"><strong>State</strong><span id="statState">Double Refraction</span></div>
+      </div>
+
+      <!-- Formula Overlay -->
+      <div id="formulaOverlay" class="formula-overlay">
+        \[ d = \frac{t \sin(i - r)}{\cos r} \]
+        <div class="condition-text" id="conditionText">Valid when emergent ray is parallel to incident ray (n₁ = n₃).</div>
+      </div>
+    </div>
+
+    <!-- Bottom: Controls Area -->
+    <div class="controls-area">
+      <div class="control-group">
+        <label>Top Medium (n₁) <span id="n1Val">1.00</span></label>
+        <input id="n1Slider" type="range" min="1.0" max="2.5" step="0.01" value="1.00">
+      </div>
+      <div class="control-group">
+        <label>Glass Slab (n₂) <span id="n2SliderVal">1.50</span></label>
+        <input id="n2Slider" type="range" min="1.0" max="2.5" step="0.01" value="1.50">
+      </div>
+      <div class="control-group">
+        <label>Bottom Medium (n₃) <span id="n3Val">1.00</span></label>
+        <input id="n3Slider" type="range" min="1.0" max="2.5" step="0.01" value="1.00">
+      </div>
+      <div class="control-group">
+        <label>Slab Thickness (t) <span id="tVal">150 px</span></label>
+        <input id="tSlider" type="range" min="80" max="280" step="1" value="150">
+      </div>
+      <div class="control-group">
+        <label>Angle of Incidence (∠i) <span id="angleVal">45°</span></label>
+        <input id="angleSlider" type="range" min="0" max="85" step="1" value="45">
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const canvas = document.getElementById("slabCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // UI Elements
+    const n1Slider = document.getElementById("n1Slider");
+    const n2Slider = document.getElementById("n2Slider");
+    const n3Slider = document.getElementById("n3Slider");
+    const tSlider = document.getElementById("tSlider");
+    const angleSlider = document.getElementById("angleSlider");
+
+    const n1Val = document.getElementById("n1Val");
+    const n2SliderVal = document.getElementById("n2SliderVal");
+    const n3Val = document.getElementById("n3Val");
+    const tVal = document.getElementById("tVal");
+    const angleVal = document.getElementById("angleVal");
+
+    const statI = document.getElementById("statI");
+    const statR1 = document.getElementById("statR1");
+    const statE = document.getElementById("statE");
+    const statShift = document.getElementById("statShift");
+    const statState = document.getElementById("statState");
+    const shiftCard = document.getElementById("shiftCard");
+    const conditionText = document.getElementById("conditionText");
+
+    let W = 0, H = 0;
+    let initialized = false;
+
+    // --- RESIZE OBSERVER ---
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        if (entry.target.id === 'simWrapper') {
+          W = Math.floor(entry.contentRect.width);
+          H = Math.floor(entry.contentRect.height);
+          canvas.width = W;
+          canvas.height = H;
+          if (!initialized && W > 10 && H > 10) {
+            initialized = true;
+            draw();
+          } else if (initialized) {
+            draw();
+          }
+        }
+      }
+    });
+    resizeObserver.observe(document.getElementById('simWrapper'));
+
+    // Fallback initializer
+    setTimeout(() => {
+      if (!initialized && canvas.parentElement.clientWidth > 10) {
+        W = canvas.parentElement.clientWidth;
+        H = canvas.parentElement.clientHeight || 500; 
+        canvas.width = W;
+        canvas.height = H;
+        initialized = true;
+        draw();
+      }
+    }, 300);
+
+    // --- DRAWING UTILS ---
+    function drawRay(startX, startY, endX, endY, color, isDashed = false, opacity = 1.0, showArrow = true) {
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      
+      // Glow Effect for main rays
+      if (!isDashed) {
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = color;
+      }
+
+      if (isDashed) ctx.setLineDash([6, 6]);
+      
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      
+      ctx.setLineDash([]); 
+      ctx.shadowBlur = 0; 
+      
+      if (showArrow && Math.hypot(endX - startX, endY - startY) > 20) {
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const angle = Math.atan2(dy, dx);
+        const midX = startX + dx * 0.55;
+        const midY = startY + dy * 0.55;
+
+        ctx.beginPath();
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(midX - 12 * Math.cos(angle - 0.4), midY - 12 * Math.sin(angle - 0.4));
+        ctx.lineTo(midX - 12 * Math.cos(angle + 0.4), midY - 12 * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawNormal(x, y1, y2) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y1);
+      ctx.lineTo(x, y2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawMediums(n1, n2, n3, yTop, yBottom) {
+      // Background colors mapping to refractive index density
+      const getBg = (n) => `rgba(0, 229, 255, ${Math.min((n - 1) * 0.15, 0.4)})`;
+
+      ctx.fillStyle = getBg(n1);
+      ctx.fillRect(0, 0, W, yTop);
+
+      ctx.fillStyle = getBg(n2);
+      ctx.fillRect(0, yTop, W, yBottom - yTop);
+
+      ctx.fillStyle = getBg(n3);
+      ctx.fillRect(0, yBottom, W, H - yBottom);
+
+      // Boundaries
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, yTop); ctx.lineTo(W, yTop);
+      ctx.moveTo(0, yBottom); ctx.lineTo(W, yBottom);
+      ctx.stroke();
+
+      // Labels
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "13px 'Segoe UI'";
+      ctx.fillText(`Medium 1 (n₁ = ${n1.toFixed(2)})`, 15, 25);
+      ctx.fillText(`Glass Slab (n₂ = ${n2.toFixed(2)})`, 15, yTop + 25);
+      ctx.fillText(`Medium 3 (n₃ = ${n3.toFixed(2)})`, 15, yBottom + 25);
+    }
+
+    // --- MAIN PHYSICS & RENDER LOOP ---
+    function draw() {
+      if(W === 0 || H === 0 || !initialized) return;
+
+      const n1 = parseFloat(n1Slider.value);
+      const n2 = parseFloat(n2Slider.value);
+      const n3 = parseFloat(n3Slider.value);
+      const t = parseFloat(tSlider.value);
+      const i_deg = parseFloat(angleSlider.value);
+
+      // Update Slider Labels
+      n1Val.textContent = n1.toFixed(2);
+      n2SliderVal.textContent = n2.toFixed(2);
+      n3Val.textContent = n3.toFixed(2);
+      tVal.textContent = `${t} px`;
+      angleVal.textContent = `${i_deg}°`;
+      statI.textContent = `${i_deg.toFixed(1)}°`;
+
+      const i_rad = i_deg * Math.PI / 180;
+      
+      // Geometry Setup
+      const yTop = H * 0.25;
+      const yBottom = yTop + t;
+      const p1x = W * 0.5; // Entry point X
+      const p1y = yTop;    // Entry point Y
+      const rayLen = Math.max(W, H);
+
+      ctx.clearRect(0, 0, W, H);
+      drawMediums(n1, n2, n3, yTop, yBottom);
+
+      // 1. Incident Ray
+      const incX = p1x - rayLen * Math.sin(i_rad);
+      const incY = p1y - rayLen * Math.cos(i_rad);
+      drawRay(incX, incY, p1x, p1y, "#ffffff", false, 1.0);
+      drawNormal(p1x, 0, yBottom + 40);
+
+      let stateMsg = "Double Refraction";
+      let stateColor = "var(--primary)";
+      
+      // First Boundary Refraction
+      const sin_r1 = (n1 / n2) * Math.sin(i_rad);
+      let r1_rad, r1_deg;
+
+      if (sin_r1 > 1.0) {
+        // TIR at Top Boundary
+        stateMsg = "TIR at Top Boundary";
+        stateColor = "var(--tir-color)";
+        statR1.textContent = "TIR";
+        statE.textContent = "N/A";
+        statShift.textContent = "N/A";
+        shiftCard.classList.add("alert");
+
+        const refX = p1x + rayLen * Math.sin(i_rad);
+        const refY = p1y - rayLen * Math.cos(i_rad);
+        drawRay(p1x, p1y, refX, refY, "#ffffff", false, 1.0);
+      } else {
+        r1_rad = Math.asin(sin_r1);
+        r1_deg = r1_rad * 180 / Math.PI;
+        statR1.textContent = `${r1_deg.toFixed(1)}°`;
+
+        // Draw Refracted Ray inside slab
+        const p2x = p1x + t * Math.tan(r1_rad);
+        const p2y = yBottom;
+        drawRay(p1x, p1y, p2x, p2y, "#ffd166", false, 1.0);
+        
+        // Partial reflection at top boundary
+        const prefX = p1x + rayLen * Math.sin(i_rad);
+        const prefY = p1y - rayLen * Math.cos(i_rad);
+        drawRay(p1x, p1y, prefX, prefY, "#ffffff", true, 0.2, false);
+
+        // Second Boundary Refraction (Incident angle is r1_rad)
+        const sin_r2 = (n2 / n3) * Math.sin(r1_rad);
+        drawNormal(p2x, yTop - 40, H);
+
+        if (sin_r2 > 1.0) {
+          // TIR at Bottom Boundary
+          stateMsg = "TIR at Bottom Boundary";
+          stateColor = "var(--tir-color)";
+          statE.textContent = "TIR";
+          statShift.textContent = "N/A";
+          shiftCard.classList.add("alert");
+
+          // Draw internally reflected ray
+          const ref2X = p2x + rayLen * Math.sin(r1_rad);
+          const ref2Y = p2y - rayLen * Math.cos(r1_rad);
+          drawRay(p2x, p2y, ref2X, ref2Y, "#ffd166", false, 1.0);
+        } else {
+          // Ray emerges
+          shiftCard.classList.remove("alert");
+          const r2_rad = Math.asin(sin_r2);
+          const r2_deg = r2_rad * 180 / Math.PI;
+          statE.textContent = `${r2_deg.toFixed(1)}°`;
+
+          const emX = p2x + rayLen * Math.sin(r2_rad);
+          const emY = p2y + rayLen * Math.cos(r2_rad);
+          drawRay(p2x, p2y, emX, emY, "#00ffaa", false, 1.0);
+
+          // Partial reflection inside slab at bottom boundary
+          const pref2X = p2x + rayLen * Math.sin(r1_rad);
+          const pref2Y = p2y - rayLen * Math.cos(r1_rad);
+          drawRay(p2x, p2y, pref2X, pref2Y, "#ffd166", true, 0.2, false);
+
+          // Lateral Shift Calculation & Drawing
+          // Extended incident ray path
+          const extXBottom = p1x + t * Math.tan(i_rad);
+          drawRay(p1x, p1y, extXBottom, yBottom, "rgba(255,255,255,0.3)", true, 0.8, false);
+          
+          // Draw continuing extended ray
+          const extEndX = extXBottom + rayLen * Math.sin(i_rad);
+          const extEndY = yBottom + rayLen * Math.cos(i_rad);
+          drawRay(extXBottom, yBottom, extEndX, extEndY, "rgba(255,255,255,0.15)", true, 0.5, false);
+
+          // Perpendicular distance calculation
+          // Shift is exactly defined when n1 == n3 (rays are parallel).
+          // We calculate the horizontal gap at the exit plane and project it.
+          const dx = extXBottom - p2x; 
+          const shift = Math.abs(dx * Math.cos(i_rad));
+          
+          statShift.textContent = `${shift.toFixed(1)} px`;
+
+          if (n1 === n3) {
+            conditionText.textContent = "Valid: Emergent ray is parallel to incident ray (n₁ = n₃).";
+            conditionText.style.color = "var(--text-muted)";
+            
+            // Draw Perpendicular Shift Line visually
+            if (shift > 2) {
+              ctx.save();
+              ctx.strokeStyle = "#ff007f";
+              ctx.setLineDash([4, 4]);
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              // Drop perpendicular from p2 to extended line
+              // Direction of extended line is (sin i, cos i). Normal is (cos i, -sin i)
+              const perpX = p2x + shift * Math.cos(i_rad) * Math.sign(dx);
+              const perpY = p2y - shift * Math.sin(i_rad) * Math.sign(dx);
+              ctx.moveTo(p2x, p2y);
+              ctx.lineTo(perpX, perpY);
+              ctx.stroke();
+
+              // Draw 'd' label
+              ctx.fillStyle = "#ff007f";
+              ctx.font = "italic 16px 'Segoe UI'";
+              ctx.fillText("d", (p2x + perpX)/2 + 10, (p2y + perpY)/2);
+              ctx.restore();
+            }
+          } else {
+            conditionText.textContent = "Note: Rays are not parallel because n₁ ≠ n₃.";
+            conditionText.style.color = "var(--gold)";
+          }
+        }
+      }
+
+      statState.textContent = stateMsg;
+      statState.style.color = stateColor;
+    }
+
+    // Event Listeners
+    [n1Slider, n2Slider, n3Slider, tSlider, angleSlider].forEach(slider => {
+      slider.addEventListener('input', draw);
+    });
+
+  </script>
+</body>
+</html>
