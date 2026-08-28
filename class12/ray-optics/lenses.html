@@ -248,7 +248,7 @@
     .tool-row {
       display: flex;
       gap: 8px;
-      grid-column: 1 / -1; /* spans full width */
+      grid-column: 1 / -1; 
     }
 
     .tool-btn {
@@ -322,7 +322,7 @@
       }
       .stat-mini span { font-size: 0.95rem; }
       .formula-overlay { display: none; }
-      .legend { display: none; } /* Hidden on mobile to maximize view space */
+      .legend { display: none; } 
       .canvas-head { padding: 8px 12px; font-size: 0.8rem; }
     }
   </style>
@@ -348,14 +348,15 @@
 
       <!-- Stats Overlay -->
       <div class="stats-overlay">
-        <div class="stat-mini"><strong>Image Dist (v)</strong><span id="vOut">0 px</span></div>
+        <div class="stat-mini"><strong>Image Dist (v)</strong><span id="vOut">0 cm</span></div>
         <div class="stat-mini"><strong>Magnification (m)</strong><span id="mOut">0.00</span></div>
         <div class="stat-mini" style="grid-column: span 2;"><strong>Nature</strong><span id="natureOut">Real & Inverted</span></div>
       </div>
 
       <!-- Formula Overlay -->
       <div class="formula-overlay" id="formulas">
-        \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad v = \frac{uf}{u+f} \]
+        \[ \frac{1}{v} - \frac{1}{u} = \frac{1}{f} \quad \Rightarrow \quad u = \frac{vf}{f-v} \]
+        \[ m = \frac{v}{u} = \frac{f}{f+u} \]
       </div>
 
       <!-- Legend Overlay -->
@@ -378,17 +379,17 @@
       </div>
 
       <div class="control-group">
-        <label>Focal Length (f) <span id="fVal">100 px</span></label>
+        <label>Focal Length (f) <span id="fVal">100 cm</span></label>
         <input id="fSlider" type="range" min="40" max="250" step="1" value="100">
       </div>
       
       <div class="control-group">
-        <label>Object Distance (u) <span id="uVal">150 px</span></label>
+        <label>Object Distance (u) <span id="uVal">150 cm</span></label>
         <input id="uSlider" type="range" min="20" max="400" step="1" value="150">
       </div>
 
       <div class="control-group">
-        <label>Object Height (hₒ) <span id="hVal">50 px</span></label>
+        <label>Object Height (hₒ) <span id="hVal">50 cm</span></label>
         <input id="hSlider" type="range" min="10" max="100" step="1" value="50">
       </div>
     </div>
@@ -413,10 +414,10 @@
     const natureOut = document.getElementById("natureOut");
     const canvasTitle = document.getElementById("canvasTitle");
 
-    // Color definitions mapped to CSS variables
+    // Color definitions
     const colorRay1 = "#ff3366"; // Pink (Parallel Ray)
     const colorRay2 = "#ffffff"; // White (Center Ray)
-    const extColor = "rgba(255, 255, 255, 0.4)"; // Faint white for virtual
+    const extColor = "rgba(255, 255, 255, 0.4)"; // Faint white
     const objColor = "#ffd166";  // Yellow
     const realImgColor = "#00ffaa"; // Green
     const virtImgColor = "#c7a6ff"; // Purple
@@ -584,8 +585,8 @@
         const len = Math.hypot(dx, dy);
         if(len > 30) {
           const angle = Math.atan2(dy, dx);
-          const midX = x1 + dx * 0.55;
-          const midY = y1 + dy * 0.55;
+          const midX = x1 + dx * 0.6;
+          const midY = y1 + dy * 0.6;
           ctx.beginPath();
           ctx.moveTo(midX, midY);
           ctx.lineTo(midX - 10 * Math.cos(angle - 0.4), midY - 10 * Math.sin(angle - 0.4));
@@ -654,9 +655,9 @@
       }
 
       // Update UI Text
-      uVal.textContent = `${U.toFixed(0)} px`;
-      fVal.textContent = `${f_mag.toFixed(0)} px`;
-      hVal.textContent = `${ho.toFixed(0)} px`;
+      uVal.textContent = `${U.toFixed(0)} cm`;
+      fVal.textContent = `${f_mag.toFixed(0)} cm`;
+      hVal.textContent = `${ho.toFixed(0)} cm`;
 
       if (isInfinity) {
         vOut.textContent = "∞";
@@ -664,7 +665,7 @@
         natureOut.textContent = "Real & Highly Enlarged";
         natureOut.style.color = realImgColor;
       } else {
-        vOut.textContent = `${Math.abs(v).toFixed(1)} px`;
+        vOut.textContent = `${Math.abs(v).toFixed(1)} cm`;
         mOut.textContent = `${m.toFixed(2)}`;
         
         if (v > 0) {
@@ -700,7 +701,7 @@
       drawLens(cx, cy, Math.max(250, ho * 2 + 50));
 
       // Coordinate mapping
-      const objX = cx + u; // u is negative
+      const objX = cx + u; 
       const objY = cy;
       const tipX = objX;
       const tipY = cy - ho;
@@ -714,9 +715,9 @@
 
       if (isConvex) {
         // Ray 1: Parallel to principal axis -> passes through F2
-        drawRay(tipX, tipY, cx, tipY, colorRay1); // Incident parallel
+        drawRay(tipX, tipY, cx, tipY, colorRay1); 
         if (!isInfinity) {
-          drawRay(cx, tipY, cx + (W/2), tipY + ((cy - tipY)/f_mag) * (W/2), colorRay1); // Refracted through F2
+          drawRay(cx, tipY, cx + (W/2), tipY + ((cy - tipY)/f_mag) * (W/2), colorRay1); 
         } else {
           drawRay(cx, tipY, W, tipY + ((cy - tipY)/f_mag) * (W/2), colorRay1);
         }
@@ -726,7 +727,7 @@
         const dy2 = cy - tipY;
         drawRay(tipX, tipY, cx + (W/2), cy + (W/2) * (dy2 / dx2), colorRay2);
 
-        // Virtual extensions for Convex (when object is inside focus, v < 0)
+        // Virtual extensions for Convex (when object is inside focus v < 0)
         if (v < 0 && !isInfinity) {
           drawRay(cx, tipY, imgX, imgTipY, colorRay1, true, false);
           drawRay(cx, cy, imgX, imgTipY, colorRay2, true, false);
@@ -739,8 +740,6 @@
         drawRay(tipX, tipY, cx, tipY, colorRay1);
         
         // Ray 1 Refracted: Diverges, appearing to come from F1
-        // Slope = dy/dx. Ray hit lens at (cx, tipY). F1 is at (cx - f_mag, cy).
-        // Vector from F1 to hit point: dx = f_mag, dy = tipY - cy.
         const slope = (tipY - cy) / f_mag;
         drawRay(cx, tipY, W, tipY + slope * (W - cx), colorRay1);
         
