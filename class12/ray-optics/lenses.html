@@ -25,16 +25,16 @@
 
   <style>
     :root {
-      --primary: #00e5ff;
-      --secondary: #ff007f;
+      --primary: #00e5ff;      /* Center Ray */
+      --secondary: #ff007f;    /* Parallel Ray */
       --bg-dark: #070b19;
       --panel-bg: rgba(255, 255, 255, 0.03);
       --text-main: #ffffff;
       --text-muted: #a0aabf;
-      --gold: #ffd166;
+      --gold: #ffd166;         /* Object */
       --border: rgba(255, 255, 255, 0.1);
-      --real-img: #00ffaa;
-      --virtual-img: #00e5ff;
+      --real-img: #00ffaa;     /* Real Image */
+      --virtual-img: #c7a6ff;  /* Virtual Image */
     }
 
     * { box-sizing: border-box; }
@@ -131,7 +131,7 @@
       font-weight: 800;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--secondary);
+      color: var(--gold);
       margin-bottom: 10px;
     }
 
@@ -324,7 +324,7 @@
       height: 100%;
       cursor: crosshair;
       z-index: 1;
-      touch-action: none; /* Crucial for mobile dragging */
+      touch-action: none; 
     }
 
     /* Legend */
@@ -453,8 +453,9 @@
       </div>
 
       <div class="legend">
-        <div class="leg"><div class="leg-line" style="background: var(--text-main);"></div> Ray</div>
-        <div class="leg"><div class="leg-line" style="background: transparent; border-top: 2px dashed var(--virtual-img);"></div> Virtual Extension</div>
+        <div class="leg"><div class="leg-line" style="background: var(--secondary);"></div> Parallel Ray</div>
+        <div class="leg"><div class="leg-line" style="background: var(--primary);"></div> Center Ray</div>
+        <div class="leg"><div class="leg-line" style="background: transparent; border-top: 2px dashed rgba(255,255,255,0.4);"></div> Virtual Ext.</div>
         <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Object</div>
         <div class="leg"><div class="leg-dot" style="background: var(--real-img);"></div> Real Image</div>
         <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
@@ -591,17 +592,17 @@
     function drawPoint(x, y, label, isFocal = false) {
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = isFocal ? "#ff007f" : "#ffffff";
+      ctx.fillStyle = isFocal ? "#ffffff" : "#ffffff";
       ctx.fill();
       ctx.fillStyle = "#a0aabf";
-      ctx.font = "12px 'Segoe UI'";
-      ctx.fillText(label, x - 5, y + 20);
+      ctx.font = "13px 'Segoe UI'";
+      ctx.fillText(label, x - 8, y + 20);
     }
 
-    function drawArrow(x, y, height, color, label) {
+    function drawObjectArrow(x, y, height, color, label) {
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 4;
       
       // Stem
       ctx.beginPath();
@@ -620,15 +621,15 @@
 
       // Label
       ctx.fillStyle = color;
-      ctx.font = "bold 14px 'Segoe UI'";
-      ctx.fillText(label, x - 20, y - height - (10 * headDir));
+      ctx.font = "bold 15px 'Segoe UI'";
+      ctx.fillText(label, x - 22, y - height - (10 * headDir));
     }
 
     function drawRay(x1, y1, x2, y2, color, dashed = false, showArrow = true) {
       ctx.save();
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       
       if (dashed) ctx.setLineDash([5, 5]);
       ctx.beginPath();
@@ -693,15 +694,15 @@
     function draw() {
       if(W === 0 || H === 0 || !initialized) return;
 
-      const U = parseFloat(uSlider.value); // Physical distance > 0
+      const U = parseFloat(uSlider.value); 
       const f_mag = parseFloat(fSlider.value);
       const ho = parseFloat(hSlider.value);
 
-      // Cartesian Sign Convention applied mathematically
+      // Cartesian Sign Convention
       const u = -U; 
       const f = isConvex ? f_mag : -f_mag;
 
-      // Lens Equation: 1/v - 1/u = 1/f => 1/v = 1/f + 1/u = (u+f)/(uf) => v = (uf)/(u+f)
+      // Lens Equation
       let v = (u * f) / (u + f);
       let m = v / u;
       
@@ -712,7 +713,7 @@
         m = 9999;
       }
 
-      // Update UI
+      // Update UI Text
       uVal.textContent = `${U.toFixed(0)} px`;
       fVal.textContent = `${f_mag.toFixed(0)} px`;
       hVal.textContent = `${ho.toFixed(0)} px`;
@@ -753,13 +754,13 @@
       drawPoint(cx + f_mag, cy, "F₂", true);
       drawPoint(cx - 2*f_mag, cy, "2F₁");
       drawPoint(cx + 2*f_mag, cy, "2F₂");
-      drawPoint(cx, cy, "O");
+      drawPoint(cx, cy, "P");
 
       // Draw Lens
       drawLens(cx, cy, Math.max(250, ho * 2 + 50));
 
       // Coordinate mapping
-      const objX = cx + u; // u is negative
+      const objX = cx + u; 
       const objY = cy;
       const tipX = objX;
       const tipY = cy - ho;
@@ -769,48 +770,72 @@
       const imgTipY = cy - hi;
 
       // Draw Object
-      drawArrow(objX, objY, ho, "var(--gold)", "O");
+      drawObjectArrow(objX, objY, ho, "var(--gold)", "O");
 
-      // Ray Tracing
-      const rayColor = "#ffffff";
-      const extColor = "rgba(0, 229, 255, 0.4)";
+      // Ray Colors
+      const colorRay1 = "#ff007f"; // Pink: Parallel Ray
+      const colorRay2 = "#00e5ff"; // Cyan: Center Ray
+      const extColor = "rgba(255, 255, 255, 0.4)"; // Faint white for virtual extensions
 
       if (isConvex) {
         // Ray 1: Parallel to principal axis -> passes through F2
-        drawRay(tipX, tipY, cx, tipY, rayColor);
+        drawRay(tipX, tipY, cx, tipY, colorRay1);
+        
+        const dx1 = f_mag;
+        const dy1 = cy - tipY;
+        const endX1 = W;
+        const endY1 = tipY + (W - cx) * (dy1 / dx1);
+        
         if (!isInfinity) {
-          drawRay(cx, tipY, cx + (W/2), tipY + ((cy - tipY)/f) * (W/2), rayColor); // Extend far right
+          drawRay(cx, tipY, endX1, endY1, colorRay1);
         } else {
-          drawRay(cx, tipY, W, tipY + ((cy - tipY)/f) * (W/2), rayColor);
+          drawRay(cx, tipY, W, tipY + (W - cx) * (dy1 / dx1), colorRay1);
         }
 
         // Ray 2: Passes through Optical Center
-        drawRay(tipX, tipY, cx + (W/2), cy - (tipY - cy) * (W/(2*Math.abs(u))), rayColor);
+        const dx2 = cx - tipX;
+        const dy2 = cy - tipY;
+        const endX2 = W;
+        const endY2 = cy + (W - cx) * (dy2 / dx2);
+        drawRay(tipX, tipY, endX2, endY2, colorRay2);
 
-        // Virtual extensions for Convex (when object is inside focus)
+        // Virtual extensions for Convex (when object is inside focus v < 0)
         if (v < 0 && !isInfinity) {
-          drawRay(cx, tipY, imgX, imgTipY, extColor, true, false);
-          drawRay(cx, cy, imgX, imgTipY, extColor, true, false);
+          drawRay(cx, tipY, imgX, imgTipY, colorRay1, true, false);
+          drawRay(cx, cy, imgX, imgTipY, colorRay2, true, false);
         }
 
       } else {
         // Concave Lens
         // Ray 1: Parallel -> diverges, appearing to come from F1
-        drawRay(tipX, tipY, cx, tipY, rayColor);
-        // Diverging part
-        const slope = (tipY - cy) / (-f_mag); // F1 is at -f_mag
-        drawRay(cx, tipY, W, tipY + slope * (W/2), rayColor);
+        drawRay(tipX, tipY, cx, tipY, colorRay1);
+        
+        // Diverging part math (Slope from F1 to incidence point)
+        const dx1 = f_mag; // from cx-f_mag to cx
+        const dy1 = tipY - cy;
+        const endX1 = W;
+        const endY1 = tipY + (W - cx) * (dy1 / dx1);
+        
+        drawRay(cx, tipY, endX1, endY1, colorRay1);
+        
         // Virtual extension back to F1
-        drawRay(cx, tipY, cx - f_mag, cy, extColor, true, false);
+        drawRay(cx, tipY, cx - f_mag, cy, colorRay1, true, false);
 
         // Ray 2: Passes through Optical Center
-        drawRay(tipX, tipY, W, cy - (tipY - cy) * (W/(2*Math.abs(u))), rayColor);
+        const dx2 = cx - tipX;
+        const dy2 = cy - tipY;
+        const endX2 = W;
+        const endY2 = cy + (W - cx) * (dy2 / dx2);
+        drawRay(tipX, tipY, endX2, endY2, colorRay2);
+        
+        // Virtual extension of Ray 2 to image
+        drawRay(cx, cy, imgX, imgTipY, colorRay2, true, false);
       }
 
       // Draw Image
       if (!isInfinity) {
         const imgColor = v > 0 ? "var(--real-img)" : "var(--virtual-img)";
-        drawArrow(imgX, objY, hi, imgColor, "I");
+        drawObjectArrow(imgX, objY, hi, imgColor, "I");
       }
     }
 
