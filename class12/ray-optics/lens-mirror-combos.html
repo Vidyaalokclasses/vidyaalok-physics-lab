@@ -23,211 +23,110 @@
             --text-main: #ffffff;
             --text-muted: #a0aabf;
             --gold: #ffd166;
-            --real-img: #00ffaa;
-            --virtual-img: #c7a6ff;
             --border: rgba(0, 229, 255, 0.2);
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100vh;
+            margin: 0; padding: 0; width: 100%; height: 100vh;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            overflow: hidden; 
-            display: flex;
-            flex-direction: column;
+            background-color: var(--bg-dark); color: var(--text-main);
+            overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* Top Navigation */
         .navbar {
-            padding: 12px 20px;
-            background: rgba(7, 11, 25, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            padding: 12px 20px; background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-            z-index: 100;
-            position: relative;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; z-index: 100; position: relative;
         }
 
         .back-btn {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: var(--primary); text-decoration: none; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem;
+            display: flex; align-items: center; gap: 8px;
         }
 
-        .navbar h1 {
-            margin: 0;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            color: rgba(255,255,255,0.8);
-        }
+        .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
 
-        /* Workspace & Canvas */
         .workspace {
-            position: relative;
-            flex-grow: 1;
-            width: 100%;
-            display: flex;
-            overflow: hidden;
+            position: relative; flex-grow: 1; width: 100%; display: flex; overflow: hidden;
             background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%);
         }
 
         canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            touch-action: none;
-            cursor: crosshair;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; touch-action: none; cursor: crosshair;
         }
 
         .watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60%; 
-            height: 60%;
-            background-image: url('../../logo.png'); 
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            opacity: 0.06; 
-            pointer-events: none; 
-            z-index: 0;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 60%; height: 60%;
+            background-image: url('../../logo.png'); background-size: contain;
+            background-repeat: no-repeat; background-position: center;
+            opacity: 0.08; pointer-events: none; z-index: 0;
         }
 
-        /* Mobile-First HUD Panel */
         .hud-panel {
-            position: absolute;
-            z-index: 50;
-            background: var(--panel-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-            transition: all 0.3s ease;
+            position: absolute; z-index: 50; background: var(--panel-bg);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border); display: flex; flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7); transition: all 0.3s ease;
         }
 
         .hud-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
+            padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
         }
 
-        .hud-header h2 {
-            margin: 0;
-            font-size: 1rem;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
 
         .hud-content {
-            padding: 16px;
-            overflow-y: auto;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary) transparent;
+            padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px;
+            scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
         }
         
         .hud-content::-webkit-scrollbar { width: 4px; }
         .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
 
-        /* Desktop Positioning */
         @media (min-width: 901px) {
             .hud-panel {
-                top: 20px;
-                left: 20px;
-                width: 360px;
-                max-height: calc(100% - 40px);
-                border-radius: 16px;
+                top: 20px; left: 20px; width: 360px; max-height: calc(100% - 40px); border-radius: 16px;
             }
         }
 
-        /* Mobile Positioning (Bottom Overlay) */
         @media (max-width: 900px) {
             .hud-panel {
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: 45vh;
-                border-radius: 20px 20px 0 0;
-                border-bottom: none;
-                border-left: none;
-                border-right: none;
+                bottom: 0; left: 0; width: 100%; height: 45vh;
+                border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none;
             }
         }
 
-        /* UI Controls */
         .section-title {
-            font-size: 0.75rem;
-            color: var(--gold);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            font-weight: bold;
+            font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold;
         }
 
-        .toolbar {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
+        .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
         .btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--text-main);
-            padding: 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main); padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;
+            cursor: pointer; transition: all 0.2s ease; text-align: center;
         }
-
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.danger { border-color: rgba(255, 51, 102, 0.4); color: #ff3366; }
         .btn.danger:hover { background: rgba(255, 51, 102, 0.15); border-color: #ff3366; }
 
         .element-list { display: flex; flex-direction: column; gap: 6px; }
-        
         .element-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+            display: flex; justify-content: space-between; align-items: center; padding: 8px 12px;
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+            cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
         }
-        
         .element-item:hover { border-color: rgba(255,255,255,0.3); }
         .element-item.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.1); }
         .element-item small { color: var(--text-muted); font-family: monospace; }
 
-        /* Sliders */
         .control-group { margin-bottom: 10px; }
         .control-group label {
             display: flex; justify-content: space-between; color: var(--text-muted);
@@ -252,11 +151,7 @@
         .leg { display: flex; align-items: center; gap: 6px; }
         .leg-dot { width: 12px; height: 12px; border-radius: 50%; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -267,11 +162,9 @@
     </nav>
 
     <div class="workspace">
-        <!-- Canvas Layer -->
         <div class="watermark"></div>
         <canvas id="comboCanvas"></canvas>
 
-        <!-- Floating HUD Panel -->
         <div class="hud-panel" id="hudPanel">
             <div class="hud-header">
                 <h2>System Controls</h2>
@@ -279,16 +172,18 @@
             </div>
             
             <div class="hud-content">
-                <!-- Object Controls -->
                 <div>
                     <div class="section-title">Point Object Settings</div>
                     <div class="control-group">
                         <label>Position (X) <span id="objXVal">-150 px</span></label>
-                        <input id="objX" type="range" min="-400" max="400" step="1" value="-150">
+                        <input id="objX" type="range" min="-600" max="600" step="1" value="-150">
+                    </div>
+                    <div class="control-group">
+                        <label>Position (Y) <span id="objYVal">0 px</span></label>
+                        <input id="objY" type="range" min="-300" max="300" step="1" value="0">
                     </div>
                 </div>
 
-                <!-- Add Optics -->
                 <div>
                     <div class="section-title">Bring Optical Element</div>
                     <div class="toolbar">
@@ -300,27 +195,28 @@
                     </div>
                 </div>
 
-                <!-- Active Elements -->
                 <div>
                     <div class="section-title">Optical Path Sequence</div>
                     <div class="element-list" id="elementList"></div>
                 </div>
 
-                <!-- Live Editor -->
                 <div id="editorPanel" class="editor-panel" style="display: none;">
                     <div class="section-title" id="editorTitle" style="color: var(--text-main);">Edit Element</div>
                     <div class="control-group">
                         <label>Position (X) <span id="elXVal">0 px</span></label>
-                        <input id="elX" type="range" min="-400" max="400" step="1" value="0">
+                        <input id="elX" type="range" min="-600" max="600" step="1" value="0">
+                    </div>
+                    <div class="control-group">
+                        <label>Position (Y) <span id="elYVal">0 px</span></label>
+                        <input id="elY" type="range" min="-300" max="300" step="1" value="0">
                     </div>
                     <div class="control-group" id="focalGroup">
                         <label>Focal Length (f) <span id="elFVal">100 px</span></label>
-                        <input id="elF" type="range" min="20" max="300" step="1" value="100">
+                        <input id="elF" type="range" min="20" max="400" step="1" value="100">
                     </div>
                     <button class="btn danger" style="width: 100%; margin-top: 5px;" onclick="deleteSelected()">Remove Element</button>
                 </div>
 
-                <!-- Dynamic Image Legend -->
                 <div>
                     <div class="section-title">Ray Tracing Map</div>
                     <div class="legend" id="legendBox">
@@ -335,32 +231,29 @@
         const canvas = document.getElementById("comboCanvas");
         const ctx = canvas.getContext("2d");
         
-        // UI Elements
         const objXSlider = document.getElementById("objX");
+        const objYSlider = document.getElementById("objY");
         const elXSlider = document.getElementById("elX");
+        const elYSlider = document.getElementById("elY");
         const elFSlider = document.getElementById("elF");
         const elementListUI = document.getElementById("elementList");
         const editorPanel = document.getElementById("editorPanel");
         const hudPanel = document.getElementById("hudPanel");
         const legendBox = document.getElementById("legendBox");
         
-        let W = 0, H = 0;
-        let originX = 0, originY = 0;
+        let W = 0, H = 0, originX = 0, originY = 0;
         let initialized = false;
 
-        // Interactive State
         let isDragging = false;
-        let dragTarget = null; // 'object' or element ID
-        let dragOffsetX = 0;
+        let dragTarget = null; 
+        let dragOffsetX = 0, dragOffsetY = 0;
 
-        // Physics State
-        const rayColors = ['#ffffff', '#00e5ff', '#ff007f', '#00ffaa', '#ffd166', '#c7a6ff', '#ff5e00'];
-        let object = { x: -200 };
+        const rayColors = ['#00e5ff', '#ff007f', '#00ffaa', '#ffd166', '#c7a6ff', '#ff5e00'];
+        let object = { x: -200, y: 0 };
         let elements = [];
         let selectedId = null;
         let nextId = 1;
 
-        // --- RESIZE OBSERVER & DYNAMIC ORIGIN ---
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 W = Math.floor(entry.contentRect.width);
@@ -369,52 +262,48 @@
                 canvas.height = H;
                 
                 if (W > 900) {
-                    originX = 420; 
+                    originX = 420 + (W - 420) / 2;
                     originY = H / 2;
                 } else {
                     const hudHeight = hudPanel.offsetHeight || (H * 0.45);
-                    originX = 40; 
+                    originX = W / 2; 
                     originY = (H - hudHeight) / 2;
                 }
 
                 if (!initialized && W > 10 && H > 10) {
                     initialized = true;
                     resetScene();
-                } else if (initialized) {
-                    draw();
-                }
+                } else if (initialized) draw();
             }
         });
         resizeObserver.observe(document.querySelector('.workspace'));
 
         function resetScene() {
-            object = { x: -150 };
+            object = { x: -150, y: 0 };
             elements = [
-                { id: nextId++, type: 'lens', subtype: 'convex', x: 50, f: 120 },
-                { id: nextId++, type: 'mirror', subtype: 'concave', x: 300, f: 150 }
+                { id: nextId++, type: 'lens', subtype: 'convex', x: 50, y: 0, f: 120 },
+                { id: nextId++, type: 'mirror', subtype: 'concave', x: 300, y: 0, f: 150 }
             ];
             selectedId = elements[0].id;
             updateUI();
             draw();
         }
 
-        // --- HUD UI LOGIC ---
         function updateUI() {
             document.getElementById("objXVal").textContent = `${Math.round(object.x)} px`;
+            document.getElementById("objYVal").textContent = `${Math.round(object.y)} px`;
             objXSlider.value = object.x;
+            objYSlider.value = object.y;
             
             const sorted = [...elements].sort((a,b) => a.x - b.x);
-            
             elementListUI.innerHTML = "";
-            if(sorted.length === 0) {
-                elementListUI.innerHTML = "<div style='color:var(--text-muted); font-size:0.8rem; text-align:center; padding: 10px;'>No elements in path.</div>";
-            }
+            if(sorted.length === 0) elementListUI.innerHTML = "<div style='color:var(--text-muted); font-size:0.8rem; text-align:center; padding: 10px;'>No elements in path.</div>";
             
             sorted.forEach(el => {
                 const div = document.createElement("div");
                 div.className = "element-item" + (el.id === selectedId ? " active" : "");
                 const name = el.subtype.charAt(0).toUpperCase() + el.subtype.slice(1) + " " + el.type.charAt(0).toUpperCase() + el.type.slice(1);
-                div.innerHTML = `<span>E${el.id}: ${name}</span> <small>x: ${Math.round(el.x)}</small>`;
+                div.innerHTML = `<span>E${el.id}: ${name}</span> <small>x: ${Math.round(el.x)}, y: ${Math.round(el.y)}</small>`;
                 div.onclick = () => selectElement(el.id);
                 elementListUI.appendChild(div);
             });
@@ -424,8 +313,9 @@
                 editorPanel.style.display = "block";
                 document.getElementById("editorTitle").textContent = `Edit E${sel.id} (${sel.subtype.charAt(0).toUpperCase() + sel.subtype.slice(1)} ${sel.type.charAt(0).toUpperCase() + sel.type.slice(1)})`;
                 
-                elXSlider.value = sel.x;
+                elXSlider.value = sel.x; elYSlider.value = sel.y;
                 document.getElementById("elXVal").textContent = `${Math.round(sel.x)} px`;
+                document.getElementById("elYVal").textContent = `${Math.round(sel.y)} px`;
                 
                 if (sel.subtype === 'plane') {
                     document.getElementById("focalGroup").style.display = "none";
@@ -440,39 +330,20 @@
         }
 
         function addElement(type, subtype) {
-            elements.push({ id: nextId++, type, subtype, x: 200, f: 100 });
+            elements.push({ id: nextId++, type, subtype, x: object.x + 150, y: 0, f: 100 });
             selectedId = nextId - 1;
-            updateUI(); 
-            draw();
+            updateUI(); draw();
         }
 
-        function selectElement(id) {
-            selectedId = id;
-            updateUI(); 
-            draw();
-        }
+        function selectElement(id) { selectedId = id; updateUI(); draw(); }
+        function deleteSelected() { elements = elements.filter(e => e.id !== selectedId); selectedId = null; updateUI(); draw(); }
 
-        function deleteSelected() {
-            elements = elements.filter(e => e.id !== selectedId);
-            selectedId = null;
-            updateUI(); 
-            draw();
-        }
-
-        // HUD Listeners
         objXSlider.addEventListener("input", (e) => { object.x = parseFloat(e.target.value); updateUI(); draw(); });
-        
-        elXSlider.addEventListener("input", (e) => {
-            const sel = elements.find(el => el.id === selectedId);
-            if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }
-        });
-        
-        elFSlider.addEventListener("input", (e) => {
-            const sel = elements.find(el => el.id === selectedId);
-            if(sel) { sel.f = parseFloat(e.target.value); updateUI(); draw(); }
-        });
+        objYSlider.addEventListener("input", (e) => { object.y = parseFloat(e.target.value); updateUI(); draw(); });
+        elXSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }});
+        elYSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
+        elFSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.f = parseFloat(e.target.value); updateUI(); draw(); }});
 
-        // --- INTERACTION / DRAGGING ---
         function getEventX(e) {
             const rect = canvas.getBoundingClientRect();
             let clientX = e.clientX;
@@ -491,24 +362,21 @@
 
         function handleInputStart(e) {
             if (e.target.closest('.hud-panel')) return; 
-            const cx = getEventX(e);
-            const cy = getEventY(e);
-            const simX = cx - originX;
+            const cx = getEventX(e); const cy = getEventY(e);
+            const simX = cx - originX; const simY = originY - cy;
 
-            if (Math.abs(simX - object.x) < 20 && Math.abs(cy - originY) < 30) {
-                isDragging = true; dragTarget = 'object'; dragOffsetX = object.x - simX;
+            if (Math.hypot(simX - object.x, simY - object.y) < 30) {
+                isDragging = true; dragTarget = 'object'; 
+                dragOffsetX = object.x - simX; dragOffsetY = object.y - simY;
                 if(e.cancelable) e.preventDefault();
                 return;
             }
 
             for (let i = elements.length - 1; i >= 0; i--) {
-                if (Math.abs(simX - elements[i].x) < 25 && Math.abs(cy - originY) < 80) {
-                    isDragging = true;
-                    dragTarget = elements[i].id;
-                    selectedId = elements[i].id;
-                    dragOffsetX = elements[i].x - simX;
-                    updateUI();
-                    draw();
+                if (Math.abs(simX - elements[i].x) < 30 && Math.abs(simY - elements[i].y) < 100) {
+                    isDragging = true; dragTarget = elements[i].id; selectedId = elements[i].id;
+                    dragOffsetX = elements[i].x - simX; dragOffsetY = elements[i].y - simY;
+                    updateUI(); draw();
                     if(e.cancelable) e.preventDefault();
                     return;
                 }
@@ -519,25 +387,26 @@
             if (!isDragging || !dragTarget) return;
             if(e.cancelable) e.preventDefault();
             
-            const cx = getEventX(e);
-            const simX = cx - originX;
-            let newX = simX + dragOffsetX;
+            const cx = getEventX(e); const cy = getEventY(e);
+            const simX = cx - originX; const simY = originY - cy;
             
+            let newX = simX + dragOffsetX; let newY = simY + dragOffsetY;
             if (newX < -W/2 + 20) newX = -W/2 + 20;
             if (newX > W/2 - 20) newX = W/2 - 20;
+            if (newY < -H/2 + 20) newY = -H/2 + 20;
+            if (newY > H/2 - 20) newY = H/2 - 20;
 
             if (dragTarget === 'object') {
-                object.x = newX;
-                objXSlider.value = newX;
+                object.x = newX; object.y = newY;
+                objXSlider.value = newX; objYSlider.value = newY;
             } else {
                 const sel = elements.find(el => el.id === dragTarget);
                 if (sel) {
-                    sel.x = newX;
-                    elXSlider.value = newX;
+                    sel.x = newX; sel.y = newY;
+                    elXSlider.value = newX; elYSlider.value = newY;
                 }
             }
-            updateUI();
-            draw();
+            updateUI(); draw();
         }
 
         function handleInputEnd() { isDragging = false; dragTarget = null; }
@@ -545,95 +414,108 @@
         canvas.addEventListener("mousedown", handleInputStart);
         canvas.addEventListener("mousemove", handleInputMove);
         window.addEventListener("mouseup", handleInputEnd);
-
         canvas.addEventListener("touchstart", handleInputStart, {passive: false});
         canvas.addEventListener("touchmove", handleInputMove, {passive: false});
         window.addEventListener("touchend", handleInputEnd);
 
-        // --- PARAXIAL RAY TRACING ENGINE (POINT IMAGES) ---
+        // --- PARAXIAL RAY TRACING & ANALYTICAL IMAGES ---
         function traceSystem() {
-            // Fan of paraxial rays from point object
-            const slopes = [-0.15, -0.10, -0.05, 0.05, 0.10, 0.15];
+            const slopes = [-0.15, -0.08, 0, 0.08, 0.15];
             let allPaths = [];
             let images = [];
             let dashedExtensions = [];
             
-            for (let i = 0; i < slopes.length; i++) {
-                let r = { x: object.x, y: 0, dx: 1, dy: slopes[i] };
-                let path = [{ x: r.x, y: r.y }];
-                let bounces = 0;
-                let active = true;
-                let hitSequence = [];
+            // 1. Analytical rays to calculate precise image points irrespective of aperture blocks
+            let ana1 = { x: object.x, y: object.y, dx: 1, dy: 0.05, seq: [] };
+            let ana2 = { x: object.x, y: object.y, dx: 1, dy: -0.05, seq: [] };
+            let bounces = 0;
+            
+            while(bounces < 10) {
+                let nextEl1 = null, minD1 = Infinity;
+                for (let el of elements) { let d = (el.x - ana1.x) * ana1.dx; if (d > 0.001 && d < minD1) { minD1 = d; nextEl1 = el; } }
                 
-                while (active && bounces < 10) {
+                let nextEl2 = null, minD2 = Infinity;
+                for (let el of elements) { let d = (el.x - ana2.x) * ana2.dx; if (d > 0.001 && d < minD2) { minD2 = d; nextEl2 = el; } }
+                
+                if (!nextEl1 || !nextEl2 || nextEl1.id !== nextEl2.id) break; 
+                
+                let hitY1 = ana1.y + minD1 * ana1.dy / ana1.dx;
+                let hitY2 = ana2.y + minD2 * ana2.dy / ana2.dx;
+                
+                let Power = 0;
+                if (nextEl1.type === 'lens') {
+                    Power = nextEl1.subtype === 'convex' ? 1/nextEl1.f : -1/nextEl1.f;
+                    ana1.dy -= (hitY1 - nextEl1.y) * Power * Math.abs(ana1.dx);
+                    ana2.dy -= (hitY2 - nextEl2.y) * Power * Math.abs(ana2.dx);
+                } else {
+                    Power = nextEl1.subtype === 'plane' ? 0 : (nextEl1.subtype === 'concave' ? 1/nextEl1.f : -1/nextEl1.f);
+                    ana1.dy -= (hitY1 - nextEl1.y) * Power * Math.abs(ana1.dx);
+                    ana2.dy -= (hitY2 - nextEl2.y) * Power * Math.abs(ana2.dx);
+                    ana1.dx *= -1; ana2.dx *= -1;
+                }
+                
+                ana1.x = nextEl1.x; ana1.y = hitY1; ana1.seq.push(`E${nextEl1.id}`);
+                ana2.x = nextEl2.x; ana2.y = hitY2; ana2.seq.push(`E${nextEl2.id}`);
+                
+                let cross = ana1.dx * ana2.dy - ana1.dy * ana2.dx;
+                if (Math.abs(cross) > 1e-6) {
+                    let t = ((ana2.x - ana1.x) * ana2.dy - (ana2.y - ana1.y) * ana2.dx) / cross;
+                    images.push({
+                        x: ana1.x + t * ana1.dx, 
+                        y: ana1.y + t * ana1.dy,
+                        color: rayColors[(bounces + 1) % rayColors.length],
+                        label: `I${bounces+1}`,
+                        desc: `(via ${ana1.seq.join('→')})`
+                    });
+                }
+                bounces++;
+            }
+
+            // 2. Visual rays to draw the actual path (with aperture constraints)
+            for (let i = 0; i < slopes.length; i++) {
+                let r = { x: object.x, y: object.y, dx: 1, dy: slopes[i] };
+                let path = [{ x: r.x, y: r.y }];
+                let active = true;
+                let b = 0;
+                
+                while (active && b < 10) {
                     let nextEl = null; let minDist = Infinity;
-                    
                     for (let el of elements) {
                         let d = (el.x - r.x) * r.dx;
                         if (d > 0.001 && d < minDist) { minDist = d; nextEl = el; }
                     }
-                    
                     if (!nextEl) {
                         path.push({ x: r.x + r.dx * 3000, y: r.y + r.dy * 3000 });
-                        active = false;
                         break;
                     }
                     
                     let hitY = r.y + minDist * r.dy / r.dx;
-                    // Cap aperture
-                    if(Math.abs(hitY) > 120) {
+                    if(Math.abs(hitY - nextEl.y) > 100) { 
                         path.push({ x: r.x + r.dx * 3000, y: r.y + r.dy * 3000 });
-                        active = false;
                         break;
                     }
 
                     path.push({ x: nextEl.x, y: hitY });
-                    hitSequence.push(nextEl.id);
                     
-                    // Unified Matrix Transformation
                     let Power = 0;
                     if (nextEl.type === 'lens') {
                         Power = nextEl.subtype === 'convex' ? 1/nextEl.f : -1/nextEl.f;
-                        r.dy = r.dy - hitY * Power; 
+                        r.dy -= (hitY - nextEl.y) * Power * Math.abs(r.dx);
                     } else {
                         Power = nextEl.subtype === 'plane' ? 0 : (nextEl.subtype === 'concave' ? 1/nextEl.f : -1/nextEl.f);
-                        r.dy = r.dy - hitY * Power;
-                        r.dx = -r.dx; 
+                        r.dy -= (hitY - nextEl.y) * Power * Math.abs(r.dx);
+                        r.dx *= -1; 
                     }
-                    r.x = nextEl.x;
-                    r.y = hitY;
+                    r.x = nextEl.x; r.y = hitY;
                     
-                    // Calculate and Store Analytical Image Point using first ray
-                    if (i === 0) {
-                        let imgX = Infinity;
-                        if (Math.abs(r.dy) > 1e-6) {
-                            imgX = r.x - r.y * r.dx / r.dy;
-                        }
-                        
-                        const bounceColor = rayColors[(bounces + 1) % rayColors.length];
-                        const seqStr = hitSequence.map(id => `E${id}`).join('→');
-                        images.push({ 
-                            x: imgX, 
-                            color: bounceColor, 
-                            label: `I${bounces+1}`,
-                            desc: `(via ${seqStr})`,
-                            elX: nextEl.x,
-                            dx: r.dx
+                    if (images[b] && (i === 0 || i === slopes.length - 1)) {
+                        dashedExtensions.push({
+                            x1: nextEl.x, y1: hitY,
+                            x2: images[b].x, y2: images[b].y,
+                            color: rayColors[(b+1) % rayColors.length]
                         });
                     }
-
-                    // Save dashed extensions for outermost rays
-                    if (i === 0 || i === slopes.length - 1) {
-                        if (Math.abs(r.dy) > 1e-6) {
-                            let imgX = r.x - r.y * r.dx / r.dy;
-                            dashedExtensions.push({
-                                x1: nextEl.x, y1: hitY,
-                                x2: imgX, y2: 0,
-                                color: rayColors[(bounces + 1) % rayColors.length]
-                            });
-                        }
-                    }
-                    bounces++;
+                    b++;
                 }
                 allPaths.push(path);
             }
@@ -648,31 +530,20 @@
             ctx.save();
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
-            if (dashed) {
-                ctx.setLineDash([4, 4]);
-                ctx.globalAlpha = 0.5;
-            }
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
+            if (dashed) { ctx.setLineDash([4, 4]); ctx.globalAlpha = 0.5; }
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
             ctx.setLineDash([]);
             
             if (showArrow) {
-                const dx = x2 - x1;
-                const dy = y2 - y1;
-                const len = Math.hypot(dx, dy);
+                const dx = x2 - x1; const dy = y2 - y1; const len = Math.hypot(dx, dy);
                 if (len > 30) {
                     const angle = Math.atan2(dy, dx);
-                    const midX = x1 + dx * 0.55;
-                    const midY = y1 + dy * 0.55;
-                    ctx.beginPath();
-                    ctx.fillStyle = color;
+                    const midX = x1 + dx * 0.55; const midY = y1 + dy * 0.55;
+                    ctx.beginPath(); ctx.fillStyle = color;
                     ctx.moveTo(midX, midY);
                     ctx.lineTo(midX - 10 * Math.cos(angle - 0.4), midY - 10 * Math.sin(angle - 0.4));
                     ctx.lineTo(midX - 10 * Math.cos(angle + 0.4), midY - 10 * Math.sin(angle + 0.4));
-                    ctx.closePath();
-                    ctx.fill();
+                    ctx.closePath(); ctx.fill();
                 }
             }
             ctx.restore();
@@ -680,18 +551,14 @@
 
         function drawElementGeometry(el) {
             const cx = mapX(el.x);
-            const cy = originY;
-            const h = 180; 
+            const cy = mapY(el.y);
+            const h = 200; 
             ctx.save();
             
-            if (el.id === selectedId) {
-                ctx.shadowBlur = 15; ctx.shadowColor = "var(--primary)";
-            }
+            if (el.id === selectedId) { ctx.shadowBlur = 15; ctx.shadowColor = "var(--primary)"; }
 
             if (el.type === 'lens') {
-                ctx.strokeStyle = "#00e5ff"; 
-                ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; 
-                ctx.lineWidth = 3;
+                ctx.strokeStyle = "#00e5ff"; ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.lineWidth = 3;
                 ctx.beginPath();
                 if (el.subtype === 'convex') {
                     ctx.moveTo(cx, cy - h/2);
@@ -713,23 +580,23 @@
                     ctx.strokeStyle = "#8de5ff";
                     ctx.beginPath(); ctx.moveTo(cx, cy - h/2); ctx.lineTo(cx, cy + h/2); ctx.stroke();
                     ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
-                    for(let y = cy - h/2 + 5; y < cy + h/2; y += 12) {
-                        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 10 * curveDir, y + 10); ctx.stroke();
+                    for(let y = cy - h/2 + 5; y < cy + h/2; y += 10) {
+                        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 8 * curveDir, y + 8); ctx.stroke();
                     }
                 } 
                 else {
                     ctx.strokeStyle = "#ff007f";
                     ctx.beginPath();
-                    const bulge = el.subtype === 'concave' ? 30 * curveDir : -30 * curveDir;
+                    const bulge = el.subtype === 'concave' ? 25 * curveDir : -25 * curveDir;
                     ctx.moveTo(cx, cy - h/2);
                     ctx.quadraticCurveTo(cx + bulge, cy, cx, cy + h/2);
                     ctx.stroke();
                     
                     ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
-                    for(let t = 0.05; t < 1; t += 0.06) {
+                    for(let t = 0.1; t < 1; t += 0.08) {
                         const px = cx + bulge * 2 * (1 - t) * t;
                         const py = (cy - h/2) * Math.pow(1 - t, 2) + cy * 2 * (1 - t) * t + (cy + h/2) * Math.pow(t, 2);
-                        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 10 * curveDir, py + 10); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 8 * curveDir, py + 8); ctx.stroke();
                     }
                 }
             }
@@ -745,7 +612,7 @@
             if(!initialized) return;
             ctx.clearRect(0, 0, W, H);
             
-            // Optical Axis
+            // Optical Grid (Central Axis)
             ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
             ctx.lineWidth = 1;
             ctx.setLineDash([5, 5]);
@@ -775,16 +642,17 @@
                 }
             });
 
-            // Draw Fixed Point Object (O)
+            // Draw Point Object (O)
             const ox = mapX(object.x);
+            const oy = mapY(object.y);
             ctx.save();
             ctx.shadowBlur = 15; ctx.shadowColor = "var(--gold)";
             ctx.fillStyle = "var(--gold)";
-            ctx.beginPath(); ctx.arc(ox, originY, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(ox, oy, 7, 0, Math.PI * 2); ctx.fill();
             ctx.shadowBlur = 0;
             ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'";
             ctx.textAlign = "center";
-            ctx.fillText("O", ox, originY + 22);
+            ctx.fillText("O", ox, oy + 25);
             ctx.restore();
 
             // Update Dynamic Legend & Draw Point Images (I)
@@ -793,17 +661,18 @@
             images.forEach((img) => {
                 if (img.x > -W && img.x < W*2) {
                     const ix = mapX(img.x);
+                    const iy = mapY(img.y);
                     ctx.save();
                     ctx.shadowBlur = 15; ctx.shadowColor = img.color;
                     ctx.fillStyle = img.color;
-                    ctx.beginPath(); ctx.arc(ix, originY, 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(ix, iy, 6, 0, Math.PI * 2); ctx.fill();
                     ctx.shadowBlur = 0;
                     ctx.fillStyle = "#fff"; ctx.textAlign = "center";
-                    ctx.font = "bold 14px 'Segoe UI'";
-                    ctx.fillText(img.label, ix, originY + 22);
+                    ctx.font = "bold 15px 'Segoe UI'";
+                    ctx.fillText(img.label, ix, iy + 25);
                     ctx.font = "11px 'Segoe UI'";
                     ctx.fillStyle = "var(--text-muted)";
-                    ctx.fillText(img.desc, ix, originY + 36);
+                    ctx.fillText(img.desc, ix, iy + 40);
                     ctx.restore();
                     
                     legendHTML += `<div class="leg"><div class="leg-dot" style="background: ${img.color}; box-shadow: 0 0 8px ${img.color};"></div> Image ${img.label} <span style="opacity:0.7;">${img.desc}</span></div>`;
