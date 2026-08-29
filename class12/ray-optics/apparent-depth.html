@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apparent Depth & Snell's Window | Vidyaalok Lab</title>
+    <title>Apparent Depth & Area of Vision | Vidyaalok Lab</title>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
@@ -110,9 +110,10 @@
             }
         }
 
+        /* Mobile specific HUD overlay */
         @media (max-width: 900px) {
             .hud-panel {
-                bottom: 0; left: 0; width: 100%; height: 50vh;
+                bottom: 0; left: 0; width: 100%; height: 45vh;
                 border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none;
             }
         }
@@ -157,7 +158,7 @@
         .formula-panel {
             background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
             text-align: center; color: var(--primary); font-weight: bold; animation: fadeIn 0.2s ease-out;
-            font-size: 0.9rem;
+            font-size: 0.9rem; overflow-x: auto;
         }
 
         .legend {
@@ -176,7 +177,7 @@
 
     <nav class="navbar">
         <a href="index.html" class="back-btn">← Chapter 09</a>
-        <h1>Apparent Depth & Snell's Window</h1>
+        <h1>Apparent Depth & Area of Vision</h1>
     </nav>
 
     <div class="workspace">
@@ -190,9 +191,9 @@
             
             <div class="hud-content">
                 <div class="toolbar">
-                    <button class="btn active" id="btnDepth" onclick="setMode('depth')">Apparent Depth</button>
-                    <button class="btn" id="btnHeight" onclick="setMode('height')">Apparent Height</button>
-                    <button class="btn" id="btnFish" onclick="setMode('fish')">Snell's Window</button>
+                    <button class="btn active" id="btnDepth" onclick="setMode('depth')">Apparent Depth (Object in Denser)</button>
+                    <button class="btn" id="btnHeight" onclick="setMode('height')">Apparent Height (Object in Rarer)</button>
+                    <button class="btn" id="btnFish" onclick="setMode('fish')">Area of Vision (Fish Problem)</button>
                 </div>
 
                 <div id="controlsContainer">
@@ -206,8 +207,8 @@
                         <input id="n2Slider" type="range" min="1.1" max="2.5" step="0.01" value="1.33">
                     </div>
                     <div class="control-group">
-                        <label id="distLabel">Object Depth (h) <span id="hVal">200 px</span></label>
-                        <input id="hSlider" type="range" min="50" max="350" step="1" value="200">
+                        <label id="distLabel">Object Depth (h) <span id="hVal">150 cm</span></label>
+                        <input id="hSlider" type="range" min="50" max="300" step="1" value="150">
                     </div>
                 </div>
 
@@ -254,7 +255,9 @@
                     originY = H / 2;
                 } else {
                     originX = W / 2; 
-                    originY = (H - (hudPanel.offsetHeight || H * 0.45)) / 2 + 30; // Slightly shifted down
+                    // Calculate available canvas height above the mobile HUD (which takes 45vh)
+                    const canvasVisibleHeight = H * 0.55; 
+                    originY = canvasVisibleHeight / 2 + 20; 
                 }
 
                 if (!initialized && W > 10 && H > 10) {
@@ -279,9 +282,9 @@
             document.getElementById("btnHeight").classList.toggle('active', mode === 'height');
             document.getElementById("btnFish").classList.toggle('active', mode === 'fish');
 
-            if (mode === 'depth') document.getElementById("distLabel").innerHTML = `Object Depth (h) <span id="hVal">${hSlider.value} px</span>`;
-            if (mode === 'height') document.getElementById("distLabel").innerHTML = `Object Height (h) <span id="hVal">${hSlider.value} px</span>`;
-            if (mode === 'fish') document.getElementById("distLabel").innerHTML = `Fish Depth (h) <span id="hVal">${hSlider.value} px</span>`;
+            if (mode === 'depth') document.getElementById("distLabel").innerHTML = `Object Depth (h) <span id="hVal">${hSlider.value} cm</span>`;
+            if (mode === 'height') document.getElementById("distLabel").innerHTML = `Object Height (h) <span id="hVal">${hSlider.value} cm</span>`;
+            if (mode === 'fish') document.getElementById("distLabel").innerHTML = `Fish Depth (h) <span id="hVal">${hSlider.value} cm</span>`;
 
             updateUI();
         }
@@ -293,7 +296,7 @@
             
             document.getElementById("n1Val").textContent = n1.toFixed(2);
             document.getElementById("n2Val").textContent = n2.toFixed(2);
-            document.getElementById("hVal").textContent = `${h} px`;
+            document.getElementById("hVal").textContent = `${h} cm`;
 
             const resultsContainer = document.getElementById("resultsContainer");
             
@@ -302,8 +305,8 @@
                 const shift = h - h_prime;
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
-                        <div class="stat"><strong>Apparent Depth (h')</strong><span>${h_prime.toFixed(1)} px</span></div>
-                        <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} px</span></div>
+                        <div class="stat"><strong>Apparent Depth (h')</strong><span>${h_prime.toFixed(1)} cm</span></div>
+                        <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} cm</span></div>
                     </div>
                     <div class="formula-panel">
                         \\[ h' = h \\left(\\frac{n_1}{n_2}\\right) \\]
@@ -319,8 +322,8 @@
                 const shift = h_prime - h;
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
-                        <div class="stat"><strong>Apparent Height (h')</strong><span>${h_prime.toFixed(1)} px</span></div>
-                        <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} px</span></div>
+                        <div class="stat"><strong>Apparent Height (h')</strong><span>${h_prime.toFixed(1)} cm</span></div>
+                        <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} cm</span></div>
                     </div>
                     <div class="formula-panel">
                         \\[ h' = h \\left(\\frac{n_2}{n_1}\\right) \\]
@@ -338,13 +341,13 @@
                 const area = Math.PI * r * r;
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
-                        <div class="stat"><strong>Critical Angle (i_c)</strong><span>${ic_deg.toFixed(1)}°</span></div>
-                        <div class="stat"><strong>Radius of Window (r)</strong><span>${r.toFixed(1)} px</span></div>
-                        <div class="stat" style="grid-column: span 2;"><strong>Area of Vision</strong><span>${area.toFixed(0)} px²</span></div>
+                        <div class="stat"><strong>Critical Angle (i<sub>c</sub>)</strong><span>${ic_deg.toFixed(1)}°</span></div>
+                        <div class="stat"><strong>Radius of Window (r)</strong><span>${r.toFixed(1)} cm</span></div>
+                        <div class="stat" style="grid-column: span 2;"><strong>Area of Vision</strong><span>${area.toFixed(0)} cm²</span></div>
                     </div>
-                    <div class="formula-panel" style="font-size:0.8rem;">
+                    <div class="formula-panel">
                         \\[ r = \\frac{h}{\\sqrt{n_2^2 - n_1^2}} \\]
-                        \\[ Area = \\frac{\\pi h^2}{n_2^2 - n_1^2} \\]
+                        \\[ \\text{Area} = \\frac{\\pi h^2}{n_2^2 - n_1^2} \\]
                     </div>
                 `;
             }
@@ -399,6 +402,48 @@
             ctx.shadowBlur = 0;
             ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'";
             ctx.fillText(label, sx + 12, sy + 5);
+            ctx.restore();
+        }
+
+        function drawFish(x, y) {
+            const cx = originX + x;
+            const cy = originY - y;
+            ctx.save();
+            ctx.translate(cx, cy);
+            
+            // Body
+            ctx.fillStyle = "#ff8800";
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 20, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(15, 0);
+            ctx.lineTo(30, -12);
+            ctx.lineTo(30, 12);
+            ctx.closePath();
+            ctx.fillStyle = "#ff4400";
+            ctx.fill();
+            
+            // Eye
+            ctx.beginPath();
+            ctx.arc(-10, -3, 3, 0, Math.PI * 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-11, -3, 1.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+
+            // Fin
+            ctx.beginPath();
+            ctx.moveTo(-5, 0);
+            ctx.quadraticCurveTo(0, 12, 5, 4);
+            ctx.strokeStyle = "#cc3300";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
             ctx.restore();
         }
 
@@ -479,11 +524,11 @@
                 drawPoint(0, h_prime, "I", varColor('--virtual-img'));
 
             } else if (mode === 'fish') {
-                // Snell's Window
+                // Area of Vision (Fish Problem)
                 const ic_rad = Math.asin(n1 / n2);
                 const r = h * Math.tan(ic_rad);
 
-                // Draw Ellipse (Snell's window on surface)
+                // Draw Ellipse (Area of Vision on surface)
                 ctx.save();
                 ctx.beginPath();
                 ctx.ellipse(originX, originY, r, r * 0.25, 0, 0, Math.PI * 2);
@@ -496,7 +541,7 @@
 
                 // Left and Right Critical Rays
                 drawRaySegment(0, -h, -r, 0, colors.incident, false, true);
-                drawRaySegment(-r, 0, -r - 100, 0, colors.refracted, false, true); // Skims surface
+                drawRaySegment(-r, 0, -r - 100, 0, colors.refracted, false, true); 
                 
                 drawRaySegment(0, -h, r, 0, colors.incident, false, true);
                 drawRaySegment(r, 0, r + 100, 0, colors.refracted, false, true);
@@ -518,10 +563,10 @@
                 ctx.setLineDash([]);
                 ctx.fillStyle = "var(--gold)";
                 ctx.font = "14px 'Segoe UI'";
-                ctx.fillText("Radius (r)", originX + r/2 - 20, originY - 10);
+                ctx.fillText("Radius (r)", originX + r/2 - 30, originY - 10);
 
-                // Fish position
-                drawPoint(0, -h, "Fish", varColor('--gold'));
+                // Draw the Fish
+                drawFish(0, -h);
             }
         }
 
