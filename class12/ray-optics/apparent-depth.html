@@ -113,7 +113,7 @@
         /* Mobile specific HUD overlay */
         @media (max-width: 900px) {
             .hud-panel {
-                bottom: 0; left: 0; width: 100%; height: 45vh;
+                bottom: 0; left: 0; width: 100%; height: 50vh;
                 border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none;
             }
         }
@@ -207,8 +207,8 @@
                         <input id="n2Slider" type="range" min="1.1" max="2.5" step="0.01" value="1.33">
                     </div>
                     <div class="control-group">
-                        <label id="distLabel">Object Depth (h) <span id="hVal">150 cm</span></label>
-                        <input id="hSlider" type="range" min="50" max="300" step="1" value="150">
+                        <label id="distLabel">Object Depth (h) <span id="hVal">200 cm</span></label>
+                        <input id="hSlider" type="range" min="50" max="350" step="1" value="200">
                     </div>
                 </div>
 
@@ -231,6 +231,7 @@
         const hSlider = document.getElementById("hSlider");
         
         let W = 0, H = 0, originX = 0, originY = 0;
+        let drawScale = 1; // Used to auto-fit rendering safely inside the mobile view
         let initialized = false;
         let mode = 'depth'; // 'depth', 'height', 'fish'
 
@@ -242,6 +243,29 @@
             air: 'rgba(255, 255, 255, 0.02)'
         };
 
+        // --- DYNAMIC LAYOUT ENGINE ---
+        function updateLayout() {
+            if (W > 900) {
+                originX = 380 + (W - 380) / 2;
+                originY = H / 2;
+                drawScale = 1;
+            } else {
+                originX = W / 2;
+                // Calculate height available ABOVE the mobile HUD panel
+                const hudHeight = hudPanel.offsetHeight || (H * 0.50);
+                const visH = H - hudHeight;
+
+                if (mode === 'height') {
+                    originY = visH * 0.8; // Move surface low so bird/object fits above
+                } else {
+                    originY = visH * 0.25; // Move surface high so fish/depth fits below
+                }
+                
+                // Automatically scale down the drawing so maximum depth (350) fits inside available height
+                drawScale = Math.min(1, (visH * 0.65) / 350);
+            }
+        }
+
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 W = Math.floor(entry.contentRect.width);
@@ -249,20 +273,13 @@
                 canvas.width = W;
                 canvas.height = H;
                 
-                // Set origin dynamically based on layout
-                if (W > 900) {
-                    originX = 380 + (W - 380) / 2;
-                    originY = H / 2;
-                } else {
-                    originX = W / 2; 
-                    // Calculate available canvas height above the mobile HUD (which takes 45vh)
-                    const canvasVisibleHeight = H * 0.55; 
-                    originY = canvasVisibleHeight / 2 + 20; 
-                }
+                updateLayout();
 
                 if (!initialized && W > 10 && H > 10) {
                     initialized = true; draw();
-                } else if (initialized) draw();
+                } else if (initialized) {
+                    draw();
+                }
             }
         });
         resizeObserver.observe(document.querySelector('.workspace'));
@@ -272,7 +289,9 @@
                 W = canvas.parentElement.clientWidth;
                 H = canvas.parentElement.clientHeight || 500; 
                 canvas.width = W; canvas.height = H;
-                initialized = true; draw();
+                initialized = true; 
+                updateLayout();
+                draw();
             }
         }, 300);
 
@@ -286,6 +305,7 @@
             if (mode === 'height') document.getElementById("distLabel").innerHTML = `Object Height (h) <span id="hVal">${hSlider.value} cm</span>`;
             if (mode === 'fish') document.getElementById("distLabel").innerHTML = `Fish Depth (h) <span id="hVal">${hSlider.value} cm</span>`;
 
+            updateLayout();
             updateUI();
         }
 
@@ -345,7 +365,7 @@
                         <div class="stat"><strong>Radius of Window (r)</strong><span>${r.toFixed(1)} cm</span></div>
                         <div class="stat" style="grid-column: span 2;"><strong>Area of Vision</strong><span>${area.toFixed(0)} cm²</span></div>
                     </div>
-                    <div class="formula-panel">
+                    <div class="formula-panel" style="font-size:0.8rem;">
                         \\[ r = \\frac{h}{\\sqrt{n_2^2 - n_1^2}} \\]
                         \\[ \\text{Area} = \\frac{\\pi h^2}{n_2^2 - n_1^2} \\]
                     </div>
@@ -377,9 +397,9 @@
             if (showArrow) {
                 const dx = x2 - x1; const dy = -(y2 - y1); 
                 const len = Math.hypot(dx, dy);
-                if (len > 30) {
+                if (len > 30 * drawScale) {
                     const angle = Math.atan2(dy, dx);
-                    const arrowDist = Math.min(len * 0.5, 100);
+                    const arrowDist = Math.min(len * 0.5, 100 * drawScale);
                     const mx = originX + x1 + (dx / len) * arrowDist;
                     const my = originY - y1 + (dy / len) * arrowDist;
 
@@ -410,6 +430,10 @@
             const cy = originY - y;
             ctx.save();
             ctx.translate(cx, cy);
+            
+            // Prevent fish from becoming microscopically small on mobile
+            const fishScale = Math.max(0.6, drawScale);
+            ctx.scale(fishScale, fishScale);
             
             // Body
             ctx.fillStyle = "#ff8800";
@@ -453,7 +477,10 @@
             
             const n1 = parseFloat(n1Slider.value);
             const n2 = parseFloat(n2Slider.value);
-            const h = parseFloat(hSlider.value);
+            
+            // Render Math: Calculate Physics accurately for text, draw visually scaled
+            const h_real = parseFloat(hSlider.value);
+            const h = h_real * drawScale;
 
             // Draw Mediums
             ctx.fillStyle = colors.air;
@@ -473,24 +500,24 @@
             ctx.setLineDash([]);
 
             if (mode === 'depth') {
-                // Object is in Denser (Bottom)
-                const h_prime = h * (n1 / n2);
+                const h_prime_real = h_real * (n1 / n2);
+                const h_prime = h_prime_real * drawScale;
                 
                 // Straight ray
                 drawRaySegment(0, -h, 0, 0, colors.incident, false, true);
-                drawRaySegment(0, 0, 0, 150, colors.refracted, false, true);
+                drawRaySegment(0, 0, 0, 150 * drawScale, colors.refracted, false, true);
                 drawRaySegment(0, 0, 0, -h_prime, colors.virtual, true, false);
 
                 // Angled ray
-                const dx = 50; 
+                const dx = 50 * drawScale; 
                 const angle_i = Math.atan2(dx, h);
                 const sin_r = (n2 / n1) * Math.sin(angle_i);
                 
                 if (sin_r <= 1.0) {
                     const angle_r = Math.asin(sin_r);
-                    const outDx = 150 * Math.tan(angle_r);
+                    const outDx = 150 * Math.tan(angle_r) * drawScale;
                     drawRaySegment(0, -h, dx, 0, colors.incident, false, true);
-                    drawRaySegment(dx, 0, dx + outDx, 150, colors.refracted, false, true);
+                    drawRaySegment(dx, 0, dx + outDx, 150 * drawScale, colors.refracted, false, true);
                     
                     // Virtual extension backward
                     drawRaySegment(dx, 0, 0, -h_prime, colors.virtual, true, false);
@@ -500,22 +527,20 @@
                 drawPoint(0, -h_prime, "I", varColor('--virtual-img'));
 
             } else if (mode === 'height') {
-                // Object is in Rarer (Top)
-                const h_prime = h * (n2 / n1);
+                const h_prime_real = h_real * (n2 / n1);
+                const h_prime = h_prime_real * drawScale;
 
-                // Straight ray
                 drawRaySegment(0, h, 0, 0, colors.incident, false, true);
-                drawRaySegment(0, 0, 0, -150, colors.refracted, false, true);
+                drawRaySegment(0, 0, 0, -150 * drawScale, colors.refracted, false, true);
                 drawRaySegment(0, 0, 0, h_prime, colors.virtual, true, false);
 
-                // Angled ray
-                const dx = 50;
+                const dx = 50 * drawScale;
                 const angle_i = Math.atan2(dx, h);
                 const angle_r = Math.asin((n1 / n2) * Math.sin(angle_i));
-                const outDx = 150 * Math.tan(angle_r);
+                const outDx = 150 * Math.tan(angle_r) * drawScale;
                 
                 drawRaySegment(0, h, dx, 0, colors.incident, false, true);
-                drawRaySegment(dx, 0, dx + outDx, -150, colors.refracted, false, true);
+                drawRaySegment(dx, 0, dx + outDx, -150 * drawScale, colors.refracted, false, true);
                 
                 // Virtual extension backward
                 drawRaySegment(dx, 0, 0, h_prime, colors.virtual, true, false);
@@ -524,7 +549,6 @@
                 drawPoint(0, h_prime, "I", varColor('--virtual-img'));
 
             } else if (mode === 'fish') {
-                // Area of Vision (Fish Problem)
                 const ic_rad = Math.asin(n1 / n2);
                 const r = h * Math.tan(ic_rad);
 
@@ -541,19 +565,19 @@
 
                 // Left and Right Critical Rays
                 drawRaySegment(0, -h, -r, 0, colors.incident, false, true);
-                drawRaySegment(-r, 0, -r - 100, 0, colors.refracted, false, true); 
+                drawRaySegment(-r, 0, -r - 100 * drawScale, 0, colors.refracted, false, true); 
                 
                 drawRaySegment(0, -h, r, 0, colors.incident, false, true);
-                drawRaySegment(r, 0, r + 100, 0, colors.refracted, false, true);
+                drawRaySegment(r, 0, r + 100 * drawScale, 0, colors.refracted, false, true);
 
                 // Interior rays
                 for (let a = -ic_rad * 0.6; a <= ic_rad * 0.6; a += ic_rad * 0.6) {
-                    if(a === 0) continue;
+                    if(Math.abs(a) < 0.01) continue;
                     let hitX = h * Math.tan(a);
                     let out_r = Math.asin((n2/n1) * Math.sin(a));
-                    let outX = hitX + 100 * Math.tan(out_r);
+                    let outX = hitX + 100 * Math.tan(out_r) * drawScale;
                     drawRaySegment(0, -h, hitX, 0, "rgba(255,255,255,0.4)", false, false);
-                    drawRaySegment(hitX, 0, outX, 100, "rgba(0,229,255,0.4)", false, false);
+                    drawRaySegment(hitX, 0, outX, 100 * drawScale, "rgba(0,229,255,0.4)", false, false);
                 }
 
                 // Annotate Radius
@@ -563,9 +587,9 @@
                 ctx.setLineDash([]);
                 ctx.fillStyle = "var(--gold)";
                 ctx.font = "14px 'Segoe UI'";
-                ctx.fillText("Radius (r)", originX + r/2 - 30, originY - 10);
+                ctx.fillText("Radius (r)", originX + r/2 - 20, originY - 10);
 
-                // Draw the Fish
+                // Draw the Fish (Vector Graphic)
                 drawFish(0, -h);
             }
         }
