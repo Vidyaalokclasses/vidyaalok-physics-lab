@@ -215,8 +215,8 @@
                         <input id="hSlider" type="range" min="50" max="350" step="1" value="200">
                     </div>
                     <div class="control-group" id="vControlGroup" style="display: none;">
-                        <label id="velLabel">Velocity (v) <span id="vVal">10.0 m/s</span></label>
-                        <input id="vSlider" type="range" min="-30" max="30" step="1" value="10">
+                        <label id="velLabel">Velocity (v) <span id="vVal">0.0 cm/s</span></label>
+                        <input id="vSlider" type="range" min="-30" max="30" step="1" value="0">
                     </div>
                 </div>
 
@@ -275,10 +275,9 @@
                     maxNeeded = 350 * (n2 / n1); // Max Apparent Height
                 } else {
                     originY = visH * 0.25; // Surface high for fish below
-                    maxNeeded = 350 * Math.max(1, n1 / n2); // Depth
+                    maxNeeded = 350 * Math.max(1, n1 / n2); // Max Depth
                 }
                 
-                // Aggressively scale to ensure all graphics and virtual images ALWAYS fit on screen
                 drawScale = Math.min(1, (visH * 0.65) / maxNeeded);
             }
         }
@@ -322,6 +321,11 @@
             const isVelMode = (mode === 'vel_fish' || mode === 'vel_bird');
             document.getElementById("vControlGroup").style.display = isVelMode ? "block" : "none";
             
+            // Default velocity to 0 when opening velocity modes
+            if(isVelMode && parseFloat(vSlider.value) !== 0) {
+                vSlider.value = 0;
+            }
+
             if (mode === 'depth') document.getElementById("distLabel").innerHTML = `Object Depth (h) <span id="hVal">${hSlider.value} cm</span>`;
             if (mode === 'height') document.getElementById("distLabel").innerHTML = `Object Height (h) <span id="hVal">${hSlider.value} cm</span>`;
             if (mode === 'fish') document.getElementById("distLabel").innerHTML = `Fish Depth (h) <span id="hVal">${hSlider.value} cm</span>`;
@@ -341,7 +345,7 @@
             document.getElementById("n1Val").textContent = n1.toFixed(2);
             document.getElementById("n2Val").textContent = n2.toFixed(2);
             document.getElementById("hVal").textContent = `${h} cm`;
-            document.getElementById("vVal").textContent = `${v.toFixed(1)} m/s`;
+            document.getElementById("vVal").textContent = `${v.toFixed(1)} cm/s`;
 
             const resultsContainer = document.getElementById("resultsContainer");
             
@@ -353,7 +357,10 @@
                         <div class="stat"><strong>Apparent Depth (h')</strong><span>${h_prime.toFixed(1)} cm</span></div>
                         <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} cm</span></div>
                     </div>
-                    <div class="formula-panel">\\[ h' = h \\left(\\frac{n_1}{n_2}\\right) \\] \\[ \\Delta h = h \\left(1 - \\frac{n_1}{n_2}\\right) \\]</div>
+                    <div class="formula-panel">
+                        \\[ h' = h \\left(\\frac{n_1}{n_2}\\right) \\]
+                        \\[ \\Delta h = h \\left(1 - \\frac{n_1}{n_2}\\right) \\]
+                    </div>
                     <div class="legend">
                         <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Real Object</div>
                         <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
@@ -367,7 +374,10 @@
                         <div class="stat"><strong>Apparent Height (h')</strong><span>${h_prime.toFixed(1)} cm</span></div>
                         <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} cm</span></div>
                     </div>
-                    <div class="formula-panel">\\[ h' = h \\left(\\frac{n_2}{n_1}\\right) \\] \\[ \\Delta h = h \\left(\\frac{n_2}{n_1} - 1\\right) \\]</div>
+                    <div class="formula-panel">
+                        \\[ h' = h \\left(\\frac{n_2}{n_1}\\right) \\]
+                        \\[ \\Delta h = h \\left(\\frac{n_2}{n_1} - 1\\right) \\]
+                    </div>
                     <div class="legend">
                         <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Real Object</div>
                         <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
@@ -393,8 +403,8 @@
                 const v_prime = v * (n1 / n2);
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
-                        <div class="stat"><strong>Apparent Vel (v')</strong><span>${Math.abs(v_prime).toFixed(1)} m/s</span></div>
-                        <div class="stat"><strong>Actual Vel (v)</strong><span>${Math.abs(v).toFixed(1)} m/s</span></div>
+                        <div class="stat"><strong>Apparent Vel (v')</strong><span>${Math.abs(v_prime).toFixed(1)} cm/s</span></div>
+                        <div class="stat"><strong>Actual Vel (v)</strong><span>${Math.abs(v).toFixed(1)} cm/s</span></div>
                     </div>
                     <div class="formula-panel">\\[ v' = v \\left(\\frac{n_1}{n_2}\\right) \\]</div>
                     <div class="legend">
@@ -406,8 +416,8 @@
                 const v_prime = v * (n2 / n1);
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
-                        <div class="stat"><strong>Apparent Vel (v')</strong><span>${Math.abs(v_prime).toFixed(1)} m/s</span></div>
-                        <div class="stat"><strong>Actual Vel (v)</strong><span>${Math.abs(v).toFixed(1)} m/s</span></div>
+                        <div class="stat"><strong>Apparent Vel (v')</strong><span>${Math.abs(v_prime).toFixed(1)} cm/s</span></div>
+                        <div class="stat"><strong>Actual Vel (v)</strong><span>${Math.abs(v).toFixed(1)} cm/s</span></div>
                     </div>
                     <div class="formula-panel">\\[ v' = v \\left(\\frac{n_2}{n_1}\\right) \\]</div>
                     <div class="legend">
@@ -670,7 +680,7 @@
                 ctx.beginPath(); ctx.moveTo(originX, originY); ctx.lineTo(originX + r, originY); ctx.stroke();
                 ctx.setLineDash([]);
                 ctx.fillStyle = "var(--gold)"; ctx.font = "14px 'Segoe UI'";
-                ctx.fillText("Radius (r)", originX + r/2 - 30, originY - 10);
+                ctx.fillText("Radius (r)", originX + r/2 - 20, originY - 10);
 
                 drawFish(0, -h);
 
@@ -679,26 +689,55 @@
                 const appY = animY * (n1 / n2) * drawScale;
                 const v_prime = v * (n1 / n2);
 
-                drawRaySegment(0, -aY, 0, -appY, "rgba(255, 255, 255, 0.2)", true, false);
+                // Animated Ray Diagrams matching Apparent Depth Logic
+                drawRaySegment(0, -aY, 0, 0, colors.incident, false, true);
+                drawRaySegment(0, 0, 0, 150 * drawScale, colors.refracted, false, true);
+                drawRaySegment(0, 0, 0, -appY, colors.virtual, true, false);
+
+                const dx = 50 * drawScale; 
+                const angle_i = Math.atan2(dx, aY);
+                const sin_r = (n2 / n1) * Math.sin(angle_i);
+                
+                if (sin_r <= 1.0) {
+                    const angle_r = Math.asin(sin_r);
+                    const outDx = 150 * Math.tan(angle_r) * drawScale;
+                    drawNormalAt(dx);
+                    drawRaySegment(0, -aY, dx, 0, colors.incident, false, true);
+                    drawRaySegment(dx, 0, dx + outDx, 150 * drawScale, colors.refracted, false, true);
+                    drawRaySegment(dx, 0, 0, -appY, colors.virtual, true, false);
+                }
 
                 drawFish(0, -aY, 1.0); // Real
                 drawFish(0, -appY, 0.4); // Apparent
 
-                drawVelocityVector(0, -aY, v, "#ff8800", `v = ${v.toFixed(1)} m/s`);
-                drawVelocityVector(0, -appY, v_prime, "#ff007f", `v' = ${v_prime.toFixed(1)} m/s`);
+                drawVelocityVector(0, -aY, v, "#ff8800", `v = ${v.toFixed(1)} cm/s`);
+                drawVelocityVector(0, -appY, v_prime, "#ff007f", `v' = ${v_prime.toFixed(1)} cm/s`);
 
             } else if (mode === 'vel_bird') {
                 const v = parseFloat(vSlider.value);
                 const appY = animY * (n2 / n1) * drawScale;
                 const v_prime = v * (n2 / n1);
 
-                drawRaySegment(0, aY, 0, appY, "rgba(255, 255, 255, 0.2)", true, false);
+                // Animated Ray Diagrams matching Apparent Height Logic
+                drawRaySegment(0, aY, 0, 0, colors.incident, false, true);
+                drawRaySegment(0, 0, 0, -150 * drawScale, colors.refracted, false, true);
+                drawRaySegment(0, 0, 0, appY, colors.virtual, true, false);
+
+                const dx = 50 * drawScale;
+                const angle_i = Math.atan2(dx, aY);
+                const angle_r = Math.asin((n1 / n2) * Math.sin(angle_i));
+                const outDx = 150 * Math.tan(angle_r) * drawScale;
+                
+                drawNormalAt(dx);
+                drawRaySegment(0, aY, dx, 0, colors.incident, false, true);
+                drawRaySegment(dx, 0, dx + outDx, -150 * drawScale, colors.refracted, false, true);
+                drawRaySegment(dx, 0, 0, appY, colors.virtual, true, false);
 
                 drawBird(0, aY, 1.0); // Real
                 drawBird(0, appY, 0.4); // Apparent
 
-                drawVelocityVector(0, aY, v, "#ffffff", `v = ${v.toFixed(1)} m/s`);
-                drawVelocityVector(0, appY, v_prime, "#00e5ff", `v' = ${v_prime.toFixed(1)} m/s`);
+                drawVelocityVector(0, aY, v, "#ffffff", `v = ${v.toFixed(1)} cm/s`);
+                drawVelocityVector(0, appY, v_prime, "#00e5ff", `v' = ${v_prime.toFixed(1)} cm/s`);
             }
         }
 
