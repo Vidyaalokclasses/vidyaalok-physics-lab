@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Apparent Depth & Area of Vision | Vidyaalok Lab</title>
+    <title>Apparent Depth, Velocity & Snell's Window | Vidyaalok Lab</title>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
@@ -122,15 +122,17 @@
             font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold;
         }
 
-        .toolbar { display: flex; flex-direction: column; gap: 8px; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 
         .btn {
+            flex: 1 1 calc(50% - 8px); min-width: 140px;
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
-            color: var(--text-main); padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;
+            color: var(--text-main); padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.75rem;
             cursor: pointer; transition: all 0.2s ease; text-align: center;
         }
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
+        .btn.full { flex: 1 1 100%; }
 
         /* Sliders */
         .control-group { margin-bottom: 12px; }
@@ -152,7 +154,7 @@
             background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center;
         }
-        .stat strong { color: var(--secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .stat span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
         
         .formula-panel {
@@ -177,7 +179,7 @@
 
     <nav class="navbar">
         <a href="index.html" class="back-btn">← Chapter 09</a>
-        <h1>Apparent Depth & Area of Vision</h1>
+        <h1>Apparent Depth & Velocity</h1>
     </nav>
 
     <div class="workspace">
@@ -191,13 +193,15 @@
             
             <div class="hud-content">
                 <div class="toolbar">
-                    <button class="btn active" id="btnDepth" onclick="setMode('depth')">Apparent Depth (Object in Denser)</button>
-                    <button class="btn" id="btnHeight" onclick="setMode('height')">Apparent Height (Object in Rarer)</button>
-                    <button class="btn" id="btnFish" onclick="setMode('fish')">Area of Vision (Fish Problem)</button>
+                    <button class="btn active" id="btnDepth" onclick="setMode('depth')">Apparent Depth</button>
+                    <button class="btn" id="btnHeight" onclick="setMode('height')">Apparent Height</button>
+                    <button class="btn" id="btnVelFish" onclick="setMode('vel_fish')">Velocity of Fish</button>
+                    <button class="btn" id="btnVelBird" onclick="setMode('vel_bird')">Velocity of Bird</button>
+                    <button class="btn full" id="btnFish" onclick="setMode('fish')">Area of Vision</button>
                 </div>
 
                 <div id="controlsContainer">
-                    <div class="section-title" id="mediumTitle">Medium Properties</div>
+                    <div class="section-title" id="mediumTitle">Properties</div>
                     <div class="control-group">
                         <label>Rarer Medium (n₁) <span id="n1Val">1.00</span></label>
                         <input id="n1Slider" type="range" min="1.0" max="1.5" step="0.01" value="1.00">
@@ -206,9 +210,13 @@
                         <label>Denser Medium (n₂) <span id="n2Val">1.33</span></label>
                         <input id="n2Slider" type="range" min="1.1" max="2.5" step="0.01" value="1.33">
                     </div>
-                    <div class="control-group">
-                        <label id="distLabel">Object Depth (h) <span id="hVal">200 cm</span></label>
+                    <div class="control-group" id="hControlGroup">
+                        <label id="distLabel">Position (y) <span id="hVal">200 cm</span></label>
                         <input id="hSlider" type="range" min="50" max="350" step="1" value="200">
+                    </div>
+                    <div class="control-group" id="vControlGroup" style="display: none;">
+                        <label id="velLabel">Velocity (v) <span id="vVal">10.0 m/s</span></label>
+                        <input id="vSlider" type="range" min="-30" max="30" step="1" value="10">
                     </div>
                 </div>
 
@@ -229,11 +237,15 @@
         const n1Slider = document.getElementById("n1Slider");
         const n2Slider = document.getElementById("n2Slider");
         const hSlider = document.getElementById("hSlider");
+        const vSlider = document.getElementById("vSlider");
         
         let W = 0, H = 0, originX = 0, originY = 0;
         let drawScale = 1; 
         let initialized = false;
-        let mode = 'depth'; // 'depth', 'height', 'fish'
+        let mode = 'depth'; // 'depth', 'height', 'fish', 'vel_fish', 'vel_bird'
+
+        let animY = 200;
+        let lastTime = performance.now();
 
         const colors = {
             incident: '#ffffff',
@@ -254,13 +266,20 @@
                 const hudHeight = hudPanel.offsetHeight || (H * 0.50);
                 const visH = H - hudHeight;
 
-                if (mode === 'height') {
-                    originY = visH * 0.8; 
+                const n1 = parseFloat(n1Slider.value) || 1.0;
+                const n2 = parseFloat(n2Slider.value) || 1.33;
+                let maxNeeded = 350;
+
+                if (mode === 'height' || mode === 'vel_bird') {
+                    originY = visH * 0.85; // Surface low for bird above
+                    maxNeeded = 350 * (n2 / n1); // Max Apparent Height
                 } else {
-                    originY = visH * 0.25; 
+                    originY = visH * 0.25; // Surface high for fish below
+                    maxNeeded = 350 * Math.max(1, n1 / n2); // Depth
                 }
                 
-                drawScale = Math.min(1, (visH * 0.65) / 350);
+                // Aggressively scale to ensure all graphics and virtual images ALWAYS fit on screen
+                drawScale = Math.min(1, (visH * 0.65) / maxNeeded);
             }
         }
 
@@ -274,9 +293,7 @@
                 updateLayout();
 
                 if (!initialized && W > 10 && H > 10) {
-                    initialized = true; draw();
-                } else if (initialized) {
-                    draw();
+                    initialized = true;
                 }
             }
         });
@@ -289,20 +306,28 @@
                 canvas.width = W; canvas.height = H;
                 initialized = true; 
                 updateLayout();
-                draw();
             }
         }, 300);
 
         function setMode(newMode) {
             mode = newMode;
-            document.getElementById("btnDepth").classList.toggle('active', mode === 'depth');
-            document.getElementById("btnHeight").classList.toggle('active', mode === 'height');
-            document.getElementById("btnFish").classList.toggle('active', mode === 'fish');
+            document.querySelectorAll('.toolbar .btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (mode === 'depth') document.getElementById("btnDepth").classList.add('active');
+            if (mode === 'height') document.getElementById("btnHeight").classList.add('active');
+            if (mode === 'fish') document.getElementById("btnFish").classList.add('active');
+            if (mode === 'vel_fish') document.getElementById("btnVelFish").classList.add('active');
+            if (mode === 'vel_bird') document.getElementById("btnVelBird").classList.add('active');
 
+            const isVelMode = (mode === 'vel_fish' || mode === 'vel_bird');
+            document.getElementById("vControlGroup").style.display = isVelMode ? "block" : "none";
+            
             if (mode === 'depth') document.getElementById("distLabel").innerHTML = `Object Depth (h) <span id="hVal">${hSlider.value} cm</span>`;
             if (mode === 'height') document.getElementById("distLabel").innerHTML = `Object Height (h) <span id="hVal">${hSlider.value} cm</span>`;
             if (mode === 'fish') document.getElementById("distLabel").innerHTML = `Fish Depth (h) <span id="hVal">${hSlider.value} cm</span>`;
+            if (isVelMode) document.getElementById("distLabel").innerHTML = `Initial Position (y) <span id="hVal">${hSlider.value} cm</span>`;
 
+            animY = parseFloat(hSlider.value);
             updateLayout();
             updateUI();
         }
@@ -311,10 +336,12 @@
             const n1 = parseFloat(n1Slider.value);
             const n2 = parseFloat(n2Slider.value);
             const h = parseFloat(hSlider.value);
+            const v = parseFloat(vSlider.value);
             
             document.getElementById("n1Val").textContent = n1.toFixed(2);
             document.getElementById("n2Val").textContent = n2.toFixed(2);
             document.getElementById("hVal").textContent = `${h} cm`;
+            document.getElementById("vVal").textContent = `${v.toFixed(1)} m/s`;
 
             const resultsContainer = document.getElementById("resultsContainer");
             
@@ -326,10 +353,7 @@
                         <div class="stat"><strong>Apparent Depth (h')</strong><span>${h_prime.toFixed(1)} cm</span></div>
                         <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} cm</span></div>
                     </div>
-                    <div class="formula-panel">
-                        \\[ h' = h \\left(\\frac{n_1}{n_2}\\right) \\]
-                        \\[ \\Delta h = h \\left(1 - \\frac{n_1}{n_2}\\right) \\]
-                    </div>
+                    <div class="formula-panel">\\[ h' = h \\left(\\frac{n_1}{n_2}\\right) \\] \\[ \\Delta h = h \\left(1 - \\frac{n_1}{n_2}\\right) \\]</div>
                     <div class="legend">
                         <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Real Object</div>
                         <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
@@ -343,10 +367,7 @@
                         <div class="stat"><strong>Apparent Height (h')</strong><span>${h_prime.toFixed(1)} cm</span></div>
                         <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} cm</span></div>
                     </div>
-                    <div class="formula-panel">
-                        \\[ h' = h \\left(\\frac{n_2}{n_1}\\right) \\]
-                        \\[ \\Delta h = h \\left(\\frac{n_2}{n_1} - 1\\right) \\]
-                    </div>
+                    <div class="formula-panel">\\[ h' = h \\left(\\frac{n_2}{n_1}\\right) \\] \\[ \\Delta h = h \\left(\\frac{n_2}{n_1} - 1\\right) \\]</div>
                     <div class="legend">
                         <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Real Object</div>
                         <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
@@ -368,22 +389,52 @@
                         \\[ \\text{Area} = \\frac{\\pi h^2}{n_2^2 - n_1^2} \\]
                     </div>
                 `;
+            } else if (mode === 'vel_fish') {
+                const v_prime = v * (n1 / n2);
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Apparent Vel (v')</strong><span>${Math.abs(v_prime).toFixed(1)} m/s</span></div>
+                        <div class="stat"><strong>Actual Vel (v)</strong><span>${Math.abs(v).toFixed(1)} m/s</span></div>
+                    </div>
+                    <div class="formula-panel">\\[ v' = v \\left(\\frac{n_1}{n_2}\\right) \\]</div>
+                    <div class="legend">
+                        <div class="leg"><div class="leg-dot" style="background: #ff8800;"></div> Actual Fish</div>
+                        <div class="leg"><div class="leg-dot" style="background: rgba(255, 136, 0, 0.4);"></div> Apparent Fish</div>
+                    </div>
+                `;
+            } else if (mode === 'vel_bird') {
+                const v_prime = v * (n2 / n1);
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Apparent Vel (v')</strong><span>${Math.abs(v_prime).toFixed(1)} m/s</span></div>
+                        <div class="stat"><strong>Actual Vel (v)</strong><span>${Math.abs(v).toFixed(1)} m/s</span></div>
+                    </div>
+                    <div class="formula-panel">\\[ v' = v \\left(\\frac{n_2}{n_1}\\right) \\]</div>
+                    <div class="legend">
+                        <div class="leg"><div class="leg-dot" style="background: #ffffff;"></div> Actual Bird</div>
+                        <div class="leg"><div class="leg-dot" style="background: rgba(255, 255, 255, 0.4);"></div> Apparent Bird</div>
+                    </div>
+                `;
             }
 
             if(window.MathJax && window.MathJax.typesetPromise) {
                 window.MathJax.typesetPromise([resultsContainer]);
             }
-            
-            draw();
         }
 
-        [n1Slider, n2Slider, hSlider].forEach(el => el.addEventListener("input", updateUI));
+        n1Slider.addEventListener("input", () => { updateLayout(); updateUI(); });
+        n2Slider.addEventListener("input", () => { updateLayout(); updateUI(); });
+        hSlider.addEventListener("input", (e) => { 
+            animY = parseFloat(e.target.value); 
+            updateLayout(); updateUI(); 
+        });
+        vSlider.addEventListener("input", updateUI);
 
+        // --- DRAWING UTILITIES ---
         function drawRaySegment(x1, y1, x2, y2, color, dashed = false, showArrow = true) {
             ctx.save();
             ctx.strokeStyle = color;
             ctx.lineWidth = 2;
-            
             if (dashed) { ctx.setLineDash([5, 5]); ctx.globalAlpha = 0.6; }
             
             ctx.beginPath();
@@ -411,18 +462,6 @@
             ctx.restore();
         }
 
-        function drawPoint(x, y, label, color) {
-            const sx = originX + x, sy = originY - y;
-            ctx.save();
-            ctx.shadowBlur = 15; ctx.shadowColor = color;
-            ctx.fillStyle = color;
-            ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'";
-            ctx.fillText(label, sx + 12, sy + 5);
-            ctx.restore();
-        }
-
         function drawNormalAt(x) {
             const nx = originX + x;
             ctx.save();
@@ -436,48 +475,97 @@
             ctx.restore();
         }
 
-        function drawFish(x, y) {
+        function drawVelocityVector(x, y, v, color, label) {
+            if (Math.abs(v) < 0.1) return;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 3;
+            
+            const sx = originX + x;
+            const sy = originY - y;
+            const length = v * 3 * drawScale; // visual scaling
+            
+            ctx.beginPath();
+            ctx.moveTo(sx + 35, sy);
+            ctx.lineTo(sx + 35, sy - length);
+            ctx.stroke();
+            
+            const dir = v > 0 ? 1 : -1;
+            ctx.beginPath();
+            ctx.moveTo(sx + 35, sy - length);
+            ctx.lineTo(sx + 35 - 6, sy - length + 10 * dir);
+            ctx.lineTo(sx + 35 + 6, sy - length + 10 * dir);
+            ctx.fill();
+
+            ctx.font = "bold 13px 'Segoe UI'";
+            ctx.fillText(label, sx + 45, sy - length/2);
+            ctx.restore();
+        }
+
+        function drawPoint(x, y, label, color) {
+            const sx = originX + x, sy = originY - y;
+            ctx.save();
+            ctx.shadowBlur = 15; ctx.shadowColor = color;
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'";
+            ctx.fillText(label, sx + 12, sy + 5);
+            ctx.restore();
+        }
+
+        function drawFish(x, y, opacity=1.0) {
             const cx = originX + x;
             const cy = originY - y;
             ctx.save();
             ctx.translate(cx, cy);
             
-            const fishScale = Math.max(0.6, drawScale);
+            const fishScale = Math.max(0.5, drawScale);
             ctx.scale(fishScale, fishScale);
+            ctx.globalAlpha = opacity;
             
             // Body
             ctx.fillStyle = "#ff8800";
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 20, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.ellipse(0, 0, 20, 10, 0, 0, Math.PI * 2); ctx.fill();
             
             // Tail
-            ctx.beginPath();
-            ctx.moveTo(15, 0);
-            ctx.lineTo(30, -12);
-            ctx.lineTo(30, 12);
-            ctx.closePath();
-            ctx.fillStyle = "#ff4400";
-            ctx.fill();
+            ctx.beginPath(); ctx.moveTo(15, 0); ctx.lineTo(30, -12); ctx.lineTo(30, 12); ctx.closePath();
+            ctx.fillStyle = "#ff4400"; ctx.fill();
             
             // Eye
-            ctx.beginPath();
-            ctx.arc(-10, -3, 3, 0, Math.PI * 2);
-            ctx.fillStyle = "#ffffff";
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(-11, -3, 1.5, 0, Math.PI * 2);
-            ctx.fillStyle = "#000000";
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(-10, -3, 3, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
+            ctx.beginPath(); ctx.arc(-11, -3, 1.5, 0, Math.PI * 2); ctx.fillStyle = "#000000"; ctx.fill();
 
             // Fin
-            ctx.beginPath();
-            ctx.moveTo(-5, 0);
-            ctx.quadraticCurveTo(0, 12, 5, 4);
-            ctx.strokeStyle = "#cc3300";
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(-5, 0); ctx.quadraticCurveTo(0, 12, 5, 4);
+            ctx.strokeStyle = "#cc3300"; ctx.lineWidth = 2; ctx.stroke();
             
+            ctx.restore();
+        }
+
+        function drawBird(x, y, opacity=1.0) {
+            const cx = originX + x;
+            const cy = originY - y;
+            ctx.save();
+            ctx.translate(cx, cy);
+            
+            const birdScale = Math.max(0.5, drawScale);
+            ctx.scale(birdScale, birdScale);
+            ctx.globalAlpha = opacity;
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.moveTo(0, 5);
+            ctx.quadraticCurveTo(15, -15, 30, 0);
+            ctx.quadraticCurveTo(15, -5, 0, 15);
+            ctx.quadraticCurveTo(-15, -5, -30, 0);
+            ctx.quadraticCurveTo(-15, -15, 0, 5);
+            ctx.fill();
+
+            ctx.fillStyle = "#000";
+            ctx.beginPath(); ctx.arc(8, -2, 2, 0, Math.PI*2); ctx.fill();
+
             ctx.restore();
         }
 
@@ -487,15 +575,13 @@
             
             const n1 = parseFloat(n1Slider.value);
             const n2 = parseFloat(n2Slider.value);
-            
             const h_real = parseFloat(hSlider.value);
             const h = h_real * drawScale;
+            const aY = animY * drawScale;
 
             // Draw Mediums
-            ctx.fillStyle = colors.air;
-            ctx.fillRect(0, 0, W, originY);
-            ctx.fillStyle = colors.water;
-            ctx.fillRect(0, originY, W, H - originY);
+            ctx.fillStyle = colors.air; ctx.fillRect(0, 0, W, originY);
+            ctx.fillStyle = colors.water; ctx.fillRect(0, originY, W, H - originY);
 
             // Surface Line
             ctx.strokeStyle = "rgba(0, 229, 255, 0.4)";
@@ -509,15 +595,12 @@
             ctx.setLineDash([]);
 
             if (mode === 'depth') {
-                const h_prime_real = h_real * (n1 / n2);
-                const h_prime = h_prime_real * drawScale;
+                const h_prime = h * (n1 / n2);
                 
-                // Straight ray
                 drawRaySegment(0, -h, 0, 0, colors.incident, false, true);
                 drawRaySegment(0, 0, 0, 150 * drawScale, colors.refracted, false, true);
                 drawRaySegment(0, 0, 0, -h_prime, colors.virtual, true, false);
 
-                // Angled ray
                 const dx = 50 * drawScale; 
                 const angle_i = Math.atan2(dx, h);
                 const sin_r = (n2 / n1) * Math.sin(angle_i);
@@ -535,8 +618,7 @@
                 drawPoint(0, -h_prime, "I", varColor('--virtual-img'));
 
             } else if (mode === 'height') {
-                const h_prime_real = h_real * (n2 / n1);
-                const h_prime = h_prime_real * drawScale;
+                const h_prime = h * (n2 / n1);
 
                 drawRaySegment(0, h, 0, 0, colors.incident, false, true);
                 drawRaySegment(0, 0, 0, -150 * drawScale, colors.refracted, false, true);
@@ -559,18 +641,13 @@
                 const ic_rad = Math.asin(n1 / n2);
                 const r = h * Math.tan(ic_rad);
 
-                // Draw Ellipse (Area of Vision on surface)
                 ctx.save();
                 ctx.beginPath();
                 ctx.ellipse(originX, originY, r, r * 0.25, 0, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(0, 255, 170, 0.15)";
-                ctx.fill();
-                ctx.strokeStyle = "rgba(0, 255, 170, 0.6)";
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                ctx.fillStyle = "rgba(0, 255, 170, 0.15)"; ctx.fill();
+                ctx.strokeStyle = "rgba(0, 255, 170, 0.6)"; ctx.lineWidth = 2; ctx.stroke();
                 ctx.restore();
 
-                // Left and Right Critical Rays
                 drawNormalAt(-r);
                 drawRaySegment(0, -h, -r, 0, colors.incident, false, true);
                 drawRaySegment(-r, 0, -r - 100 * drawScale, 0, colors.refracted, false, true); 
@@ -579,7 +656,6 @@
                 drawRaySegment(0, -h, r, 0, colors.incident, false, true);
                 drawRaySegment(r, 0, r + 100 * drawScale, 0, colors.refracted, false, true);
 
-                // Interior rays
                 for (let a = -ic_rad * 0.6; a <= ic_rad * 0.6; a += ic_rad * 0.6) {
                     if(Math.abs(a) < 0.01) continue;
                     let hitX = h * Math.tan(a);
@@ -590,24 +666,69 @@
                     drawRaySegment(hitX, 0, outX, 100 * drawScale, "rgba(0,229,255,0.4)", false, false);
                 }
 
-                // Annotate Radius
-                ctx.strokeStyle = "var(--gold)";
-                ctx.setLineDash([4,4]);
+                ctx.strokeStyle = "var(--gold)"; ctx.setLineDash([4,4]);
                 ctx.beginPath(); ctx.moveTo(originX, originY); ctx.lineTo(originX + r, originY); ctx.stroke();
                 ctx.setLineDash([]);
-                ctx.fillStyle = "var(--gold)";
-                ctx.font = "14px 'Segoe UI'";
-                ctx.fillText("Radius (r)", originX + r/2 - 20, originY - 10);
+                ctx.fillStyle = "var(--gold)"; ctx.font = "14px 'Segoe UI'";
+                ctx.fillText("Radius (r)", originX + r/2 - 30, originY - 10);
 
                 drawFish(0, -h);
+
+            } else if (mode === 'vel_fish') {
+                const v = parseFloat(vSlider.value);
+                const appY = animY * (n1 / n2) * drawScale;
+                const v_prime = v * (n1 / n2);
+
+                drawRaySegment(0, -aY, 0, -appY, "rgba(255, 255, 255, 0.2)", true, false);
+
+                drawFish(0, -aY, 1.0); // Real
+                drawFish(0, -appY, 0.4); // Apparent
+
+                drawVelocityVector(0, -aY, v, "#ff8800", `v = ${v.toFixed(1)} m/s`);
+                drawVelocityVector(0, -appY, v_prime, "#ff007f", `v' = ${v_prime.toFixed(1)} m/s`);
+
+            } else if (mode === 'vel_bird') {
+                const v = parseFloat(vSlider.value);
+                const appY = animY * (n2 / n1) * drawScale;
+                const v_prime = v * (n2 / n1);
+
+                drawRaySegment(0, aY, 0, appY, "rgba(255, 255, 255, 0.2)", true, false);
+
+                drawBird(0, aY, 1.0); // Real
+                drawBird(0, appY, 0.4); // Apparent
+
+                drawVelocityVector(0, aY, v, "#ffffff", `v = ${v.toFixed(1)} m/s`);
+                drawVelocityVector(0, appY, v_prime, "#00e5ff", `v' = ${v_prime.toFixed(1)} m/s`);
             }
         }
 
-        function varColor(name) {
-            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        // --- ANIMATION LOOP FOR VELOCITY ---
+        function animateLoop(now) {
+            if(!initialized) { requestAnimationFrame(animateLoop); return; }
+            const dt = Math.min((now - lastTime) / 1000, 0.05);
+            lastTime = now;
+
+            if (mode === 'vel_fish' || mode === 'vel_bird') {
+                const v = parseFloat(vSlider.value);
+                animY += v * 20 * dt; // Scale movement speed for screen
+                
+                // Wrap around logic
+                if (animY > 350) animY = 50;
+                if (animY < 50) animY = 350;
+                
+                // Keep slider in sync with animation loop
+                hSlider.value = animY;
+            }
+
+            draw();
+            requestAnimationFrame(animateLoop);
         }
 
+        function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+        // Start 
         setMode('depth');
+        requestAnimationFrame(animateLoop);
     </script>
 </body>
 </html>
