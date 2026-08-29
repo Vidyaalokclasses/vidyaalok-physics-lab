@@ -32,8 +32,6 @@
             --text-main: #ffffff;
             --text-muted: #a0aabf;
             --gold: #ffd166;
-            --real-img: #00ffaa;
-            --virtual-img: #c7a6ff;
             --border: rgba(0, 229, 255, 0.2);
         }
 
@@ -197,15 +195,15 @@
                 <div id="controlsContainer">
                     <div class="section-title">Prism Properties</div>
                     <div class="control-group">
-                        <label>Angle of Prism (\(A\)) <span id="aVal">60°</span></label>
+                        <label>Angle of Prism (<i>A</i>) <span id="aVal">60°</span></label>
                         <input id="aSlider" type="range" min="30" max="90" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Refractive Index (\(n\)) <span id="nVal">1.50</span></label>
+                        <label>Refractive Index (<i>n</i>) <span id="nVal">1.50</span></label>
                         <input id="nSlider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
                     <div class="control-group">
-                        <label>Angle of Incidence (\(i\)) <span id="iVal">45°</span></label>
+                        <label>Angle of Incidence (<i>i</i>) <span id="iVal">45°</span></label>
                         <input id="iSlider" type="range" min="0" max="90" step="1" value="45">
                     </div>
                 </div>
@@ -233,10 +231,6 @@
                         <div class="control-group">
                             <label>Position Y <span id="elYVal">0 cm</span></label>
                             <input id="elY" type="range" min="-300" max="300" step="5" value="0">
-                        </div>
-                        <div class="control-group">
-                            <label>Rotation Angle (θ) <span id="elAngleVal">0°</span></label>
-                            <input id="elAngle" type="range" min="-180" max="180" step="1" value="0">
                         </div>
                         <div class="control-group" id="focalGroup">
                             <label>Focal Length (f) <span id="elFVal">100 cm</span></label>
@@ -270,7 +264,6 @@
         const editorPanel = document.getElementById("editorPanel");
         const elXSlider = document.getElementById("elX");
         const elYSlider = document.getElementById("elY");
-        const elAngleSlider = document.getElementById("elAngle");
         const elFSlider = document.getElementById("elF");
         
         let W = 0, H = 0, originX = 0, originY = 0;
@@ -292,13 +285,13 @@
         // --- DYNAMIC AUTO-SCALING LAYOUT ENGINE ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) * 0.35; 
+                originX = 380 + (W - 380) * 0.35; // Prism shifted left to allow space on right
                 originY = H / 2;
                 drawScale = Math.min(1, H / 600);
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
                 const visH = H - hudHeight;
-                originX = W * 0.45; 
+                originX = W * 0.4; // Shift prism left for mobile too
                 originY = visH * 0.55; 
                 
                 if (mode === 'graph') {
@@ -306,6 +299,7 @@
                     originY = visH * 0.4;
                 }
                 
+                // Aggressively scale so the entire prism and rays fit in the visible top area
                 drawScale = Math.min(1, visH / 500, W / 800);
             }
         }
@@ -345,6 +339,7 @@
             comboContainer.style.display = (mode === 'combo') ? "block" : "none";
 
             if (mode === 'combo' && elements.length === 0) {
+                // Spawn an initial convex lens to demonstrate combo
                 addElement('lens', 'convex');
             }
 
@@ -381,14 +376,9 @@
                     editorPanel.style.display = "block";
                     document.getElementById("editorTitle").textContent = `Edit E${sel.id}`;
                     document.getElementById("editorTitle").style.color = sel.color;
-                    
-                    elXSlider.value = sel.x; 
-                    elYSlider.value = sel.y;
-                    elAngleSlider.value = sel.angle;
-
+                    elXSlider.value = sel.x; elYSlider.value = sel.y;
                     document.getElementById("elXVal").textContent = `${Math.round(sel.x)} cm`;
                     document.getElementById("elYVal").textContent = `${Math.round(sel.y)} cm`;
-                    document.getElementById("elAngleVal").textContent = `${Math.round(sel.angle)}°`;
                     
                     if (sel.subtype === 'plane') {
                         document.getElementById("focalGroup").style.display = "none";
@@ -449,12 +439,13 @@
                     </div>
                 `;
             } else if (mode === 'graph') {
+                // Find minimum deviation
                 const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
                 const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
                         <div class="stat"><strong>Current Deviation (δ)</strong><span>${isTIR ? 'N/A' : delta_deg.toFixed(1) + '°'}</span></div>
-                        <div class="stat"><strong>Minimum Deviation (δ<sub>m</sub>)</strong><span style="color:var(--gold);">${d_min_deg.toFixed(1)}°</span></div>
+                        <div class="stat"><strong>Minimum Deviation (δ_m)</strong><span style="color:var(--gold);">${d_min_deg.toFixed(1)}°</span></div>
                     </div>
                     <div class="formula-panel">
                         \\[ n = \\frac{\\sin\\left(\\frac{A + \\delta_m}{2}\\right)}{\\sin\\left(\\frac{A}{2}\\right)} \\]
@@ -466,12 +457,11 @@
             draw();
         }
 
-        // ONLY target the Prism sliders for the global updateUI
         [aSlider, nSlider, iSlider].forEach(el => el.addEventListener("input", updateUI));
 
         // --- COMBO CONTROLS ---
         function addElement(type, subtype) {
-            elements.push({ id: nextId++, type, subtype, x: 250, y: 0, f: 120, angle: 0, color: rayColors[(nextId - 1) % rayColors.length], aperture: 200 });
+            elements.push({ id: nextId++, type, subtype, x: 250, y: 0, f: 120, color: rayColors[(nextId - 1) % rayColors.length], aperture: 200 });
             selectedId = nextId - 1;
             updateUI(); draw();
         }
@@ -480,7 +470,6 @@
 
         elXSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }});
         elYSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
-        elAngleSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.angle = parseFloat(e.target.value); updateUI(); draw(); }});
         elFSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.f = parseFloat(e.target.value); updateUI(); draw(); }});
 
         // --- INTERACTION (DRAGGING ELEMENTS) ---
@@ -554,9 +543,9 @@
             let c = -dot(D, N);
             if (c < 0) { N = {x: -N.x, y: -N.y}; c = -c; }
             let sin2_t = r * r * (1 - c * c);
-            if (sin2_t > 1.0) return { tir: true, D: { x: D.x + 2*c*N.x, y: D.y + 2*c*N.y } };
+            if (sin2_t > 1.0) return { tir: true, dir: { x: D.x + 2*c*N.x, y: D.y + 2*c*N.y } };
             let cos_t = Math.sqrt(1 - sin2_t);
-            return { tir: false, D: { x: r * D.x + (r * c - cos_t) * N.x, y: r * D.y + (r * c - cos_t) * N.y } };
+            return { tir: false, dir: { x: r * D.x + (r * c - cos_t) * N.x, y: r * D.y + (r * c - cos_t) * N.y } };
         }
 
         function lineIntersect(p1, d1, a, b) {
@@ -579,7 +568,7 @@
 
         // --- DRAWING UTILS ---
         function mapX(x) { return originX + x * drawScale; }
-        function mapY(y) { return originY - y * drawScale; } 
+        function mapY(y) { return originY - y * drawScale; } // Canvas Y inverted
 
         function drawArrow(p1, p2, color, dashed = false) {
             const sx1 = mapX(p1.x), sy1 = mapY(p1.y);
@@ -814,9 +803,10 @@
                             const e_val = (Math.asin(r.n * Math.sin((A - parseFloat(r1_val)) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
                             drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
                             
-                            // Deviation Calculation and Arc
+                            // Deviation
                             const devP = rayIntersect(hitPoint, d_inc, p2.p, ref2.dir);
                             if (devP) {
+                                // Draw backward extension of emergent ray
                                 drawArrow(p2.p, devP, r.color, true);
                                 const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
                                 drawArcBetweenVectors(devP, d_inc, ref2.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
@@ -824,6 +814,7 @@
                         }
 
                         if (mode === 'combo') {
+                            // Paraxial tracing through custom combo elements
                             let curP = p2.p; let curD = ref2.dir;
                             let b = 0;
                             
@@ -867,8 +858,15 @@
             });
 
             if (mode === 'graph') {
-                const gW = 300; const gH = 200;
-                const gX = W / 2 - gW / 2; const gY = H * 0.55;
+                const gW = 300 * drawScale; const gH = 200 * drawScale;
+                let gX, gY;
+                if (W > 900) {
+                    gX = originX + 250 * drawScale;
+                    gY = originY - gH / 2;
+                } else {
+                    gX = originX - gW / 2;
+                    gY = originY + 140 * drawScale;
+                }
                 
                 ctx.save();
                 ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
