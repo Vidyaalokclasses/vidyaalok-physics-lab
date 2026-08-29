@@ -184,7 +184,6 @@
                 <div id="controlsContainer">
                     <div class="section-title">Prism Properties</div>
                     <div class="control-group">
-                        <!-- Used proper HTML formatting instead of MathJax to fix invisible spacing issues -->
                         <label>Angle of Prism (<i>A</i>) <span id="aVal">60°</span></label>
                         <input id="aSlider" type="range" min="30" max="90" step="1" value="60">
                     </div>
@@ -716,7 +715,7 @@
             ctx.restore();
 
             // Apex Angle Arc
-            if (mode === 'ray' || mode === 'combo') {
+            if (mode === 'ray' || mode === 'combo' || mode === 'graph') {
                 drawArcBetweenVectors(apex, {x: bl.x - apex.x, y: bl.y - apex.y}, {x: br.x - apex.x, y: br.y - apex.y}, 30 * drawScale, `A=${A}°`, "#ffffff");
             }
 
@@ -738,14 +737,12 @@
             const n_right = getInwardNormal(apex, br, centerP);
             const n_bottom = getInwardNormal(br, bl, centerP);
 
-            // Establish Incident Direction & Midpoint
+            // Incident Ray Setup (From Bottom Left)
+            const hitPoint = { x: bl.x + (apex.x - bl.x) * 0.4, y: bl.y + (apex.y - bl.y) * 0.4 };
             const normalAngle = Math.atan2(n_left.y, n_left.x);
-            // i_deg is added so ray comes from BOTTOM LEFT heading UP and RIGHT
-            const rayAngle = normalAngle + i_deg * Math.PI / 180; 
+            const rayAngle = normalAngle - i_deg * Math.PI / 180; // Entering from below normal
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             const perp_d = { x: -d_inc.y, y: d_inc.x }; // For generating parallel offset bundles
-
-            const midLeft = { x: bl.x + (apex.x - bl.x) * 0.4, y: bl.y + (apex.y - bl.y) * 0.4 };
 
             // Draw Combo Elements Early
             if (mode === 'combo') elements.forEach(drawElementGeometry);
@@ -753,45 +750,46 @@
             // Main Ray Tracing Execution
             activeRays.forEach(r => {
                 let startP = { 
-                    x: midLeft.x - d_inc.x * 400 + r.offset * perp_d.x, 
-                    y: midLeft.y - d_inc.y * 400 + r.offset * perp_d.y 
+                    x: hitPoint.x - d_inc.x * 400 + r.offset * perp_d.x, 
+                    y: hitPoint.y - d_inc.y * 400 + r.offset * perp_d.y 
                 };
                 
                 let hit1 = lineIntersect(startP, d_inc, apex, bl);
-                if (!hit1) hit1 = { p: midLeft, t: 400 }; 
-                const hitPoint = hit1.p;
+                if (!hit1) hit1 = { p: hitPoint, t: 400 }; // Fallback protection
+                const currHit = hit1.p;
 
                 // Draw Incident Ray
-                drawArrow(startP, hitPoint, "#ffffff");
+                drawArrow(startP, currHit, "#ffffff");
 
-                if (r.isLabelRay && (mode === 'ray' || mode === 'combo')) {
-                    drawDashedNormal(hitPoint, n_left);
-                    drawArcBetweenVectors(hitPoint, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
+                if (r.isLabelRay && (mode === 'ray' || mode === 'combo' || mode === 'graph')) {
+                    drawDashedNormal(currHit, n_left);
+                    drawArcBetweenVectors(currHit, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
                     
                     if (mode !== 'combo') {
-                        const extEnd = { x: hitPoint.x + d_inc.x * 400, y: hitPoint.y + d_inc.y * 400 };
-                        drawArrow(hitPoint, extEnd, "rgba(255, 255, 255, 0.2)", true);
+                        const extEnd = { x: currHit.x + d_inc.x * 400, y: currHit.y + d_inc.y * 400 };
+                        drawArrow(currHit, extEnd, "rgba(255, 255, 255, 0.2)", true);
                     }
                 }
 
                 let ref1 = refract(d_inc, n_left, 1.0, r.n);
-                let p2 = lineIntersect(hitPoint, ref1.dir, apex, br); 
+                let p2 = lineIntersect(currHit, ref1.dir, apex, br); 
                 let nextNormal = n_right;
                 
-                if (!p2) { p2 = lineIntersect(hitPoint, ref1.dir, bl, br); nextNormal = n_bottom; }
+                if (!p2) { p2 = lineIntersect(currHit, ref1.dir, bl, br); nextNormal = n_bottom; }
 
                 if (p2) {
-                    drawArrow(hitPoint, p2.p, r.color);
+                    drawArrow(currHit, p2.p, r.color);
                     
-                    if (r.isLabelRay && mode === 'ray') {
+                    if (r.isLabelRay && (mode === 'ray' || mode === 'graph')) {
                         const r1_val = (Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI).toFixed(1);
-                        drawArcBetweenVectors(hitPoint, ref1.dir, n_left, 40 * drawScale, `r₁=${r1_val}°`, r.color);
+                        drawArcBetweenVectors(currHit, ref1.dir, n_left, 40 * drawScale, `r₁=${r1_val}°`, r.color);
                     }
 
+                    // Normal pointing OUT of the prism for second boundary calculation
                     let outNormal = { x: -nextNormal.x, y: -nextNormal.y };
                     let ref2 = refract(ref1.dir, outNormal, r.n, 1.0);
                     
-                    if (r.isLabelRay && mode === 'ray') {
+                    if (r.isLabelRay && (mode === 'ray' || mode === 'graph')) {
                         drawDashedNormal(p2.p, nextNormal);
                         const r2_val = (A - parseFloat((Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI))).toFixed(1);
                         drawArcBetweenVectors(p2.p, {x: -ref1.dir.x, y: -ref1.dir.y}, nextNormal, 40 * drawScale, `r₂=${r2_val}°`, r.color);
@@ -812,13 +810,14 @@
                         // Emergent Ray
                         let finalEnd = { x: p2.p.x + ref2.dir.x * 1200, y: p2.p.y + ref2.dir.y * 1200 };
                         
-                        if (mode === 'ray' && r.isLabelRay) {
+                        if ((mode === 'ray' || mode === 'graph') && r.isLabelRay) {
                             const e_val = (Math.asin(r.n * Math.sin((A - parseFloat((Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI))) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
                             drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
                             
                             // Deviation
-                            const devP = rayIntersect(hitPoint, d_inc, p2.p, ref2.dir);
+                            const devP = rayIntersect(currHit, d_inc, p2.p, ref2.dir);
                             if (devP) {
+                                // Draw backward extension of emergent ray
                                 drawArrow(p2.p, devP, r.color, true);
                                 const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
                                 drawArcBetweenVectors(devP, d_inc, ref2.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
@@ -826,6 +825,7 @@
                         }
 
                         if (mode === 'combo') {
+                            // Paraxial tracing through custom combo elements
                             let curP = p2.p; let curD = ref2.dir;
                             let b = 0;
                             
@@ -873,6 +873,7 @@
                 }
             });
 
+            // Deviation Graph Overlay
             if (mode === 'graph') {
                 const gW = 300 * drawScale; const gH = 200 * drawScale;
                 let gX, gY;
@@ -886,9 +887,10 @@
                 ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
                 ctx.fillRect(gX, gY, gW, gH); 
                 
+                // Draw Axes
                 ctx.beginPath();
-                ctx.moveTo(gX, gY); ctx.lineTo(gX, gY + gH);
-                ctx.lineTo(gX + gW, gY + gH);
+                ctx.moveTo(gX, gY); ctx.lineTo(gX, gY + gH); // Y Axis
+                ctx.lineTo(gX + gW, gY + gH); // X Axis
                 ctx.stroke();
 
                 ctx.fillStyle = "#fff"; ctx.font = "12px 'Segoe UI'";
@@ -896,6 +898,7 @@
                 ctx.fillText("i (Incidence)", gX + gW - 70, gY + gH - 10);
                 ctx.fillText("0", gX - 10, gY + gH + 15);
 
+                // Draw curve
                 ctx.beginPath();
                 for(let i = 0; i <= 90; i++) {
                     let i_r = i * Math.PI / 180;
@@ -914,6 +917,7 @@
                 }
                 ctx.strokeStyle = "var(--primary)"; ctx.lineWidth = 2; ctx.stroke();
 
+                // Plot Minimum Deviation Point
                 const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
                 const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
                 const i_min_deg = i_min_rad * 180 / Math.PI;
@@ -928,6 +932,7 @@
                 ctx.fillStyle = "var(--gold)"; ctx.fillText("iₘ", px_min - 8, gY + gH + 15);
                 ctx.fillText("δₘ", gX - 25, py_min + 4);
 
+                // Plot Current Point
                 const r1_rad = Math.asin(Math.sin(i_rad) / n);
                 const r2_rad = A_rad - r1_rad;
                 if (n * Math.sin(r2_rad) <= 1) {
