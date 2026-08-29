@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prism & Dispersion | Vidyaalok Lab</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script>
+      window.MathJax = { 
+        tex: { inlineMath: [['\\(', '\\)']] }, 
+        svg: { fontCache: 'global' } 
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --panel-bg: rgba(7, 11, 25, 0.85);
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+            --gold: #ffd166;
+            --real-img: #00ffaa;
+            --virtual-img: #c7a6ff;
+            --border: rgba(0, 229, 255, 0.2);
+        }
+
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark); color: var(--text-main);
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 12px 20px; background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; z-index: 100; position: relative;
+        }
+
+        .back-btn {
+            color: var(--primary); text-decoration: none; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+
+        /* Workspace & Canvas */
+        .workspace {
+            position: relative; flex-grow: 1; width: 100%; display: flex; overflow: hidden;
+            background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%);
+        }
+
+        canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; touch-action: none; cursor: crosshair;
+        }
+
+        .watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 60%; height: 60%;
+            background-image: url('../../logo.png'); background-size: contain;
+            background-repeat: no-repeat; background-position: center;
+            opacity: 0.06; pointer-events: none; z-index: 0;
+        }
+
+        /* HUD Panel */
+        .hud-panel {
+            position: absolute; z-index: 50; background: var(--panel-bg);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border); display: flex; flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7); transition: all 0.3s ease;
+        }
+
+        .hud-header {
+            padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+
+        .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+
+        .hud-content {
+            padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px;
+            scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
+        }
+        
+        .hud-content::-webkit-scrollbar { width: 4px; }
+        .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+        @media (min-width: 901px) {
+            .hud-panel {
+                top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hud-panel {
+                bottom: 0; left: 0; width: 100%; height: 50vh;
+                border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none;
+            }
+        }
+
+        .section-title {
+            font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold;
+        }
+
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+        .btn {
+            flex: 1 1 calc(50% - 8px); min-width: 140px;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main); padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.75rem;
+            cursor: pointer; transition: all 0.2s ease; text-align: center;
+        }
+        .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
+        .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
+        .btn.full { flex: 1 1 100%; }
+
+        /* Sliders */
+        .control-group { margin-bottom: 12px; }
+        .control-group label {
+            display: flex; justify-content: space-between; color: var(--text-muted);
+            font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+
+        /* Stats & Formulas */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .stat {
+            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .stat span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
+        .stat.alert span { color: #ff3366; }
+        
+        .formula-panel {
+            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
+            text-align: center; color: var(--primary); font-weight: bold; font-size: 0.85rem; overflow-x: auto;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Chapter 09</a>
+        <h1>Prism & Dispersion</h1>
+    </nav>
+
+    <div class="workspace">
+        <div class="watermark"></div>
+        <canvas id="simCanvas"></canvas>
+
+        <div class="hud-panel" id="hudPanel">
+            <div class="hud-header">
+                <h2>Simulation Mode</h2>
+            </div>
+            
+            <div class="hud-content">
+                <div class="toolbar">
+                    <button class="btn active" id="btnRay" onclick="setMode('ray')">Ray Diagram</button>
+                    <button class="btn" id="btnDispersion" onclick="setMode('dispersion')">Dispersion</button>
+                    <button class="btn" id="btnGraph" onclick="setMode('graph')">Deviation Graph</button>
+                    <button class="btn full" id="btnCombo" onclick="setMode('combo')">Prism + Lens Combo</button>
+                </div>
+
+                <div id="controlsContainer">
+                    <div class="section-title">Optical Properties</div>
+                    <div class="control-group">
+                        <label>Angle of Prism (A) <span id="aVal">60°</span></label>
+                        <input id="aSlider" type="range" min="30" max="90" step="1" value="60">
+                    </div>
+                    <div class="control-group">
+                        <label>Refractive Index (n) <span id="nVal">1.50</span></label>
+                        <input id="nSlider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
+                    </div>
+                    <div class="control-group">
+                        <label>Angle of Incidence (i) <span id="iVal">45°</span></label>
+                        <input id="iSlider" type="range" min="0" max="90" step="1" value="45">
+                    </div>
+                    <div class="control-group" id="lensGroup" style="display: none;">
+                        <label>Lens Focal Length (f) <span id="fVal">100 px</span></label>
+                        <input id="fSlider" type="range" min="50" max="250" step="5" value="100">
+                    </div>
+                </div>
+
+                <div class="section-title">Analysis & Results</div>
+                <div id="resultsContainer">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+        const hudPanel = document.getElementById("hudPanel");
+        
+        // UI Sliders
+        const aSlider = document.getElementById("aSlider");
+        const nSlider = document.getElementById("nSlider");
+        const iSlider = document.getElementById("iSlider");
+        const fSlider = document.getElementById("fSlider");
+        
+        let W = 0, H = 0, originX = 0, originY = 0;
+        let drawScale = 1; 
+        let initialized = false;
+        let mode = 'ray'; // 'ray', 'dispersion', 'graph', 'combo'
+
+        // --- DYNAMIC LAYOUT ENGINE ---
+        function updateLayout() {
+            if (W > 900) {
+                originX = 380 + (W - 380) / 2;
+                originY = H / 2;
+                if(mode === 'combo' || mode === 'graph') originX = 380 + (W - 380) * 0.3; // Shift left for combo/graph
+                drawScale = Math.min(1, H / 600);
+            } else {
+                originX = W / 2;
+                const hudHeight = hudPanel.offsetHeight || (H * 0.50);
+                const visH = H - hudHeight;
+                originY = visH / 2;
+                
+                if (mode === 'combo') originX = W * 0.25;
+                if (mode === 'graph') originY = visH * 0.4;
+                
+                drawScale = Math.min(1, visH / 450);
+            }
+        }
+
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                W = Math.floor(entry.contentRect.width);
+                H = Math.floor(entry.contentRect.height);
+                canvas.width = W;
+                canvas.height = H;
+                updateLayout();
+                if (!initialized && W > 10 && H > 10) { initialized = true; draw(); } 
+                else if (initialized) draw();
+            }
+        });
+        resizeObserver.observe(document.querySelector('.workspace'));
+
+        setTimeout(() => {
+            if (!initialized && canvas.parentElement.clientWidth > 10) {
+                W = canvas.parentElement.clientWidth;
+                H = canvas.parentElement.clientHeight || 500; 
+                canvas.width = W; canvas.height = H;
+                initialized = true; 
+                updateLayout(); draw();
+            }
+        }, 300);
+
+        function setMode(newMode) {
+            mode = newMode;
+            document.querySelectorAll('.toolbar .btn').forEach(btn => btn.classList.remove('active'));
+            
+            if (mode === 'ray') document.getElementById("btnRay").classList.add('active');
+            if (mode === 'dispersion') document.getElementById("btnDispersion").classList.add('active');
+            if (mode === 'graph') document.getElementById("btnGraph").classList.add('active');
+            if (mode === 'combo') document.getElementById("btnCombo").classList.add('active');
+
+            document.getElementById("lensGroup").style.display = (mode === 'combo') ? "block" : "none";
+
+            updateLayout();
+            updateUI();
+        }
+
+        function updateUI() {
+            const A = parseFloat(aSlider.value);
+            const n = parseFloat(nSlider.value);
+            const i_deg = parseFloat(iSlider.value);
+            
+            document.getElementById("aVal").textContent = `${A}°`;
+            document.getElementById("nVal").textContent = n.toFixed(2);
+            document.getElementById("iVal").textContent = `${i_deg}°`;
+            document.getElementById("fVal").textContent = `${fSlider.value} px`;
+
+            const resultsContainer = document.getElementById("resultsContainer");
+            
+            // Physics Math
+            const A_rad = A * Math.PI / 180;
+            const i_rad = i_deg * Math.PI / 180;
+            
+            const r1_rad = Math.asin(Math.sin(i_rad) / n);
+            const r1_deg = r1_rad * 180 / Math.PI;
+            
+            const r2_rad = A_rad - r1_rad;
+            const r2_deg = r2_rad * 180 / Math.PI;
+            
+            let e_rad = 0, e_deg = 0, delta_deg = 0;
+            let isTIR = false;
+            
+            if (n * Math.sin(r2_rad) > 1) {
+                isTIR = true;
+            } else {
+                e_rad = Math.asin(n * Math.sin(r2_rad));
+                e_deg = e_rad * 180 / Math.PI;
+                delta_deg = i_deg + e_deg - A;
+            }
+
+            if (mode === 'ray' || mode === 'combo') {
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Refract 1 (r₁)</strong><span>${r1_deg.toFixed(1)}°</span></div>
+                        <div class="stat"><strong>Refract 2 (r₂)</strong><span>${r2_deg.toFixed(1)}°</span></div>
+                        <div class="stat ${isTIR ? 'alert' : ''}"><strong>Emergence (e)</strong><span>${isTIR ? 'TIR' : e_deg.toFixed(1) + '°'}</span></div>
+                        <div class="stat ${isTIR ? 'alert' : ''}"><strong>Deviation (δ)</strong><span>${isTIR ? 'N/A' : delta_deg.toFixed(1) + '°'}</span></div>
+                    </div>
+                    <div class="formula-panel">
+                        \\[ r_1 + r_2 = A \\]
+                        \\[ \\delta = i + e - A \\]
+                    </div>
+                `;
+            } else if (mode === 'dispersion') {
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Δ Violet</strong><span>${(i_deg + Math.asin((n+0.04)*Math.sin(A_rad - Math.asin(Math.sin(i_rad)/(n+0.04))))*180/Math.PI - A).toFixed(1)}°</span></div>
+                        <div class="stat"><strong>Δ Red</strong><span>${(i_deg + Math.asin((n-0.02)*Math.sin(A_rad - Math.asin(Math.sin(i_rad)/(n-0.02))))*180/Math.PI - A).toFixed(1)}°</span></div>
+                        <div class="stat" style="grid-column: span 2;"><strong>Angular Dispersion</strong><span>${((Math.asin((n+0.04)*Math.sin(A_rad - Math.asin(Math.sin(i_rad)/(n+0.04))))*180/Math.PI) - (Math.asin((n-0.02)*Math.sin(A_rad - Math.asin(Math.sin(i_rad)/(n-0.02))))*180/Math.PI)).toFixed(2)}°</span></div>
+                    </div>
+                    <div class="formula-panel" style="font-size: 0.8rem;">
+                        \\[ n(\\lambda) = A + \\frac{B}{\\lambda^2} \\quad \\text{(Cauchy's Eq)} \\]
+                    </div>
+                `;
+            } else if (mode === 'graph') {
+                // Find minimum deviation
+                const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
+                const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Current Deviation (δ)</strong><span>${isTIR ? 'N/A' : delta_deg.toFixed(1) + '°'}</span></div>
+                        <div class="stat"><strong>Minimum Deviation (δ_m)</strong><span style="color:var(--gold);">${d_min_deg.toFixed(1)}°</span></div>
+                    </div>
+                    <div class="formula-panel">
+                        \\[ n = \\frac{\\sin\\left(\\frac{A + \\delta_m}{2}\\right)}{\\sin\\left(\\frac{A}{2}\\right)} \\]
+                    </div>
+                `;
+            }
+
+            if(window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise([resultsContainer]);
+            draw();
+        }
+
+        [aSlider, nSlider, iSlider, fSlider].forEach(el => el.addEventListener("input", updateUI));
+
+        // --- VECTOR MATH ENGINE ---
+        function getNormal(p1, p2) {
+            let dx = p2.x - p1.x; let dy = p2.y - p1.y; let l = Math.hypot(dx, dy);
+            return { x: dy/l, y: -dx/l }; 
+        }
+
+        function lineIntersect(p1, d1, a, b) {
+            let v1 = p1, v2 = {x: p1.x + d1.x, y: p1.y + d1.y};
+            let v3 = a, v4 = b;
+            let denom = (v1.x - v2.x)*(v3.y - v4.y) - (v1.y - v2.y)*(v3.x - v4.x);
+            if (Math.abs(denom) < 1e-6) return null;
+            let t = ((v1.x - v3.x)*(v3.y - v4.y) - (v1.y - v3.y)*(v3.x - v4.x)) / denom;
+            let u = -((v1.x - v2.x)*(v1.y - v3.y) - (v1.y - v2.y)*(v1.x - v3.x)) / denom;
+            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y } };
+            return null;
+        }
+
+        function refract(d_inc, normal, n1, n2) {
+            let cos_i = - (d_inc.x * normal.x + d_inc.y * normal.y);
+            let n_ratio = n1 / n2;
+            let sin2_r = n_ratio * n_ratio * (1 - cos_i * cos_i);
+            if (sin2_r > 1) { 
+                return { dir: { x: d_inc.x + 2 * cos_i * normal.x, y: d_inc.y + 2 * cos_i * normal.y }, tir: true };
+            }
+            let cos_r = Math.sqrt(1 - sin2_r);
+            return {
+                dir: { x: n_ratio * d_inc.x + (n_ratio * cos_i - cos_r) * normal.x, y: n_ratio * d_inc.y + (n_ratio * cos_i - cos_r) * normal.y },
+                tir: false
+            };
+        }
+
+        function drawArrow(p1, p2, color, dashed = false) {
+            ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2;
+            if (dashed) { ctx.setLineDash([5, 5]); ctx.globalAlpha = 0.5; }
+            else { ctx.shadowBlur = 10; ctx.shadowColor = color; }
+            
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            ctx.setLineDash([]); ctx.shadowBlur = 0;
+            
+            const dx = p2.x - p1.x; const dy = p2.y - p1.y; const len = Math.hypot(dx, dy);
+            if (len > 30 && !dashed) {
+                const angle = Math.atan2(dy, dx);
+                const mx = p1.x + (dx / len) * Math.min(len * 0.5, 100);
+                const my = p1.y + (dy / len) * Math.min(len * 0.5, 100);
+                ctx.beginPath(); ctx.fillStyle = color;
+                ctx.moveTo(mx, my);
+                ctx.lineTo(mx - 12 * Math.cos(angle - 0.4), my - 12 * Math.sin(angle - 0.4));
+                ctx.lineTo(mx - 12 * Math.cos(angle + 0.4), my - 12 * Math.sin(angle + 0.4));
+                ctx.closePath(); ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // --- MAIN RENDER LOOP ---
+        function draw() {
+            if(!initialized) return;
+            ctx.clearRect(0, 0, W, H);
+            
+            const A = parseFloat(aSlider.value);
+            const n = parseFloat(nSlider.value);
+            const i_deg = parseFloat(iSlider.value);
+            const A_rad = A * Math.PI / 180;
+            
+            // Prism Geometry
+            const side = 240 * drawScale;
+            const apex = { x: originX, y: originY - side * Math.cos(A_rad/2) * 0.5 };
+            const bl = { x: originX - side * Math.sin(A_rad/2), y: apex.y + side * Math.cos(A_rad/2) };
+            const br = { x: originX + side * Math.sin(A_rad/2), y: bl.y };
+
+            // Draw Prism
+            ctx.save();
+            ctx.beginPath(); ctx.moveTo(apex.x, apex.y); ctx.lineTo(bl.x, bl.y); ctx.lineTo(br.x, br.y); ctx.closePath();
+            ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill();
+            ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 3; ctx.stroke();
+            ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'"; ctx.textAlign = "center";
+            ctx.fillText("A", apex.x, apex.y - 15);
+            ctx.restore();
+
+            // Setup Ray Arrays
+            let rays = [];
+            if (mode === 'dispersion') {
+                // Red to Violet indices
+                const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+                const n_vals = [n - 0.02, n - 0.015, n - 0.01, n, n + 0.01, n + 0.02, n + 0.035];
+                for(let k=0; k<7; k++) rays.push({ n: n_vals[k], color: colors[k] });
+            } else {
+                rays.push({ n: n, color: "#ffffff" });
+            }
+
+            // Normals
+            const n_left = getNormal(bl, apex);
+            const n_right = getNormal(apex, br);
+            const n_bottom = getNormal(br, bl);
+
+            // Calculate Incident Ray
+            const hitPoint = { x: (apex.x + bl.x)/2, y: (apex.y + bl.y)/2 }; // Midpoint of left face
+            const normalAngle = Math.atan2(n_left.y, n_left.x);
+            const rayAngle = normalAngle + i_deg * Math.PI / 180; // i is below normal
+            const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
+            const startP = { x: hitPoint.x - d_inc.x * 400, y: hitPoint.y - d_inc.y * 400 };
+
+            // Draw Normal Line at entry
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)"; ctx.setLineDash([4,4]); ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(hitPoint.x - n_left.x * 60, hitPoint.y - n_left.y * 60); ctx.lineTo(hitPoint.x + n_left.x * 60, hitPoint.y + n_left.y * 60); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw Incident Ray
+            drawArrow(startP, hitPoint, "#ffffff");
+
+            // Extension for deviation
+            const extEnd = { x: hitPoint.x + d_inc.x * 300, y: hitPoint.y + d_inc.y * 300 };
+            drawArrow(hitPoint, extEnd, "rgba(255, 255, 255, 0.2)", true);
+
+            rays.forEach(r => {
+                // 1st Refraction (Air -> Prism)
+                let ref1 = refract(d_inc, n_left, 1.0, r.n);
+                let p2 = lineIntersect(hitPoint, ref1.dir, apex, br); // Check right face
+                let nextNormal = n_right;
+                
+                if (!p2) { // Hit bottom face
+                    p2 = lineIntersect(hitPoint, ref1.dir, bl, br);
+                    nextNormal = n_bottom;
+                }
+
+                if (p2) {
+                    drawArrow(hitPoint, p2.p, r.color);
+
+                    // 2nd Refraction/TIR (Prism -> Air)
+                    let ref2 = refract(ref1.dir, nextNormal, r.n, 1.0);
+                    if (ref2.tir) {
+                        let p3 = lineIntersect(p2.p, ref2.dir, bl, br); // Assuming it hits bottom next
+                        if(p3) {
+                            drawArrow(p2.p, p3.p, r.color);
+                            let ref3 = refract(ref2.dir, n_bottom, r.n, 1.0);
+                            let finalEnd = { x: p3.p.x + ref3.dir.x * 400, y: p3.p.y + ref3.dir.y * 400 };
+                            drawArrow(p3.p, finalEnd, r.color);
+                        } else {
+                            let finalEnd = { x: p2.p.x + ref2.dir.x * 400, y: p2.p.y + ref2.dir.y * 400 };
+                            drawArrow(p2.p, finalEnd, r.color);
+                        }
+                    } else {
+                        // Emergent Ray
+                        let finalEnd = { x: p2.p.x + ref2.dir.x * 600, y: p2.p.y + ref2.dir.y * 600 };
+                        drawArrow(p2.p, finalEnd, r.color);
+                        
+                        // Combo Mode: Add Lens
+                        if (mode === 'combo') {
+                            const f_lens = parseFloat(fSlider.value) * drawScale;
+                            const lensX = p2.p.x + 200 * drawScale; // Fixed distance for demo
+                            const lensY = p2.p.y + ref2.dir.y * (lensX - p2.p.x) / ref2.dir.x;
+                            
+                            // Draw Lens
+                            ctx.save();
+                            ctx.strokeStyle = "#00e5ff"; ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.lineWidth = 3;
+                            ctx.beginPath();
+                            ctx.moveTo(lensX, lensY - 80*drawScale);
+                            ctx.quadraticCurveTo(lensX + 20, lensY, lensX, lensY + 80*drawScale);
+                            ctx.quadraticCurveTo(lensX - 20, lensY, lensX, lensY - 80*drawScale);
+                            ctx.fill(); ctx.stroke();
+                            ctx.restore();
+
+                            // Optical Axis for lens
+                            ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.setLineDash([4,4]);
+                            ctx.beginPath(); ctx.moveTo(0, lensY); ctx.lineTo(W, lensY); ctx.stroke(); ctx.setLineDash([]);
+
+                            // Focus Ray
+                            let hitY_lens = lensY - p2.p.y; // Height relative to optical axis
+                            let power = 1 / f_lens;
+                            let new_dy = ref2.dir.y - (hitY_lens) * power * Math.abs(ref2.dir.x);
+                            let final_dir = { x: ref2.dir.x, y: new_dy };
+                            
+                            let lensEnd = { x: lensX + final_dir.x * 600, y: lensY + final_dir.y * 600 };
+                            drawArrow({x: lensX, y: lensY}, lensEnd, r.color);
+                            
+                            // Draw Image Point Intersection with optical axis
+                            let imgX = lensX - (0 - lensY) * final_dir.x / final_dir.y;
+                            if(Math.abs(imgX) < 3000) {
+                                ctx.fillStyle = varColor('--real-img');
+                                ctx.beginPath(); ctx.arc(imgX, lensY, 5, 0, Math.PI*2); ctx.fill();
+                                ctx.fillStyle = "#fff"; ctx.fillText("I", imgX, lensY + 20);
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Deviation Graph Overlay
+            if (mode === 'graph') {
+                const gW = 250 * drawScale; const gH = 150 * drawScale;
+                const gX = W - gW - 20; const gY = 20;
+                
+                ctx.save();
+                ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
+                ctx.fillRect(gX, gY, gW, gH); ctx.strokeRect(gX, gY, gW, gH);
+                
+                ctx.fillStyle = "#fff"; ctx.font = "12px 'Segoe UI'";
+                ctx.fillText("δ (Deviation)", gX + 10, gY + 15);
+                ctx.fillText("i (Incidence)", gX + gW - 70, gY + gH - 10);
+
+                ctx.beginPath();
+                for(let i = 0; i <= 90; i++) {
+                    let i_r = i * Math.PI / 180;
+                    let sin_r1 = Math.sin(i_r) / n;
+                    if(sin_r1 > 1) continue;
+                    let r1_r = Math.asin(sin_r1);
+                    let r2_r = A_rad - r1_r;
+                    let sin_e = n * Math.sin(r2_r);
+                    if(sin_e > 1) continue;
+                    let e_r = Math.asin(sin_e);
+                    let delta = (i_r + e_r - A_rad) * 180 / Math.PI;
+                    
+                    let px = gX + (i / 90) * gW;
+                    let py = gY + gH - (delta / 90) * gH;
+                    if(i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = "var(--primary)"; ctx.lineWidth = 2; ctx.stroke();
+
+                // Current Point
+                const r1_rad = Math.asin(Math.sin(i_rad) / n);
+                const r2_rad = A_rad - r1_rad;
+                if (n * Math.sin(r2_rad) <= 1) {
+                    const e_rad = Math.asin(n * Math.sin(r2_rad));
+                    const delta_deg = (i_rad + e_rad - A_rad) * 180 / Math.PI;
+                    const cX = gX + (i_deg / 90) * gW;
+                    const cY = gY + gH - (delta_deg / 90) * gH;
+                    
+                    ctx.shadowBlur = 10; ctx.shadowColor = "var(--gold)"; ctx.fillStyle = "var(--gold)";
+                    ctx.beginPath(); ctx.arc(cX, cY, 4, 0, Math.PI*2); ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+        setMode('ray');
+    </script>
+</body>
+</html>
