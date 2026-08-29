@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Apparent Depth & Snell's Window | Vidyaalok Lab</title>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <!-- MathJax for rendering LaTeX formulas -->
+    <script>
+      window.MathJax = { 
+        tex: { inlineMath: [['\\(', '\\)']] }, 
+        svg: { fontCache: 'global' } 
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ff007f;
+            --bg-dark: #070b19;
+            --panel-bg: rgba(7, 11, 25, 0.85);
+            --text-main: #ffffff;
+            --text-muted: #a0aabf;
+            --gold: #ffd166;
+            --real-img: #00ffaa;
+            --virtual-img: #c7a6ff;
+            --border: rgba(0, 229, 255, 0.2);
+        }
+
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark); color: var(--text-main);
+            overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            padding: 12px 20px; background: rgba(7, 11, 25, 0.8);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; z-index: 100; position: relative;
+        }
+
+        .back-btn {
+            color: var(--primary); text-decoration: none; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+
+        /* Workspace & Canvas */
+        .workspace {
+            position: relative; flex-grow: 1; width: 100%; display: flex; overflow: hidden;
+            background: var(--bg-dark);
+        }
+
+        canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; touch-action: none; cursor: crosshair;
+        }
+
+        .watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 60%; height: 60%;
+            background-image: url('../../logo.png'); background-size: contain;
+            background-repeat: no-repeat; background-position: center;
+            opacity: 0.06; pointer-events: none; z-index: 0;
+        }
+
+        /* HUD Panel */
+        .hud-panel {
+            position: absolute; z-index: 50; background: var(--panel-bg);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border); display: flex; flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7); transition: all 0.3s ease;
+        }
+
+        .hud-header {
+            padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+
+        .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+
+        .hud-content {
+            padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px;
+            scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
+        }
+        
+        .hud-content::-webkit-scrollbar { width: 4px; }
+        .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+        @media (min-width: 901px) {
+            .hud-panel {
+                top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hud-panel {
+                bottom: 0; left: 0; width: 100%; height: 50vh;
+                border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none;
+            }
+        }
+
+        .section-title {
+            font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold;
+        }
+
+        .toolbar { display: flex; flex-direction: column; gap: 8px; }
+
+        .btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main); padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.8rem;
+            cursor: pointer; transition: all 0.2s ease; text-align: center;
+        }
+        .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
+        .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
+
+        /* Sliders */
+        .control-group { margin-bottom: 12px; }
+        .control-group label {
+            display: flex; justify-content: space-between; color: var(--text-muted);
+            font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+
+        /* Stats & Formulas */
+        .stat-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;
+        }
+        .stat {
+            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .stat strong { color: var(--secondary); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .stat span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
+        
+        .formula-panel {
+            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
+            text-align: center; color: var(--primary); font-weight: bold; animation: fadeIn 0.2s ease-out;
+            font-size: 0.9rem;
+        }
+
+        .legend {
+            display: flex; flex-wrap: wrap; gap: 10px; padding: 10px;
+            font-size: 0.75rem; color: var(--text-main); border-top: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.2); border-radius: 6px; margin-top: 10px;
+        }
+        .leg { display: flex; align-items: center; gap: 6px; font-weight: bold; }
+        .leg-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Chapter 09</a>
+        <h1>Apparent Depth & Snell's Window</h1>
+    </nav>
+
+    <div class="workspace">
+        <div class="watermark"></div>
+        <canvas id="simCanvas"></canvas>
+
+        <div class="hud-panel" id="hudPanel">
+            <div class="hud-header">
+                <h2>Simulation Mode</h2>
+            </div>
+            
+            <div class="hud-content">
+                <div class="toolbar">
+                    <button class="btn active" id="btnDepth" onclick="setMode('depth')">Apparent Depth</button>
+                    <button class="btn" id="btnHeight" onclick="setMode('height')">Apparent Height</button>
+                    <button class="btn" id="btnFish" onclick="setMode('fish')">Snell's Window</button>
+                </div>
+
+                <div id="controlsContainer">
+                    <div class="section-title" id="mediumTitle">Medium Properties</div>
+                    <div class="control-group">
+                        <label>Rarer Medium (n₁) <span id="n1Val">1.00</span></label>
+                        <input id="n1Slider" type="range" min="1.0" max="1.5" step="0.01" value="1.00">
+                    </div>
+                    <div class="control-group">
+                        <label>Denser Medium (n₂) <span id="n2Val">1.33</span></label>
+                        <input id="n2Slider" type="range" min="1.1" max="2.5" step="0.01" value="1.33">
+                    </div>
+                    <div class="control-group">
+                        <label id="distLabel">Object Depth (h) <span id="hVal">200 px</span></label>
+                        <input id="hSlider" type="range" min="50" max="350" step="1" value="200">
+                    </div>
+                </div>
+
+                <div class="section-title">Analysis & Results</div>
+                <div id="resultsContainer">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+        const hudPanel = document.getElementById("hudPanel");
+        
+        // UI Sliders
+        const n1Slider = document.getElementById("n1Slider");
+        const n2Slider = document.getElementById("n2Slider");
+        const hSlider = document.getElementById("hSlider");
+        
+        let W = 0, H = 0, originX = 0, originY = 0;
+        let initialized = false;
+        let mode = 'depth'; // 'depth', 'height', 'fish'
+
+        const colors = {
+            incident: '#ffffff',
+            refracted: '#00e5ff',
+            virtual: '#ff007f',
+            water: 'rgba(0, 162, 255, 0.3)',
+            air: 'rgba(255, 255, 255, 0.02)'
+        };
+
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                W = Math.floor(entry.contentRect.width);
+                H = Math.floor(entry.contentRect.height);
+                canvas.width = W;
+                canvas.height = H;
+                
+                // Set origin dynamically based on layout
+                if (W > 900) {
+                    originX = 380 + (W - 380) / 2;
+                    originY = H / 2;
+                } else {
+                    originX = W / 2; 
+                    originY = (H - (hudPanel.offsetHeight || H * 0.45)) / 2 + 30; // Slightly shifted down
+                }
+
+                if (!initialized && W > 10 && H > 10) {
+                    initialized = true; draw();
+                } else if (initialized) draw();
+            }
+        });
+        resizeObserver.observe(document.querySelector('.workspace'));
+
+        setTimeout(() => {
+            if (!initialized && canvas.parentElement.clientWidth > 10) {
+                W = canvas.parentElement.clientWidth;
+                H = canvas.parentElement.clientHeight || 500; 
+                canvas.width = W; canvas.height = H;
+                initialized = true; draw();
+            }
+        }, 300);
+
+        function setMode(newMode) {
+            mode = newMode;
+            document.getElementById("btnDepth").classList.toggle('active', mode === 'depth');
+            document.getElementById("btnHeight").classList.toggle('active', mode === 'height');
+            document.getElementById("btnFish").classList.toggle('active', mode === 'fish');
+
+            if (mode === 'depth') document.getElementById("distLabel").innerHTML = `Object Depth (h) <span id="hVal">${hSlider.value} px</span>`;
+            if (mode === 'height') document.getElementById("distLabel").innerHTML = `Object Height (h) <span id="hVal">${hSlider.value} px</span>`;
+            if (mode === 'fish') document.getElementById("distLabel").innerHTML = `Fish Depth (h) <span id="hVal">${hSlider.value} px</span>`;
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const n1 = parseFloat(n1Slider.value);
+            const n2 = parseFloat(n2Slider.value);
+            const h = parseFloat(hSlider.value);
+            
+            document.getElementById("n1Val").textContent = n1.toFixed(2);
+            document.getElementById("n2Val").textContent = n2.toFixed(2);
+            document.getElementById("hVal").textContent = `${h} px`;
+
+            const resultsContainer = document.getElementById("resultsContainer");
+            
+            if (mode === 'depth') {
+                const h_prime = h * (n1 / n2);
+                const shift = h - h_prime;
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Apparent Depth (h')</strong><span>${h_prime.toFixed(1)} px</span></div>
+                        <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} px</span></div>
+                    </div>
+                    <div class="formula-panel">
+                        \\[ h' = h \\left(\\frac{n_1}{n_2}\\right) \\]
+                        \\[ \\Delta h = h \\left(1 - \\frac{n_1}{n_2}\\right) \\]
+                    </div>
+                    <div class="legend">
+                        <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Real Object</div>
+                        <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
+                    </div>
+                `;
+            } else if (mode === 'height') {
+                const h_prime = h * (n2 / n1);
+                const shift = h_prime - h;
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Apparent Height (h')</strong><span>${h_prime.toFixed(1)} px</span></div>
+                        <div class="stat"><strong>Normal Shift (Δh)</strong><span>${shift.toFixed(1)} px</span></div>
+                    </div>
+                    <div class="formula-panel">
+                        \\[ h' = h \\left(\\frac{n_2}{n_1}\\right) \\]
+                        \\[ \\Delta h = h \\left(\\frac{n_2}{n_1} - 1\\right) \\]
+                    </div>
+                    <div class="legend">
+                        <div class="leg"><div class="leg-dot" style="background: var(--gold);"></div> Real Object</div>
+                        <div class="leg"><div class="leg-dot" style="background: var(--virtual-img);"></div> Virtual Image</div>
+                    </div>
+                `;
+            } else if (mode === 'fish') {
+                const ic_rad = Math.asin(n1 / n2);
+                const ic_deg = ic_rad * 180 / Math.PI;
+                const r = h * Math.tan(ic_rad);
+                const area = Math.PI * r * r;
+                resultsContainer.innerHTML = `
+                    <div class="stat-grid">
+                        <div class="stat"><strong>Critical Angle (i_c)</strong><span>${ic_deg.toFixed(1)}°</span></div>
+                        <div class="stat"><strong>Radius of Window (r)</strong><span>${r.toFixed(1)} px</span></div>
+                        <div class="stat" style="grid-column: span 2;"><strong>Area of Vision</strong><span>${area.toFixed(0)} px²</span></div>
+                    </div>
+                    <div class="formula-panel" style="font-size:0.8rem;">
+                        \\[ r = \\frac{h}{\\sqrt{n_2^2 - n_1^2}} \\]
+                        \\[ Area = \\frac{\\pi h^2}{n_2^2 - n_1^2} \\]
+                    </div>
+                `;
+            }
+
+            if(window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([resultsContainer]);
+            }
+            
+            draw();
+        }
+
+        [n1Slider, n2Slider, hSlider].forEach(el => el.addEventListener("input", updateUI));
+
+        function drawRaySegment(x1, y1, x2, y2, color, dashed = false, showArrow = true) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            
+            if (dashed) { ctx.setLineDash([5, 5]); ctx.globalAlpha = 0.6; }
+            
+            ctx.beginPath();
+            ctx.moveTo(originX + x1, originY - y1);
+            ctx.lineTo(originX + x2, originY - y2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            if (showArrow) {
+                const dx = x2 - x1; const dy = -(y2 - y1); 
+                const len = Math.hypot(dx, dy);
+                if (len > 30) {
+                    const angle = Math.atan2(dy, dx);
+                    const arrowDist = Math.min(len * 0.5, 100);
+                    const mx = originX + x1 + (dx / len) * arrowDist;
+                    const my = originY - y1 + (dy / len) * arrowDist;
+
+                    ctx.beginPath(); ctx.fillStyle = color;
+                    ctx.moveTo(mx, my);
+                    ctx.lineTo(mx - 10 * Math.cos(angle - 0.4), my - 10 * Math.sin(angle - 0.4));
+                    ctx.lineTo(mx - 10 * Math.cos(angle + 0.4), my - 10 * Math.sin(angle + 0.4));
+                    ctx.closePath(); ctx.fill();
+                }
+            }
+            ctx.restore();
+        }
+
+        function drawPoint(x, y, label, color) {
+            const sx = originX + x, sy = originY - y;
+            ctx.save();
+            ctx.shadowBlur = 15; ctx.shadowColor = color;
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'";
+            ctx.fillText(label, sx + 12, sy + 5);
+            ctx.restore();
+        }
+
+        function draw() {
+            if(!initialized) return;
+            ctx.clearRect(0, 0, W, H);
+            
+            const n1 = parseFloat(n1Slider.value);
+            const n2 = parseFloat(n2Slider.value);
+            const h = parseFloat(hSlider.value);
+
+            // Draw Mediums
+            ctx.fillStyle = colors.air;
+            ctx.fillRect(0, 0, W, originY);
+            ctx.fillStyle = colors.water;
+            ctx.fillRect(0, originY, W, H - originY);
+
+            // Surface Line
+            ctx.strokeStyle = "rgba(0, 229, 255, 0.4)";
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(W, originY); ctx.stroke();
+
+            // Optical Axis (Normal)
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, H); ctx.stroke();
+            ctx.setLineDash([]);
+
+            if (mode === 'depth') {
+                // Object is in Denser (Bottom)
+                const h_prime = h * (n1 / n2);
+                
+                // Straight ray
+                drawRaySegment(0, -h, 0, 0, colors.incident, false, true);
+                drawRaySegment(0, 0, 0, 150, colors.refracted, false, true);
+                drawRaySegment(0, 0, 0, -h_prime, colors.virtual, true, false);
+
+                // Angled ray
+                const dx = 50; 
+                const angle_i = Math.atan2(dx, h);
+                const sin_r = (n2 / n1) * Math.sin(angle_i);
+                
+                if (sin_r <= 1.0) {
+                    const angle_r = Math.asin(sin_r);
+                    const outDx = 150 * Math.tan(angle_r);
+                    drawRaySegment(0, -h, dx, 0, colors.incident, false, true);
+                    drawRaySegment(dx, 0, dx + outDx, 150, colors.refracted, false, true);
+                    
+                    // Virtual extension backward
+                    drawRaySegment(dx, 0, 0, -h_prime, colors.virtual, true, false);
+                }
+
+                drawPoint(0, -h, "O", varColor('--gold'));
+                drawPoint(0, -h_prime, "I", varColor('--virtual-img'));
+
+            } else if (mode === 'height') {
+                // Object is in Rarer (Top)
+                const h_prime = h * (n2 / n1);
+
+                // Straight ray
+                drawRaySegment(0, h, 0, 0, colors.incident, false, true);
+                drawRaySegment(0, 0, 0, -150, colors.refracted, false, true);
+                drawRaySegment(0, 0, 0, h_prime, colors.virtual, true, false);
+
+                // Angled ray
+                const dx = 50;
+                const angle_i = Math.atan2(dx, h);
+                const angle_r = Math.asin((n1 / n2) * Math.sin(angle_i));
+                const outDx = 150 * Math.tan(angle_r);
+                
+                drawRaySegment(0, h, dx, 0, colors.incident, false, true);
+                drawRaySegment(dx, 0, dx + outDx, -150, colors.refracted, false, true);
+                
+                // Virtual extension backward
+                drawRaySegment(dx, 0, 0, h_prime, colors.virtual, true, false);
+
+                drawPoint(0, h, "O", varColor('--gold'));
+                drawPoint(0, h_prime, "I", varColor('--virtual-img'));
+
+            } else if (mode === 'fish') {
+                // Snell's Window
+                const ic_rad = Math.asin(n1 / n2);
+                const r = h * Math.tan(ic_rad);
+
+                // Draw Ellipse (Snell's window on surface)
+                ctx.save();
+                ctx.beginPath();
+                ctx.ellipse(originX, originY, r, r * 0.25, 0, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(0, 255, 170, 0.15)";
+                ctx.fill();
+                ctx.strokeStyle = "rgba(0, 255, 170, 0.6)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+
+                // Left and Right Critical Rays
+                drawRaySegment(0, -h, -r, 0, colors.incident, false, true);
+                drawRaySegment(-r, 0, -r - 100, 0, colors.refracted, false, true); // Skims surface
+                
+                drawRaySegment(0, -h, r, 0, colors.incident, false, true);
+                drawRaySegment(r, 0, r + 100, 0, colors.refracted, false, true);
+
+                // Interior rays
+                for (let a = -ic_rad * 0.6; a <= ic_rad * 0.6; a += ic_rad * 0.6) {
+                    if(a === 0) continue;
+                    let hitX = h * Math.tan(a);
+                    let out_r = Math.asin((n2/n1) * Math.sin(a));
+                    let outX = hitX + 100 * Math.tan(out_r);
+                    drawRaySegment(0, -h, hitX, 0, "rgba(255,255,255,0.4)", false, false);
+                    drawRaySegment(hitX, 0, outX, 100, "rgba(0,229,255,0.4)", false, false);
+                }
+
+                // Annotate Radius
+                ctx.strokeStyle = "var(--gold)";
+                ctx.setLineDash([4,4]);
+                ctx.beginPath(); ctx.moveTo(originX, originY); ctx.lineTo(originX + r, originY); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = "var(--gold)";
+                ctx.font = "14px 'Segoe UI'";
+                ctx.fillText("Radius (r)", originX + r/2 - 20, originY - 10);
+
+                // Fish position
+                drawPoint(0, -h, "Fish", varColor('--gold'));
+            }
+        }
+
+        // Helper to get CSS variable colors
+        function varColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        // Initialize HUD
+        setMode('depth');
+    </script>
+</body>
+</html>
