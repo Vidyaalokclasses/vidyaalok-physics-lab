@@ -184,6 +184,7 @@
                 <div id="controlsContainer">
                     <div class="section-title">Prism Properties</div>
                     <div class="control-group">
+                        <!-- Used proper HTML formatting instead of MathJax to fix invisible spacing issues -->
                         <label>Angle of Prism (<i>A</i>) <span id="aVal">60°</span></label>
                         <input id="aSlider" type="range" min="30" max="90" step="1" value="60">
                     </div>
@@ -215,11 +216,11 @@
                         <div class="section-title" id="editorTitle" style="color: var(--text-main);">Edit Element</div>
                         <div class="control-group">
                             <label>Position X <span id="elXVal">0 cm</span></label>
-                            <input id="elX" type="range" min="-100" max="1000" step="5" value="0">
+                            <input id="elX" type="range" min="-400" max="800" step="5" value="0">
                         </div>
                         <div class="control-group">
                             <label>Position Y <span id="elYVal">0 cm</span></label>
-                            <input id="elY" type="range" min="-400" max="400" step="5" value="0">
+                            <input id="elY" type="range" min="-300" max="300" step="5" value="0">
                         </div>
                         <div class="control-group">
                             <label>Rotation Angle (<i>θ</i>) <span id="elAngleVal">0°</span></label>
@@ -279,19 +280,21 @@
         // --- DYNAMIC AUTO-SCALING LAYOUT ENGINE ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) * 0.35; // Prism shifted left
+                originX = 380 + (W - 380) * 0.35; // Prism shifted left to allow space on right
                 originY = H / 2;
                 drawScale = Math.min(1, H / 600);
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
                 const visH = H - hudHeight;
-                originX = W * 0.4; // Shift prism left for mobile
+                originX = W * 0.4; // Shift prism left for mobile too
                 originY = visH * 0.55; 
                 
                 if (mode === 'graph') {
                     originX = W / 2;
                     originY = visH * 0.4;
                 }
+                
+                // Aggressively scale so the entire prism and rays fit in the visible top area
                 drawScale = Math.min(1, visH / 500, W / 800);
             }
         }
@@ -367,8 +370,7 @@
                     editorPanel.style.display = "block";
                     document.getElementById("editorTitle").textContent = `Edit E${sel.id}`;
                     document.getElementById("editorTitle").style.color = sel.color;
-                    elXSlider.value = sel.x; 
-                    elYSlider.value = sel.y;
+                    elXSlider.value = sel.x; elYSlider.value = sel.y;
                     elAngleSlider.value = sel.angle;
 
                     document.getElementById("elXVal").textContent = `${Math.round(sel.x)} cm`;
@@ -439,7 +441,7 @@
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
                         <div class="stat"><strong>Current Deviation (δ)</strong><span>${isTIR ? 'N/A' : delta_deg.toFixed(1) + '°'}</span></div>
-                        <div class="stat"><strong>Minimum Deviation (δ<sub>m</sub>)</strong><span style="color:var(--gold);">${d_min_deg.toFixed(1)}°</span></div>
+                        <div class="stat"><strong>Minimum Deviation (δₘ)</strong><span style="color:var(--gold);">${d_min_deg.toFixed(1)}°</span></div>
                     </div>
                     <div class="formula-panel">
                         \\[ n = \\frac{\\sin\\left(\\frac{A + \\delta_m}{2}\\right)}{\\sin\\left(\\frac{A}{2}\\right)} \\]
@@ -713,6 +715,11 @@
             ctx.fillText("C", mapX(br.x) + 15, mapY(br.y) + 15);
             ctx.restore();
 
+            // Apex Angle Arc
+            if (mode === 'ray' || mode === 'combo') {
+                drawArcBetweenVectors(apex, {x: bl.x - apex.x, y: bl.y - apex.y}, {x: br.x - apex.x, y: br.y - apex.y}, 30 * drawScale, `A=${A}°`, "#ffffff");
+            }
+
             // Setup Ray Arrays
             let activeRays = [];
             if (mode === 'dispersion') {
@@ -733,16 +740,12 @@
 
             // Establish Incident Direction & Midpoint
             const normalAngle = Math.atan2(n_left.y, n_left.x);
-            const rayAngle = normalAngle - i_deg * Math.PI / 180; // Entering from below normal
+            // i_deg is added so ray comes from BOTTOM LEFT heading UP and RIGHT
+            const rayAngle = normalAngle + i_deg * Math.PI / 180; 
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             const perp_d = { x: -d_inc.y, y: d_inc.x }; // For generating parallel offset bundles
 
-            const midLeft = { x: (apex.x + bl.x)/2, y: (apex.y + bl.y)/2 };
-
-            // Draw Apex Arc ONLY once
-            if (mode !== 'dispersion') {
-                drawArcBetweenVectors(apex, {x: bl.x - apex.x, y: bl.y - apex.y}, {x: br.x - apex.x, y: br.y - apex.y}, 30 * drawScale, `A=${A}°`, "#ffffff");
-            }
+            const midLeft = { x: bl.x + (apex.x - bl.x) * 0.4, y: bl.y + (apex.y - bl.y) * 0.4 };
 
             // Draw Combo Elements Early
             if (mode === 'combo') elements.forEach(drawElementGeometry);
@@ -755,13 +758,13 @@
                 };
                 
                 let hit1 = lineIntersect(startP, d_inc, apex, bl);
-                if (!hit1) hit1 = { p: midLeft, t: 400 }; // Fallback protection
+                if (!hit1) hit1 = { p: midLeft, t: 400 }; 
                 const hitPoint = hit1.p;
 
                 // Draw Incident Ray
-                drawArrow(startP, hitPoint, r.color);
+                drawArrow(startP, hitPoint, "#ffffff");
 
-                if (r.isLabelRay) {
+                if (r.isLabelRay && (mode === 'ray' || mode === 'combo')) {
                     drawDashedNormal(hitPoint, n_left);
                     drawArcBetweenVectors(hitPoint, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
                     
@@ -780,7 +783,7 @@
                 if (p2) {
                     drawArrow(hitPoint, p2.p, r.color);
                     
-                    if (r.isLabelRay) {
+                    if (r.isLabelRay && mode === 'ray') {
                         const r1_val = (Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI).toFixed(1);
                         drawArcBetweenVectors(hitPoint, ref1.dir, n_left, 40 * drawScale, `r₁=${r1_val}°`, r.color);
                     }
@@ -788,7 +791,7 @@
                     let outNormal = { x: -nextNormal.x, y: -nextNormal.y };
                     let ref2 = refract(ref1.dir, outNormal, r.n, 1.0);
                     
-                    if (r.isLabelRay && mode !== 'combo') {
+                    if (r.isLabelRay && mode === 'ray') {
                         drawDashedNormal(p2.p, nextNormal);
                         const r2_val = (A - parseFloat((Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI))).toFixed(1);
                         drawArcBetweenVectors(p2.p, {x: -ref1.dir.x, y: -ref1.dir.y}, nextNormal, 40 * drawScale, `r₂=${r2_val}°`, r.color);
@@ -806,16 +809,29 @@
                             drawArrow(p2.p, finalEnd, r.color);
                         }
                     } else {
+                        // Emergent Ray
+                        let finalEnd = { x: p2.p.x + ref2.dir.x * 1200, y: p2.p.y + ref2.dir.y * 1200 };
+                        
+                        if (mode === 'ray' && r.isLabelRay) {
+                            const e_val = (Math.asin(r.n * Math.sin((A - parseFloat((Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI))) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
+                            drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
+                            
+                            // Deviation
+                            const devP = rayIntersect(hitPoint, d_inc, p2.p, ref2.dir);
+                            if (devP) {
+                                drawArrow(p2.p, devP, r.color, true);
+                                const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
+                                drawArcBetweenVectors(devP, d_inc, ref2.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
+                            }
+                        }
+
                         if (mode === 'combo') {
-                            // Paraxial tracing through combo elements
                             let curP = p2.p; let curD = ref2.dir;
                             let b = 0;
                             
                             while (b < 5) {
                                 let nextEl = null; let minD = Infinity;
                                 for (let el of elements) {
-                                    // Map back to global element orientation
-                                    // Use simple X projection for paraxial demonstration
                                     let d = (el.x - curP.x) / curD.x;
                                     if (d > 0.001 && d < minD) { minD = d; nextEl = el; }
                                 }
@@ -834,41 +850,29 @@
                                 drawArrow(curP, { x: nextEl.x, y: hitY }, r.color);
                                 
                                 let Power = 0;
+                                let slope = curD.y / curD.x;
                                 if (nextEl.type === 'lens') {
                                     Power = nextEl.subtype === 'convex' ? 1/nextEl.f : -1/nextEl.f;
-                                    curD.y = curD.y - (hitY - nextEl.y) * Power * Math.abs(curD.x);
+                                    slope -= (hitY - nextEl.y) * Power * Math.sign(curD.x);
+                                    let dirSign = Math.sign(curD.x);
+                                    curD = norm({ x: dirSign, y: slope * dirSign });
                                 } else {
                                     Power = nextEl.subtype === 'plane' ? 0 : (nextEl.subtype === 'concave' ? 1/nextEl.f : -1/nextEl.f);
-                                    curD.y = curD.y - (hitY - nextEl.y) * Power * Math.abs(curD.x);
-                                    curD.x = -curD.x; 
+                                    slope -= (hitY - nextEl.y) * Power * Math.sign(curD.x);
+                                    let newSlope = -slope;
+                                    let dirSign = -Math.sign(curD.x); 
+                                    curD = norm({ x: dirSign, y: newSlope * dirSign });
                                 }
                                 curP = { x: nextEl.x, y: hitY };
                                 b++;
                             }
                         } else {
-                            // Explicit emergent ray
-                            let finalEnd = { x: p2.p.x + ref2.dir.x * 800, y: p2.p.y + ref2.dir.y * 800 };
                             drawArrow(p2.p, finalEnd, r.color);
-                            
-                            if (r.isLabelRay) {
-                                const r1_val = Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI;
-                                const e_val = (Math.asin(r.n * Math.sin((A - r1_val) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
-                                drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
-                                
-                                // Deviation Calculation and Arc
-                                const devP = rayIntersect(hitPoint, d_inc, p2.p, ref2.dir);
-                                if (devP) {
-                                    drawArrow(p2.p, devP, r.color, true); // Backward dashed line
-                                    const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
-                                    drawArcBetweenVectors(devP, d_inc, ref2.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
-                                }
-                            }
                         }
                     }
                 }
             });
 
-            // Deviation Graph Overlay Calculation
             if (mode === 'graph') {
                 const gW = 300 * drawScale; const gH = 200 * drawScale;
                 let gX, gY;
@@ -882,10 +886,9 @@
                 ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
                 ctx.fillRect(gX, gY, gW, gH); 
                 
-                // Draw Axes
                 ctx.beginPath();
-                ctx.moveTo(gX, gY); ctx.lineTo(gX, gY + gH); // Y Axis
-                ctx.lineTo(gX + gW, gY + gH); // X Axis
+                ctx.moveTo(gX, gY); ctx.lineTo(gX, gY + gH);
+                ctx.lineTo(gX + gW, gY + gH);
                 ctx.stroke();
 
                 ctx.fillStyle = "#fff"; ctx.font = "12px 'Segoe UI'";
@@ -893,7 +896,6 @@
                 ctx.fillText("i (Incidence)", gX + gW - 70, gY + gH - 10);
                 ctx.fillText("0", gX - 10, gY + gH + 15);
 
-                // Draw curve
                 ctx.beginPath();
                 for(let i = 0; i <= 90; i++) {
                     let i_r = i * Math.PI / 180;
@@ -912,7 +914,6 @@
                 }
                 ctx.strokeStyle = "var(--primary)"; ctx.lineWidth = 2; ctx.stroke();
 
-                // Plot Minimum Deviation Point
                 const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
                 const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
                 const i_min_deg = i_min_rad * 180 / Math.PI;
@@ -924,10 +925,9 @@
                 ctx.beginPath(); ctx.moveTo(px_min, gY + gH); ctx.lineTo(px_min, py_min); ctx.lineTo(gX, py_min); ctx.stroke();
                 ctx.setLineDash([]);
                 
-                ctx.fillStyle = "var(--gold)"; ctx.fillText("i_m", px_min - 8, gY + gH + 15);
-                ctx.fillText("δ_m", gX - 25, py_min + 4);
+                ctx.fillStyle = "var(--gold)"; ctx.fillText("iₘ", px_min - 8, gY + gH + 15);
+                ctx.fillText("δₘ", gX - 25, py_min + 4);
 
-                // Plot Current Point
                 const r1_rad = Math.asin(Math.sin(i_rad) / n);
                 const r2_rad = A_rad - r1_rad;
                 if (n * Math.sin(r2_rad) <= 1) {
