@@ -33,6 +33,7 @@
             --text-muted: #a0aabf;
             --gold: #ffd166;
             --real-img: #00ffaa;
+            --virtual-img: #c7a6ff;
             --border: rgba(0, 229, 255, 0.2);
         }
 
@@ -58,6 +59,7 @@
             letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem;
             display: flex; align-items: center; gap: 8px;
         }
+
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
 
         /* Workspace & Canvas */
@@ -91,27 +93,36 @@
             padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
         }
+
         .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
 
         .hud-content {
             padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px;
             scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
         }
+        
         .hud-content::-webkit-scrollbar { width: 4px; }
         .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
 
-        /* Device Specific HUD Layout */
         @media (min-width: 901px) {
-            .hud-panel { top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px; }
-        }
-        @media (max-width: 900px) {
-            .hud-panel { bottom: 0; left: 0; width: 100%; height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none; }
+            .hud-panel {
+                top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px;
+            }
         }
 
-        /* Controls */
-        .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
+        @media (max-width: 900px) {
+            .hud-panel {
+                bottom: 0; left: 0; width: 100%; height: 45vh;
+                border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none;
+            }
+        }
+
+        .section-title {
+            font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold;
+        }
 
         .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
         .btn {
             flex: 1 1 calc(50% - 8px); min-width: 130px;
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
@@ -120,9 +131,14 @@
         }
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
+        .btn.full { flex: 1 1 100%; }
 
+        /* Sliders */
         .control-group { margin-bottom: 12px; }
-        .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+        .control-group label {
+            display: flex; justify-content: space-between; color: var(--text-muted);
+            font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px;
+        }
         .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
         
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
@@ -181,15 +197,15 @@
                 <div id="controlsContainer">
                     <div class="section-title">Prism Properties</div>
                     <div class="control-group">
-                        <label>Angle of Prism (A) <span id="aVal">60°</span></label>
+                        <label>Angle of Prism (\(A\)) <span id="aVal">60°</span></label>
                         <input id="aSlider" type="range" min="30" max="90" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Refractive Index (n) <span id="nVal">1.50</span></label>
+                        <label>Refractive Index (\(n\)) <span id="nVal">1.50</span></label>
                         <input id="nSlider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
                     <div class="control-group">
-                        <label>Angle of Incidence (i) <span id="iVal">45°</span></label>
+                        <label>Angle of Incidence (\(i\)) <span id="iVal">45°</span></label>
                         <input id="iSlider" type="range" min="0" max="90" step="1" value="45">
                     </div>
                 </div>
@@ -211,15 +227,15 @@
                     <div id="editorPanel" class="editor-panel" style="display: none; margin-top: 10px;">
                         <div class="section-title" id="editorTitle" style="color: var(--text-main);">Edit Element</div>
                         <div class="control-group">
-                            <label>Position X <span id="elXVal">0 px</span></label>
-                            <input id="elX" type="range" min="-200" max="800" step="5" value="0">
+                            <label>Position X <span id="elXVal">0 cm</span></label>
+                            <input id="elX" type="range" min="-400" max="800" step="5" value="0">
                         </div>
                         <div class="control-group">
-                            <label>Position Y <span id="elYVal">0 px</span></label>
+                            <label>Position Y <span id="elYVal">0 cm</span></label>
                             <input id="elY" type="range" min="-300" max="300" step="5" value="0">
                         </div>
                         <div class="control-group" id="focalGroup">
-                            <label>Focal Length (f) <span id="elFVal">100 px</span></label>
+                            <label>Focal Length (f) <span id="elFVal">100 cm</span></label>
                             <input id="elF" type="range" min="20" max="400" step="5" value="100">
                         </div>
                         <button class="btn" style="width: 100%; border-color: rgba(255,51,102,0.4); color: #ff3366;" onclick="deleteSelected()">Remove Element</button>
@@ -271,22 +287,22 @@
         // --- DYNAMIC AUTO-SCALING LAYOUT ENGINE ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) * 0.3; // Prism shifted left to allow space on right
+                originX = 380 + (W - 380) * 0.35; // Prism shifted left to allow space on right
                 originY = H / 2;
-                drawScale = Math.min(1, H / 600);
+                drawScale = Math.min(1, H / 700);
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
                 const visH = H - hudHeight;
-                originX = W * 0.35; // Prism on left side for mobile too
-                originY = visH / 2;
+                originX = W * 0.4; // Shift prism left for mobile too
+                originY = visH * 0.6; // Push it down slightly
                 
                 if (mode === 'graph') {
                     originX = W / 2;
-                    originY = visH * 0.4;
+                    originY = visH * 0.5;
                 }
                 
                 // Aggressively scale so the entire prism and rays fit in the visible top area
-                drawScale = Math.min(1, visH / 500, W / 800);
+                drawScale = Math.min(1, visH / 600, W / 800);
             }
         }
 
@@ -363,15 +379,15 @@
                     document.getElementById("editorTitle").textContent = `Edit E${sel.id}`;
                     document.getElementById("editorTitle").style.color = sel.color;
                     elXSlider.value = sel.x; elYSlider.value = sel.y;
-                    document.getElementById("elXVal").textContent = `${Math.round(sel.x)} px`;
-                    document.getElementById("elYVal").textContent = `${Math.round(sel.y)} px`;
+                    document.getElementById("elXVal").textContent = `${Math.round(sel.x)} cm`;
+                    document.getElementById("elYVal").textContent = `${Math.round(sel.y)} cm`;
                     
                     if (sel.subtype === 'plane') {
                         document.getElementById("focalGroup").style.display = "none";
                     } else {
                         document.getElementById("focalGroup").style.display = "flex";
                         elFSlider.value = sel.f;
-                        document.getElementById("elFVal").textContent = `${Math.round(sel.f)} px`;
+                        document.getElementById("elFVal").textContent = `${Math.round(sel.f)} cm`;
                     }
                 } else {
                     editorPanel.style.display = "none";
@@ -425,6 +441,7 @@
                     </div>
                 `;
             } else if (mode === 'graph') {
+                // Find minimum deviation
                 const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
                 const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
                 resultsContainer.innerHTML = `
@@ -442,7 +459,7 @@
             draw();
         }
 
-        [aSlider, nSlider, iSlider].forEach(el => el.addEventListener("input", updateUI));
+        [aSlider, nSlider, iSlider, fSlider].forEach(el => el.addEventListener("input", updateUI));
 
         // --- COMBO CONTROLS ---
         function addElement(type, subtype) {
@@ -510,6 +527,12 @@
         function norm(v) { let l = Math.hypot(v.x, v.y) || 1; return { x: v.x/l, y: v.y/l }; }
         function dot(a, b) { return a.x*b.x + a.y*b.y; }
         
+        function getNormal(p1, p2) {
+            // Normal points to the left of the p1 -> p2 vector
+            let dx = p2.x - p1.x; let dy = p2.y - p1.y; let l = Math.hypot(dx, dy);
+            return { x: dy/l, y: -dx/l }; 
+        }
+
         function refract(D, N, n1, n2) {
             let r = n1 / n2;
             let c = -dot(D, N);
@@ -531,91 +554,141 @@
             return null;
         }
 
+        function rayIntersect(p1, d1, p2, d2) {
+            let cross = d1.x * d2.y - d1.y * d2.x;
+            if (Math.abs(cross) < 1e-6) return null;
+            let t = ((p2.x - p1.x) * d2.y - (p2.y - p1.y) * d2.x) / cross;
+            return { x: p1.x + t * d1.x, y: p1.y + t * d1.y };
+        }
+
         // --- DRAWING UTILS ---
         function mapX(x) { return originX + x * drawScale; }
-        function mapY(y) { return originY - y * drawScale; }
+        function mapY(y) { return originY - y * drawScale; } // Canvas Y inverted
 
         function drawArrow(p1, p2, color, dashed = false) {
-            const sx1 = mapX(p1.x), sy1 = mapY(p1.y);
-            const sx2 = mapX(p2.x), sy2 = mapY(p2.y);
-            
             ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2;
             if (dashed) { ctx.setLineDash([5, 5]); ctx.globalAlpha = 0.5; }
             else { ctx.shadowBlur = 10; ctx.shadowColor = color; }
             
-            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(mapX(p1.x), mapY(p1.y)); ctx.lineTo(mapX(p2.x), mapY(p2.y)); ctx.stroke();
             ctx.setLineDash([]); ctx.shadowBlur = 0;
             
-            const dx = sx2 - sx1; const dy = sy2 - sy1; const len = Math.hypot(dx, dy);
+            const dx = p2.x - p1.x; const dy = p2.y - p1.y; const len = Math.hypot(dx, dy);
             if (len > 30 && !dashed) {
-                const angle = Math.atan2(dy, dx);
-                const mx = sx1 + (dx / len) * Math.min(len * 0.5, 100);
-                const my = sy1 + (dy / len) * Math.min(len * 0.5, 100);
+                // Ensure arrowhead maps properly with screen inversion
+                const dx_screen = mapX(p2.x) - mapX(p1.x);
+                const dy_screen = mapY(p2.y) - mapY(p1.y);
+                const angle = Math.atan2(dy_screen, dx_screen);
+                
+                const arrowDist = Math.min(Math.hypot(dx_screen, dy_screen) * 0.5, 100);
+                const mx = mapX(p1.x) + Math.cos(angle) * arrowDist;
+                const my = mapY(p1.y) + Math.sin(angle) * arrowDist;
+
                 ctx.beginPath(); ctx.fillStyle = color;
                 ctx.moveTo(mx, my);
-                ctx.lineTo(mx - 12 * Math.cos(angle - 0.4), my - 12 * Math.sin(angle - 0.4));
-                ctx.lineTo(mx - 12 * Math.cos(angle + 0.4), my - 12 * Math.sin(angle + 0.4));
+                ctx.lineTo(mx - 10 * Math.cos(angle - 0.4), my - 10 * Math.sin(angle - 0.4));
+                ctx.lineTo(mx - 10 * Math.cos(angle + 0.4), my - 10 * Math.sin(angle + 0.4));
                 ctx.closePath(); ctx.fill();
             }
             ctx.restore();
         }
 
-        function drawNormalAndAngle(p, N, dir, label, color) {
-            const sx = mapX(p.x), sy = mapY(p.y);
-            // Draw Dashed Imaginary Normal
+        function drawNormalArrow(x, y, dir_screen) {
+            const angle = Math.atan2(dir_screen.y, dir_screen.x);
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 6 * Math.cos(angle - 0.5), y - 6 * Math.sin(angle - 0.5));
+            ctx.lineTo(x - 6 * Math.cos(angle + 0.5), y - 6 * Math.sin(angle + 0.5));
+            ctx.fillStyle = "rgba(255,255,255,0.4)";
+            ctx.fill();
+        }
+
+        function drawDashedNormal(p, N) {
             ctx.save();
             ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-            ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.moveTo(sx - N.x * 60, sy + N.y * 60); // Canvas Y inverted
-            ctx.lineTo(sx + N.x * 60, sy - N.y * 60);
+            // N points INTO prism. We draw it extending outwards and inwards.
+            let px1 = mapX(p.x - N.x * 120); let py1 = mapY(p.y - N.y * 120); // Out
+            let px2 = mapX(p.x + N.x * 120); let py2 = mapY(p.y + N.y * 120); // In
+            ctx.moveTo(px1, py1);
+            ctx.lineTo(px2, py2);
             ctx.stroke();
-            ctx.setLineDash([]);
             
-            // Draw Arc
-            const a_n = Math.atan2(-N.y, N.x); 
-            const a_d = Math.atan2(-dir.y, dir.x);
-            let diff = a_d - a_n;
+            // Draw arrows on the normal ends
+            drawNormalArrow(px1, py1, {x: -N.x, y: N.y}); // Canvas Y inverted
+            drawNormalArrow(px2, py2, {x: N.x, y: -N.y});
+            ctx.restore();
+        }
+
+        function drawArcBetweenVectors(p, v1, v2, radius, label, color) {
+            // Convert physical vectors to screen vectors (invert Y)
+            let sv1 = {x: v1.x, y: -v1.y};
+            let sv2 = {x: v2.x, y: -v2.y};
             
+            let a1 = Math.atan2(sv1.y, sv1.x);
+            let a2 = Math.atan2(sv2.y, sv2.x);
+            
+            if (a1 < 0) a1 += 2 * Math.PI;
+            if (a2 < 0) a2 += 2 * Math.PI;
+            
+            let start = Math.min(a1, a2);
+            let end = Math.max(a1, a2);
+            
+            if (end - start > Math.PI) {
+                start = Math.max(a1, a2);
+                end = Math.min(a1, a2) + 2 * Math.PI;
+            }
+            
+            ctx.save();
             ctx.beginPath();
-            ctx.arc(sx, sy, 35, Math.min(a_n, a_d), Math.max(a_n, a_d));
-            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+            ctx.arc(mapX(p.x), mapY(p.y), radius, start, end);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
             
-            // Label
-            const mid = a_n + diff / 2;
-            ctx.fillStyle = color; ctx.font = "italic 16px 'Segoe UI'";
-            ctx.fillText(label, sx + 50 * Math.cos(mid), sy + 50 * Math.sin(mid));
+            let mid = (start + end) / 2;
+            ctx.fillStyle = color;
+            ctx.font = "italic 13px 'Segoe UI'";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label, mapX(p.x) + (radius + 20) * Math.cos(mid), mapY(p.y) + (radius + 20) * Math.sin(mid));
             ctx.restore();
         }
 
         function drawElementGeometry(el) {
             const cx = mapX(el.x); const cy = mapY(el.y); const h = el.aperture * drawScale; 
             ctx.save();
+            ctx.translate(cx, cy); ctx.scale(drawScale, drawScale);
+            
             if (el.id === selectedId) { ctx.shadowBlur = 15; ctx.shadowColor = el.color; }
 
             if (el.type === 'lens') {
                 ctx.strokeStyle = el.color; ctx.fillStyle = el.color.replace(')', ', 0.15)').replace('rgb', 'rgba'); 
                 ctx.lineWidth = 3; ctx.beginPath();
                 if (el.subtype === 'convex') {
-                    ctx.moveTo(cx, cy - h/2); ctx.quadraticCurveTo(cx + 25*drawScale, cy, cx, cy + h/2); ctx.quadraticCurveTo(cx - 25*drawScale, cy, cx, cy - h/2);
+                    ctx.moveTo(0, -h/2); ctx.quadraticCurveTo(25, 0, 0, h/2); ctx.quadraticCurveTo(-25, 0, 0, -h/2);
                 } else {
-                    ctx.moveTo(cx - 15*drawScale, cy - h/2); ctx.lineTo(cx + 15*drawScale, cy - h/2);
-                    ctx.quadraticCurveTo(cx - 5*drawScale, cy, cx + 15*drawScale, cy + h/2); ctx.lineTo(cx - 15*drawScale, cy + h/2);
-                    ctx.quadraticCurveTo(cx + 5*drawScale, cy, cx - 15*drawScale, cy - h/2);
+                    ctx.moveTo(-15, -h/2); ctx.lineTo(15, -h/2);
+                    ctx.quadraticCurveTo(-5, 0, 15, h/2); ctx.lineTo(-15, h/2);
+                    ctx.quadraticCurveTo(5, 0, -15, -h/2);
                 }
                 ctx.fill(); ctx.stroke();
             } 
             else if (el.type === 'mirror') {
                 ctx.lineWidth = 4; ctx.strokeStyle = el.color; ctx.beginPath();
                 if (el.subtype === 'plane') {
-                    ctx.moveTo(cx, cy - h/2); ctx.lineTo(cx, cy + h/2); ctx.stroke();
+                    ctx.moveTo(0, -h/2); ctx.lineTo(0, h/2); ctx.stroke();
                     ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
-                    for(let y = cy - h/2 + 5; y < cy + h/2; y += 10) { ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 8, y + 8); ctx.stroke(); }
+                    for(let y = -h/2 + 5; y < h/2; y += 10) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(-8, y + 8); ctx.stroke(); }
                 } 
                 else {
-                    let a = (el.subtype === 'concave' ? 1 : -1) / (4 * el.f * drawScale);
-                    for(let y = -h/2; y <= h/2; y += 5) { if(y === -h/2) ctx.moveTo(cx + a*y*y, cy + y); else ctx.lineTo(cx + a*y*y, cy + y); }
+                    let a = (el.subtype === 'concave' ? 1 : -1) / (4 * el.f);
+                    for(let y = -h/2; y <= h/2; y += 5) { if(y === -h/2) ctx.moveTo(a*y*y, y); else ctx.lineTo(a*y*y, y); }
                     ctx.stroke();
+                    ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                    for(let y = -h/2 + 10; y < h/2; y += 12) { let px = a*y*y; ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px - 8, y + 8); ctx.stroke(); }
                 }
             }
             ctx.restore();
@@ -633,9 +706,9 @@
             const i_deg = parseFloat(iSlider.value);
             const A_rad = A * Math.PI / 180;
             
-            // Prism Geometry (Left entry orientation)
+            // Prism Geometry (Apex points UP, Left entry orientation)
             const side = 260; // Logical size
-            const apex = { x: 0, y: side * Math.cos(A_rad/2) * 0.5 };
+            const apex = { x: 0, y: side * Math.cos(A_rad/2) * 0.5 }; // Y is up logically
             const bl = { x: -side * Math.sin(A_rad/2), y: apex.y - side * Math.cos(A_rad/2) };
             const br = { x: side * Math.sin(A_rad/2), y: bl.y };
 
@@ -644,9 +717,16 @@
             ctx.beginPath(); ctx.moveTo(mapX(apex.x), mapY(apex.y)); ctx.lineTo(mapX(bl.x), mapY(bl.y)); ctx.lineTo(mapX(br.x), mapY(br.y)); ctx.closePath();
             ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill();
             ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 3; ctx.stroke();
-            ctx.fillStyle = "#fff"; ctx.font = "bold 18px 'Segoe UI'"; ctx.textAlign = "center";
+            ctx.fillStyle = "#fff"; ctx.font = "14px 'Segoe UI'"; ctx.textAlign = "center";
             ctx.fillText("A", mapX(apex.x), mapY(apex.y) - 15);
+            ctx.fillText("B", mapX(bl.x) - 15, mapY(bl.y) + 15);
+            ctx.fillText("C", mapX(br.x) + 15, mapY(br.y) + 15);
             ctx.restore();
+
+            // Apex Angle Arc
+            if (mode === 'ray' || mode === 'combo') {
+                drawArcBetweenVectors(apex, {x: bl.x - apex.x, y: bl.y - apex.y}, {x: br.x - apex.x, y: br.y - apex.y}, 30 * drawScale, `A=${A}°`, "#ffffff");
+            }
 
             // Setup Ray Arrays
             let rays = [];
@@ -659,22 +739,26 @@
             }
 
             // Normals (pointing INTO the prism)
-            const n_left = norm({ x: apex.y - bl.y, y: -(apex.x - bl.x) });
-            const n_right = norm({ x: br.y - apex.y, y: -(br.x - apex.x) });
-            const n_bottom = norm({ x: 0, y: 1 });
+            const n_left = getNormal(bl, apex); // Left face normal
+            const n_right = getNormal(apex, br); // Right face normal
+            const n_bottom = getNormal(br, bl);
 
             // Incident Ray Setup
-            const hitPoint = { x: (apex.x + bl.x)/2, y: (apex.y + bl.y)/2 }; 
+            const hitPoint = { x: (apex.x + bl.x)/2, y: (apex.y + bl.y)/2 }; // Midpoint of left face
             const normalAngle = Math.atan2(n_left.y, n_left.x);
             const rayAngle = normalAngle - i_deg * Math.PI / 180; // i is relative to normal
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             const startP = { x: hitPoint.x - d_inc.x * 400, y: hitPoint.y - d_inc.y * 400 };
 
-            // Draw Incident Ray
+            // Draw Incident Ray & Normal
             drawArrow(startP, hitPoint, "#ffffff");
 
             if (mode === 'ray' || mode === 'combo') {
-                drawNormalAndAngle(hitPoint, n_left, {x:-d_inc.x, y:-d_inc.y}, "i", "#ffffff");
+                drawDashedNormal(hitPoint, n_left);
+                // Angle of Incidence i: Between -d_inc (away) and -n_left (away)
+                drawArcBetweenVectors(hitPoint, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
+                
+                // Extended incident for deviation
                 const extEnd = { x: hitPoint.x + d_inc.x * 300, y: hitPoint.y + d_inc.y * 300 };
                 drawArrow(hitPoint, extEnd, "rgba(255, 255, 255, 0.2)", true);
             }
@@ -695,14 +779,23 @@
                 if (p2) {
                     drawArrow(hitPoint, p2.p, r.color);
                     
-                    if (mode === 'ray') drawNormalAndAngle(hitPoint, n_left, ref1.dir, "r₁", r.color);
+                    if (mode === 'ray') {
+                        // Angle r1: Between ref1.dir (away) and n_left (away inside)
+                        const r1_val = (Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI).toFixed(1);
+                        drawArcBetweenVectors(hitPoint, ref1.dir, n_left, 40 * drawScale, `r₁=${r1_val}°`, r.color);
+                    }
 
                     // 2nd Refraction/TIR (Prism -> Air)
-                    // Normal must point INTO the air (so flip nextNormal)
+                    // Normal must point INTO the air (so flip nextNormal for refraction calc)
                     let outNormal = { x: -nextNormal.x, y: -nextNormal.y };
                     let ref2 = refract(ref1.dir, outNormal, r.n, 1.0);
                     
-                    if (mode === 'ray') drawNormalAndAngle(p2.p, outNormal, {x:-ref1.dir.x, y:-ref1.dir.y}, "r₂", r.color);
+                    if (mode === 'ray') {
+                        drawDashedNormal(p2.p, nextNormal);
+                        // Angle r2: Between -ref1.dir (away inside) and nextNormal (away inside)
+                        const r2_val = (A - parseFloat(r1_val)).toFixed(1);
+                        drawArcBetweenVectors(p2.p, {x: -ref1.dir.x, y: -ref1.dir.y}, nextNormal, 40 * drawScale, `r₂=${r2_val}°`, r.color);
+                    }
 
                     if (ref2.tir) {
                         let p3 = lineIntersect(p2.p, ref2.dir, bl, br); 
@@ -720,9 +813,18 @@
                         let finalEnd = { x: p2.p.x + ref2.dir.x * 1200, y: p2.p.y + ref2.dir.y * 1200 };
                         
                         if (mode === 'ray') {
-                            drawNormalAndAngle(p2.p, outNormal, ref2.dir, "e", r.color);
-                            // Deviation Arc (between extended incident and emergent)
-                            drawNormalAndAngle(p2.p, d_inc, ref2.dir, "δ", "#ff007f");
+                            // Angle e: Between ref2.dir (away) and -nextNormal (away outside)
+                            const e_val = (Math.asin(r.n * Math.sin((A - parseFloat(r1_val)) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
+                            drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
+                            
+                            // Deviation
+                            const devP = rayIntersect(hitPoint, d_inc, p2.p, ref2.dir);
+                            if (devP) {
+                                // Draw backward extension of emergent ray
+                                drawArrow(p2.p, devP, r.color, true);
+                                const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
+                                drawArcBetweenVectors(devP, d_inc, ref2.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
+                            }
                         }
 
                         if (mode === 'combo') {
