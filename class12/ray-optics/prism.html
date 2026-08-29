@@ -234,6 +234,10 @@
                             <label>Position Y <span id="elYVal">0 cm</span></label>
                             <input id="elY" type="range" min="-300" max="300" step="5" value="0">
                         </div>
+                        <div class="control-group">
+                            <label>Rotation Angle (θ) <span id="elAngleVal">0°</span></label>
+                            <input id="elAngle" type="range" min="-180" max="180" step="1" value="0">
+                        </div>
                         <div class="control-group" id="focalGroup">
                             <label>Focal Length (f) <span id="elFVal">100 cm</span></label>
                             <input id="elF" type="range" min="20" max="400" step="5" value="100">
@@ -266,6 +270,7 @@
         const editorPanel = document.getElementById("editorPanel");
         const elXSlider = document.getElementById("elX");
         const elYSlider = document.getElementById("elY");
+        const elAngleSlider = document.getElementById("elAngle");
         const elFSlider = document.getElementById("elF");
         
         let W = 0, H = 0, originX = 0, originY = 0;
@@ -287,22 +292,21 @@
         // --- DYNAMIC AUTO-SCALING LAYOUT ENGINE ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) * 0.35; // Prism shifted left to allow space on right
+                originX = 380 + (W - 380) * 0.35; 
                 originY = H / 2;
-                drawScale = Math.min(1, H / 700);
+                drawScale = Math.min(1, H / 600);
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
                 const visH = H - hudHeight;
-                originX = W * 0.4; // Shift prism left for mobile too
-                originY = visH * 0.6; // Push it down slightly
+                originX = W * 0.45; 
+                originY = visH * 0.55; 
                 
                 if (mode === 'graph') {
                     originX = W / 2;
-                    originY = visH * 0.5;
+                    originY = visH * 0.4;
                 }
                 
-                // Aggressively scale so the entire prism and rays fit in the visible top area
-                drawScale = Math.min(1, visH / 600, W / 800);
+                drawScale = Math.min(1, visH / 500, W / 800);
             }
         }
 
@@ -341,7 +345,6 @@
             comboContainer.style.display = (mode === 'combo') ? "block" : "none";
 
             if (mode === 'combo' && elements.length === 0) {
-                // Spawn an initial convex lens to demonstrate combo
                 addElement('lens', 'convex');
             }
 
@@ -378,9 +381,14 @@
                     editorPanel.style.display = "block";
                     document.getElementById("editorTitle").textContent = `Edit E${sel.id}`;
                     document.getElementById("editorTitle").style.color = sel.color;
-                    elXSlider.value = sel.x; elYSlider.value = sel.y;
+                    
+                    elXSlider.value = sel.x; 
+                    elYSlider.value = sel.y;
+                    elAngleSlider.value = sel.angle;
+
                     document.getElementById("elXVal").textContent = `${Math.round(sel.x)} cm`;
                     document.getElementById("elYVal").textContent = `${Math.round(sel.y)} cm`;
+                    document.getElementById("elAngleVal").textContent = `${Math.round(sel.angle)}°`;
                     
                     if (sel.subtype === 'plane') {
                         document.getElementById("focalGroup").style.display = "none";
@@ -441,7 +449,6 @@
                     </div>
                 `;
             } else if (mode === 'graph') {
-                // Find minimum deviation
                 const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
                 const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
                 resultsContainer.innerHTML = `
@@ -459,11 +466,12 @@
             draw();
         }
 
-        [aSlider, nSlider, iSlider, fSlider].forEach(el => el.addEventListener("input", updateUI));
+        // ONLY target the Prism sliders for the global updateUI
+        [aSlider, nSlider, iSlider].forEach(el => el.addEventListener("input", updateUI));
 
         // --- COMBO CONTROLS ---
         function addElement(type, subtype) {
-            elements.push({ id: nextId++, type, subtype, x: 250, y: 0, f: 120, color: rayColors[(nextId - 1) % rayColors.length], aperture: 200 });
+            elements.push({ id: nextId++, type, subtype, x: 250, y: 0, f: 120, angle: 0, color: rayColors[(nextId - 1) % rayColors.length], aperture: 200 });
             selectedId = nextId - 1;
             updateUI(); draw();
         }
@@ -472,6 +480,7 @@
 
         elXSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }});
         elYSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
+        elAngleSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.angle = parseFloat(e.target.value); updateUI(); draw(); }});
         elFSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.f = parseFloat(e.target.value); updateUI(); draw(); }});
 
         // --- INTERACTION (DRAGGING ELEMENTS) ---
@@ -527,10 +536,17 @@
         function norm(v) { let l = Math.hypot(v.x, v.y) || 1; return { x: v.x/l, y: v.y/l }; }
         function dot(a, b) { return a.x*b.x + a.y*b.y; }
         
-        function getNormal(p1, p2) {
-            // Normal points to the left of the p1 -> p2 vector
-            let dx = p2.x - p1.x; let dy = p2.y - p1.y; let l = Math.hypot(dx, dy);
-            return { x: dy/l, y: -dx/l }; 
+        // Ensure normal always points towards the center of the prism
+        function getInwardNormal(p1, p2, center) {
+            let dx = p2.x - p1.x; let dy = p2.y - p1.y; 
+            let l = Math.hypot(dx, dy);
+            let n = { x: dy/l, y: -dx/l }; 
+            let mid = { x: (p1.x + p2.x)/2, y: (p1.y + p2.y)/2 };
+            let toCenter = { x: center.x - mid.x, y: center.y - mid.y };
+            if (n.x * toCenter.x + n.y * toCenter.y < 0) { 
+                n.x = -n.x; n.y = -n.y; 
+            }
+            return n;
         }
 
         function refract(D, N, n1, n2) {
@@ -563,31 +579,28 @@
 
         // --- DRAWING UTILS ---
         function mapX(x) { return originX + x * drawScale; }
-        function mapY(y) { return originY - y * drawScale; } // Canvas Y inverted
+        function mapY(y) { return originY - y * drawScale; } 
 
         function drawArrow(p1, p2, color, dashed = false) {
+            const sx1 = mapX(p1.x), sy1 = mapY(p1.y);
+            const sx2 = mapX(p2.x), sy2 = mapY(p2.y);
+            
             ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2;
             if (dashed) { ctx.setLineDash([5, 5]); ctx.globalAlpha = 0.5; }
             else { ctx.shadowBlur = 10; ctx.shadowColor = color; }
             
-            ctx.beginPath(); ctx.moveTo(mapX(p1.x), mapY(p1.y)); ctx.lineTo(mapX(p2.x), mapY(p2.y)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
             ctx.setLineDash([]); ctx.shadowBlur = 0;
             
-            const dx = p2.x - p1.x; const dy = p2.y - p1.y; const len = Math.hypot(dx, dy);
+            const dx = sx2 - sx1; const dy = sy2 - sy1; const len = Math.hypot(dx, dy);
             if (len > 30 && !dashed) {
-                // Ensure arrowhead maps properly with screen inversion
-                const dx_screen = mapX(p2.x) - mapX(p1.x);
-                const dy_screen = mapY(p2.y) - mapY(p1.y);
-                const angle = Math.atan2(dy_screen, dx_screen);
-                
-                const arrowDist = Math.min(Math.hypot(dx_screen, dy_screen) * 0.5, 100);
-                const mx = mapX(p1.x) + Math.cos(angle) * arrowDist;
-                const my = mapY(p1.y) + Math.sin(angle) * arrowDist;
-
+                const angle = Math.atan2(dy, dx);
+                const mx = sx1 + (dx / len) * Math.min(len * 0.5, 100);
+                const my = sy1 + (dy / len) * Math.min(len * 0.5, 100);
                 ctx.beginPath(); ctx.fillStyle = color;
                 ctx.moveTo(mx, my);
-                ctx.lineTo(mx - 10 * Math.cos(angle - 0.4), my - 10 * Math.sin(angle - 0.4));
-                ctx.lineTo(mx - 10 * Math.cos(angle + 0.4), my - 10 * Math.sin(angle + 0.4));
+                ctx.lineTo(mx - 12 * Math.cos(angle - 0.4), my - 12 * Math.sin(angle - 0.4));
+                ctx.lineTo(mx - 12 * Math.cos(angle + 0.4), my - 12 * Math.sin(angle + 0.4));
                 ctx.closePath(); ctx.fill();
             }
             ctx.restore();
@@ -597,24 +610,21 @@
             const angle = Math.atan2(dir_screen.y, dir_screen.x);
             ctx.beginPath();
             ctx.moveTo(x, y);
-            ctx.lineTo(x - 6 * Math.cos(angle - 0.5), y - 6 * Math.sin(angle - 0.5));
-            ctx.lineTo(x - 6 * Math.cos(angle + 0.5), y - 6 * Math.sin(angle + 0.5));
-            ctx.fillStyle = "rgba(255,255,255,0.4)";
+            ctx.lineTo(x - 8 * Math.cos(angle - 0.4), y - 8 * Math.sin(angle - 0.4));
+            ctx.lineTo(x - 8 * Math.cos(angle + 0.4), y - 8 * Math.sin(angle + 0.4));
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
             ctx.fill();
         }
 
         function drawDashedNormal(p, N) {
             ctx.save();
             ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-            ctx.setLineDash([5, 5]);
-            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
             ctx.beginPath();
             // N points INTO prism. We draw it extending outwards and inwards.
             let px1 = mapX(p.x - N.x * 120); let py1 = mapY(p.y - N.y * 120); // Out
             let px2 = mapX(p.x + N.x * 120); let py2 = mapY(p.y + N.y * 120); // In
-            ctx.moveTo(px1, py1);
-            ctx.lineTo(px2, py2);
-            ctx.stroke();
+            ctx.moveTo(px1, py1); ctx.lineTo(px2, py2); ctx.stroke();
             
             // Draw arrows on the normal ends
             drawNormalArrow(px1, py1, {x: -N.x, y: N.y}); // Canvas Y inverted
@@ -644,15 +654,11 @@
             ctx.save();
             ctx.beginPath();
             ctx.arc(mapX(p.x), mapY(p.y), radius, start, end);
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
+            ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
             
             let mid = (start + end) / 2;
-            ctx.fillStyle = color;
-            ctx.font = "italic 13px 'Segoe UI'";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
+            ctx.fillStyle = color; ctx.font = "italic 13px 'Segoe UI'";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.fillText(label, mapX(p.x) + (radius + 20) * Math.cos(mid), mapY(p.y) + (radius + 20) * Math.sin(mid));
             ctx.restore();
         }
@@ -660,7 +666,7 @@
         function drawElementGeometry(el) {
             const cx = mapX(el.x); const cy = mapY(el.y); const h = el.aperture * drawScale; 
             ctx.save();
-            ctx.translate(cx, cy); ctx.scale(drawScale, drawScale);
+            ctx.translate(cx, cy); ctx.rotate(-el.angle * Math.PI / 180); ctx.scale(drawScale, drawScale);
             
             if (el.id === selectedId) { ctx.shadowBlur = 15; ctx.shadowColor = el.color; }
 
@@ -682,8 +688,7 @@
                     ctx.moveTo(0, -h/2); ctx.lineTo(0, h/2); ctx.stroke();
                     ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
                     for(let y = -h/2 + 5; y < h/2; y += 10) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(-8, y + 8); ctx.stroke(); }
-                } 
-                else {
+                } else {
                     let a = (el.subtype === 'concave' ? 1 : -1) / (4 * el.f);
                     for(let y = -h/2; y <= h/2; y += 5) { if(y === -h/2) ctx.moveTo(a*y*y, y); else ctx.lineTo(a*y*y, y); }
                     ctx.stroke();
@@ -711,13 +716,14 @@
             const apex = { x: 0, y: side * Math.cos(A_rad/2) * 0.5 }; // Y is up logically
             const bl = { x: -side * Math.sin(A_rad/2), y: apex.y - side * Math.cos(A_rad/2) };
             const br = { x: side * Math.sin(A_rad/2), y: bl.y };
+            const centerP = { x: 0, y: (apex.y + bl.y + br.y) / 3 };
 
             // Draw Prism
             ctx.save();
             ctx.beginPath(); ctx.moveTo(mapX(apex.x), mapY(apex.y)); ctx.lineTo(mapX(bl.x), mapY(bl.y)); ctx.lineTo(mapX(br.x), mapY(br.y)); ctx.closePath();
             ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill();
             ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 3; ctx.stroke();
-            ctx.fillStyle = "#fff"; ctx.font = "14px 'Segoe UI'"; ctx.textAlign = "center";
+            ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'"; ctx.textAlign = "center";
             ctx.fillText("A", mapX(apex.x), mapY(apex.y) - 15);
             ctx.fillText("B", mapX(bl.x) - 15, mapY(bl.y) + 15);
             ctx.fillText("C", mapX(br.x) + 15, mapY(br.y) + 15);
@@ -728,7 +734,6 @@
                 drawArcBetweenVectors(apex, {x: bl.x - apex.x, y: bl.y - apex.y}, {x: br.x - apex.x, y: br.y - apex.y}, 30 * drawScale, `A=${A}°`, "#ffffff");
             }
 
-            // Setup Ray Arrays
             let rays = [];
             if (mode === 'dispersion') {
                 const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
@@ -739,37 +744,33 @@
             }
 
             // Normals (pointing INTO the prism)
-            const n_left = getNormal(bl, apex); // Left face normal
-            const n_right = getNormal(apex, br); // Right face normal
-            const n_bottom = getNormal(br, bl);
+            const n_left = getInwardNormal(bl, apex, centerP);
+            const n_right = getInwardNormal(apex, br, centerP);
+            const n_bottom = getInwardNormal(br, bl, centerP);
 
-            // Incident Ray Setup
-            const hitPoint = { x: (apex.x + bl.x)/2, y: (apex.y + bl.y)/2 }; // Midpoint of left face
+            // Incident Ray Setup (From Bottom Left)
+            const hitPoint = { x: bl.x + (apex.x - bl.x) * 0.3, y: bl.y + (apex.y - bl.y) * 0.3 };
             const normalAngle = Math.atan2(n_left.y, n_left.x);
-            const rayAngle = normalAngle - i_deg * Math.PI / 180; // i is relative to normal
+            const rayAngle = normalAngle + i_deg * Math.PI / 180; // Added i to come from below normal
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             const startP = { x: hitPoint.x - d_inc.x * 400, y: hitPoint.y - d_inc.y * 400 };
 
-            // Draw Incident Ray & Normal
+            // Draw Incident Ray
             drawArrow(startP, hitPoint, "#ffffff");
 
             if (mode === 'ray' || mode === 'combo') {
                 drawDashedNormal(hitPoint, n_left);
-                // Angle of Incidence i: Between -d_inc (away) and -n_left (away)
+                // Angle of Incidence i
                 drawArcBetweenVectors(hitPoint, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
-                
                 // Extended incident for deviation
                 const extEnd = { x: hitPoint.x + d_inc.x * 300, y: hitPoint.y + d_inc.y * 300 };
                 drawArrow(hitPoint, extEnd, "rgba(255, 255, 255, 0.2)", true);
             }
 
             // Draw Combo Elements
-            if (mode === 'combo') {
-                elements.forEach(drawElementGeometry);
-            }
+            if (mode === 'combo') elements.forEach(drawElementGeometry);
 
             rays.forEach(r => {
-                // 1st Refraction (Air -> Prism)
                 let ref1 = refract(d_inc, n_left, 1.0, r.n);
                 let p2 = lineIntersect(hitPoint, ref1.dir, apex, br); 
                 let nextNormal = n_right;
@@ -780,19 +781,16 @@
                     drawArrow(hitPoint, p2.p, r.color);
                     
                     if (mode === 'ray') {
-                        // Angle r1: Between ref1.dir (away) and n_left (away inside)
                         const r1_val = (Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI).toFixed(1);
                         drawArcBetweenVectors(hitPoint, ref1.dir, n_left, 40 * drawScale, `r₁=${r1_val}°`, r.color);
                     }
 
-                    // 2nd Refraction/TIR (Prism -> Air)
-                    // Normal must point INTO the air (so flip nextNormal for refraction calc)
+                    // Normal pointing OUT of the prism for second boundary calculation
                     let outNormal = { x: -nextNormal.x, y: -nextNormal.y };
                     let ref2 = refract(ref1.dir, outNormal, r.n, 1.0);
                     
                     if (mode === 'ray') {
                         drawDashedNormal(p2.p, nextNormal);
-                        // Angle r2: Between -ref1.dir (away inside) and nextNormal (away inside)
                         const r2_val = (A - parseFloat(r1_val)).toFixed(1);
                         drawArcBetweenVectors(p2.p, {x: -ref1.dir.x, y: -ref1.dir.y}, nextNormal, 40 * drawScale, `r₂=${r2_val}°`, r.color);
                     }
@@ -813,14 +811,12 @@
                         let finalEnd = { x: p2.p.x + ref2.dir.x * 1200, y: p2.p.y + ref2.dir.y * 1200 };
                         
                         if (mode === 'ray') {
-                            // Angle e: Between ref2.dir (away) and -nextNormal (away outside)
                             const e_val = (Math.asin(r.n * Math.sin((A - parseFloat(r1_val)) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
                             drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
                             
-                            // Deviation
+                            // Deviation Calculation and Arc
                             const devP = rayIntersect(hitPoint, d_inc, p2.p, ref2.dir);
                             if (devP) {
-                                // Draw backward extension of emergent ray
                                 drawArrow(p2.p, devP, r.color, true);
                                 const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
                                 drawArcBetweenVectors(devP, d_inc, ref2.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
@@ -828,7 +824,6 @@
                         }
 
                         if (mode === 'combo') {
-                            // Paraxial tracing through custom combo elements
                             let curP = p2.p; let curD = ref2.dir;
                             let b = 0;
                             
@@ -871,7 +866,6 @@
                 }
             });
 
-            // Deviation Graph Overlay
             if (mode === 'graph') {
                 const gW = 300; const gH = 200;
                 const gX = W / 2 - gW / 2; const gY = H * 0.55;
@@ -902,7 +896,6 @@
                 }
                 ctx.strokeStyle = "var(--primary)"; ctx.lineWidth = 2; ctx.stroke();
 
-                // Current Point
                 const r1_rad = Math.asin(Math.sin(i_rad) / n);
                 const r2_rad = A_rad - r1_rad;
                 if (n * Math.sin(r2_rad) <= 1) {
