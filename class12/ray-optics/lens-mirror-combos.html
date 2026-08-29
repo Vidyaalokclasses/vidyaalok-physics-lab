@@ -176,6 +176,18 @@
                 </div>
 
                 <div>
+                    <div class="section-title">Point Object Settings</div>
+                    <div class="control-group">
+                        <label>Position (X) <span id="objXVal">-150 cm</span></label>
+                        <input id="objX" type="range" min="-600" max="600" step="1" value="-150">
+                    </div>
+                    <div class="control-group">
+                        <label>Position (Y) <span id="objYVal">0 cm</span></label>
+                        <input id="objY" type="range" min="-300" max="300" step="1" value="0">
+                    </div>
+                </div>
+
+                <div>
                     <div class="section-title">Bring Optical Element</div>
                     <div class="toolbar">
                         <button class="btn" onclick="addElement('lens', 'convex')">+ Convex Lens</button>
@@ -194,11 +206,11 @@
                 <div id="editorPanel" class="editor-panel" style="display: none;">
                     <div class="section-title" id="editorTitle" style="color: var(--text-main);">Edit Element</div>
                     <div class="control-group">
-                        <label>Position X <span id="elXVal">0 px</span></label>
+                        <label>Position X <span id="elXVal">0 cm</span></label>
                         <input id="elX" type="range" min="-600" max="600" step="1" value="0">
                     </div>
                     <div class="control-group">
-                        <label>Position Y <span id="elYVal">0 px</span></label>
+                        <label>Position Y <span id="elYVal">0 cm</span></label>
                         <input id="elY" type="range" min="-300" max="300" step="1" value="0">
                     </div>
                     <div class="control-group">
@@ -206,7 +218,7 @@
                         <input id="elAngle" type="range" min="-180" max="180" step="1" value="0">
                     </div>
                     <div class="control-group" id="focalGroup">
-                        <label>Focal Length (f) <span id="elFVal">100 px</span></label>
+                        <label>Focal Length (f) <span id="elFVal">100 cm</span></label>
                         <input id="elF" type="range" min="20" max="400" step="1" value="100">
                     </div>
                     <button class="btn danger" style="width: 100%; margin-top: 5px;" onclick="deleteSelected()">Remove Element</button>
@@ -224,6 +236,8 @@
         const canvas = document.getElementById("comboCanvas");
         const ctx = canvas.getContext("2d");
         
+        const objXSlider = document.getElementById("objX");
+        const objYSlider = document.getElementById("objY");
         const elXSlider = document.getElementById("elX");
         const elYSlider = document.getElementById("elY");
         const elAngleSlider = document.getElementById("elAngle");
@@ -234,6 +248,7 @@
         const legendBox = document.getElementById("legendBox");
         
         let W = 0, H = 0, originX = 0, originY = 0;
+        let drawScale = 1;
         let initialized = false;
 
         let isDragging = false;
@@ -242,11 +257,25 @@
 
         const rayColors = ['#00e5ff', '#ff007f', '#00ffaa', '#ffd166', '#c7a6ff', '#ff5e00', '#ff00ff'];
         
-        // Point object fixed on the left to maximize screen space
         let object = { x: -300, y: 0 };
         let elements = [];
         let selectedId = null;
         let nextId = 1;
+
+        function updateLayout() {
+            if (W > 900) {
+                originX = 380 + (W - 380) / 2;
+                originY = H / 2;
+                drawScale = 1;
+            } else {
+                originX = W / 2;
+                const hudHeight = hudPanel.offsetHeight || (H * 0.45);
+                const visH = H - hudHeight;
+                originY = visH / 2 + 10;
+                // Auto-scale to ensure optical setup fits on smaller mobile screens
+                drawScale = Math.min(W / 1000, visH / 600, 1);
+            }
+        }
 
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
@@ -255,19 +284,14 @@
                 canvas.width = W;
                 canvas.height = H;
                 
-                if (W > 900) {
-                    originX = 420 + (W - 420) / 2;
-                    originY = H / 2;
-                } else {
-                    const hudHeight = hudPanel.offsetHeight || (H * 0.45);
-                    originX = W / 2; 
-                    originY = (H - hudHeight) / 2;
-                }
+                updateLayout();
 
                 if (!initialized && W > 10 && H > 10) {
                     initialized = true;
                     resetScene();
-                } else if (initialized) draw();
+                } else if (initialized) {
+                    draw();
+                }
             }
         });
         resizeObserver.observe(document.querySelector('.workspace'));
@@ -283,12 +307,18 @@
         }
 
         function updateUI() {
+            document.getElementById("objXVal").textContent = `${Math.round(object.x)} cm`;
+            document.getElementById("objYVal").textContent = `${Math.round(object.y)} cm`;
+            objXSlider.value = object.x;
+            objYSlider.value = object.y;
+            
+            const sorted = [...elements].sort((a,b) => a.x - b.x);
             elementListUI.innerHTML = "";
-            if(elements.length === 0) {
+            if(sorted.length === 0) {
                 elementListUI.innerHTML = "<div style='color:var(--text-muted); font-size:0.8rem; text-align:center; padding: 10px;'>No elements in path.</div>";
             }
             
-            elements.forEach(el => {
+            sorted.forEach(el => {
                 const div = document.createElement("div");
                 div.className = "element-item" + (el.id === selectedId ? " active" : "");
                 const name = el.subtype.charAt(0).toUpperCase() + el.subtype.slice(1) + " " + el.type.charAt(0).toUpperCase() + el.type.slice(1);
@@ -304,8 +334,8 @@
                 document.getElementById("editorTitle").style.color = sel.color;
                 
                 elXSlider.value = sel.x; elYSlider.value = sel.y; elAngleSlider.value = sel.angle;
-                document.getElementById("elXVal").textContent = `${Math.round(sel.x)} px`;
-                document.getElementById("elYVal").textContent = `${Math.round(sel.y)} px`;
+                document.getElementById("elXVal").textContent = `${Math.round(sel.x)} cm`;
+                document.getElementById("elYVal").textContent = `${Math.round(sel.y)} cm`;
                 document.getElementById("elAngleVal").textContent = `${Math.round(sel.angle)}°`;
                 
                 if (sel.subtype === 'plane') {
@@ -313,7 +343,7 @@
                 } else {
                     document.getElementById("focalGroup").style.display = "flex";
                     elFSlider.value = sel.f;
-                    document.getElementById("elFVal").textContent = `${Math.round(sel.f)} px`;
+                    document.getElementById("elFVal").textContent = `${Math.round(sel.f)} cm`;
                 }
             } else {
                 editorPanel.style.display = "none";
@@ -333,6 +363,8 @@
         function selectElement(id) { selectedId = id; updateUI(); draw(); }
         function deleteSelected() { elements = elements.filter(e => e.id !== selectedId); selectedId = null; updateUI(); draw(); }
 
+        objXSlider.addEventListener("input", (e) => { object.x = parseFloat(e.target.value); updateUI(); draw(); });
+        objYSlider.addEventListener("input", (e) => { object.y = parseFloat(e.target.value); updateUI(); draw(); });
         elXSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }});
         elYSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
         elAngleSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.angle = parseFloat(e.target.value); updateUI(); draw(); }});
@@ -382,7 +414,6 @@
                 }
             } 
             else if (el.type === 'mirror') {
-                // Parabola: x = a * y^2. Concave reflects towards +x when a > 0.
                 let a = (el.subtype === 'concave' ? 1 : -1) / (4 * el.f);
                 let A = a * d_loc.y * d_loc.y;
                 let B = 2 * a * p_loc.y * d_loc.y - d_loc.x;
@@ -409,7 +440,6 @@
                 let x_hit = a * y_hit * y_hit;
                 let N = norm({ x: 1, y: -2 * a * y_hit });
                 
-                // Normal should face against ray direction
                 if (dot(d_loc, N) > 0) { N.x = -N.x; N.y = -N.y; }
                 
                 let dot_dN = dot(d_loc, N);
@@ -420,7 +450,6 @@
             return null;
         }
 
-        // Find intersection of two lines (to locate point images)
         function findIntersection(p1, d1, p2, d2) {
             let cross = d1.x * d2.y - d1.y * d2.x;
             if (Math.abs(cross) < 1e-6) return null;
@@ -448,8 +477,12 @@
         function handleInputStart(e) {
             if (e.target.closest('.hud-panel')) return; 
             const cx = getEventX(e); const cy = getEventY(e);
-            const simX = cx - originX; const simY = originY - cy;
+            
+            // Map Screen Coordinates back to Logical Coordinates
+            const simX = (cx - originX) / drawScale; 
+            const simY = (originY - cy) / drawScale;
 
+            // Only elements can be dragged as per requirement (Point Object is fixed)
             for (let i = elements.length - 1; i >= 0; i--) {
                 if (Math.abs(simX - elements[i].x) < 40 && Math.abs(simY - elements[i].y) < 100) {
                     isDragging = true; dragTarget = elements[i].id; selectedId = elements[i].id;
@@ -466,7 +499,8 @@
             if(e.cancelable) e.preventDefault();
             
             const cx = getEventX(e); const cy = getEventY(e);
-            const simX = cx - originX; const simY = originY - cy;
+            const simX = (cx - originX) / drawScale; 
+            const simY = (originY - cy) / drawScale;
             
             let newX = simX + dragOffsetX; let newY = simY + dragOffsetY;
 
@@ -488,32 +522,36 @@
         window.addEventListener("touchend", handleInputEnd);
 
         // --- DRAWING UTILS ---
-        function mapX(x) { return originX + x; }
-        function mapY(y) { return originY - y; }
+        function mapX(x) { return originX + x * drawScale; }
+        function mapY(y) { return originY - y * drawScale; }
 
         function drawRaySegment(p1, p2, color, dashed = false, showArrow = true) {
+            const sx1 = mapX(p1.x), sy1 = mapY(p1.y);
+            const sx2 = mapX(p2.x), sy2 = mapY(p2.y);
+            
             ctx.save();
             ctx.strokeStyle = color;
             ctx.lineWidth = 1.5;
             
-            if (dashed) { ctx.setLineDash([4, 4]); ctx.globalAlpha = 0.4; }
+            if (dashed) { ctx.setLineDash([4, 4]); ctx.globalAlpha = 0.5; }
             else { ctx.globalAlpha = 0.8; }
             
             ctx.beginPath();
-            ctx.moveTo(mapX(p1.x), mapY(p1.y));
-            ctx.lineTo(mapX(p2.x), mapY(p2.y));
+            ctx.moveTo(sx1, sy1);
+            ctx.lineTo(sx2, sy2);
             ctx.stroke();
             ctx.setLineDash([]);
             
             if (showArrow) {
-                const dx = p2.x - p1.x; const dy = -(p2.y - p1.y); // Canvas Y is inverted
+                const dx = sx2 - sx1; 
+                const dy = sy2 - sy1; 
                 const len = Math.hypot(dx, dy);
-                if (len > 30) {
+                if (len > 20) {
                     const angle = Math.atan2(dy, dx);
-                    // Draw arrow at a guaranteed visible distance (max 150px from start)
-                    const arrowDist = Math.min(len * 0.5, 150);
-                    const mx = mapX(p1.x) + (dx / len) * arrowDist;
-                    const my = mapY(p1.y) + (dy / len) * arrowDist;
+                    // Draw arrow at a guaranteed visible distance on screen
+                    const arrowDist = Math.min(len * 0.5, 100);
+                    const mx = sx1 + (dx / len) * arrowDist;
+                    const my = sy1 + (dy / len) * arrowDist;
 
                     ctx.beginPath(); ctx.fillStyle = color;
                     ctx.moveTo(mx, my);
@@ -532,7 +570,8 @@
             ctx.save();
             
             ctx.translate(cx, cy);
-            ctx.rotate(-el.angle * Math.PI / 180); // Invert for canvas
+            ctx.rotate(-el.angle * Math.PI / 180); 
+            ctx.scale(drawScale, drawScale); // Scale geometry down mathematically
 
             if (el.id === selectedId) {
                 ctx.shadowBlur = 20; ctx.shadowColor = el.color;
@@ -554,11 +593,13 @@
                 ctx.fill(); ctx.stroke();
             } 
             else if (el.type === 'mirror') {
-                ctx.strokeStyle = el.color;
                 ctx.lineWidth = 4;
-                ctx.beginPath();
+                // Dynamically face mirror away from the curve
+                const curveDir = -1; 
+
                 if (el.subtype === 'plane') {
-                    ctx.moveTo(0, -h/2); ctx.lineTo(0, h/2); ctx.stroke();
+                    ctx.strokeStyle = el.color;
+                    ctx.beginPath(); ctx.moveTo(0, -h/2); ctx.lineTo(0, h/2); ctx.stroke();
                     ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
                     for(let y = -h/2 + 5; y < h/2; y += 10) {
                         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(8, y + 8); ctx.stroke();
@@ -566,6 +607,8 @@
                 } 
                 else {
                     let a = (el.subtype === 'concave' ? 1 : -1) / (4 * el.f);
+                    ctx.strokeStyle = el.color;
+                    ctx.beginPath();
                     for(let y = -h/2; y <= h/2; y += 5) {
                         if(y === -h/2) ctx.moveTo(a*y*y, y); else ctx.lineTo(a*y*y, y);
                     }
@@ -583,27 +626,29 @@
             ctx.fillStyle = el.id === selectedId ? el.color : "#a0aabf";
             ctx.font = "bold 13px 'Segoe UI'";
             ctx.textAlign = "center";
-            ctx.fillText(`E${el.id}`, cx, cy + h/2 + 25);
+            ctx.fillText(`E${el.id}`, cx, cy + (h/2 * drawScale) + 20);
         }
 
         function draw() {
             if(!initialized) return;
             ctx.clearRect(0, 0, W, H);
             
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-            ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
+            // Optical Axis
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
             ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(W, originY); ctx.stroke();
             ctx.setLineDash([]);
 
             elements.forEach(drawElementGeometry);
 
-            // Expand ray count for thicker, clearly visible fans
+            // Execute Parabolic Ray Tracing
             let activeRays = [];
             for (let a = -0.16; a <= 0.16; a += 0.04) {
                 activeRays.push({
                     p: {x: object.x, y: object.y},
                     d: {x: Math.cos(a), y: Math.sin(a)},
-                    color: 'rgba(255, 255, 255, 0.4)', // Faint white for initial rays
+                    color: 'rgba(255, 255, 255, 0.4)', 
                     path: [{x: object.x, y: object.y}],
                     seq: []
                 });
@@ -613,7 +658,6 @@
             let images = [];
             let allLines = [];
             
-            // RAY TRACING ENGINE
             while (bounces < 10 && activeRays.length > 0) {
                 let nextRays = [];
                 let seqGroups = {};
@@ -639,21 +683,18 @@
                         if (!seqGroups[seqKey]) seqGroups[seqKey] = [];
                         seqGroups[seqKey].push(newRay);
                     } else {
-                        // Ray shoots off to infinity
                         let endP = { x: ray.p.x + ray.d.x * 3000, y: ray.p.y + ray.d.y * 3000 };
                         allLines.push({ p1: ray.p, p2: endP, color: ray.color });
                     }
                 }
                 
-                // Extract Point Images by intersecting outermost rays in each sequence group
                 for (let key in seqGroups) {
                     let group = seqGroups[key];
                     if (group.length >= 2) {
-                        let r1 = group[0]; let r2 = group[group.length - 1];
+                        let r1 = group[0]; let r2 = group[group.length - 1]; 
                         let img = findIntersection(r1.p, r1.d, r2.p, r2.d);
                         if (img && Math.abs(img.t1) < 5000) {
                             images.push({ p: img.p, isReal: img.t1 > 0, color: r1.color, label: `I${key.split(',').length}`, seq: key });
-                            // If Virtual, save dashed lines backwards
                             if (img.t1 < 0) {
                                 allLines.push({ p1: r1.p, p2: img.p, color: r1.color, dashed: true });
                                 allLines.push({ p2: r2.p, p2: img.p, color: r2.color, dashed: true });
@@ -665,12 +706,12 @@
                 bounces++;
             }
 
-            // Draw all computed lines
+            // Render mapped lines
             allLines.forEach(line => {
                 if (line.p1 && line.p2) drawRaySegment(line.p1, line.p2, line.color, line.dashed, !line.dashed);
             });
 
-            // Draw Object
+            // Draw Point Object (O)
             const ox = mapX(object.x), oy = mapY(object.y);
             ctx.save();
             ctx.shadowBlur = 15; ctx.shadowColor = "var(--text-main)";
@@ -680,19 +721,21 @@
             ctx.fillText("O", ox, oy + 22);
             ctx.restore();
 
-            // Legend & Image Points
+            // Legend & Point Images
             let legendHTML = `<div class="leg"><div class="leg-dot" style="background: var(--text-main); box-shadow: 0 0 8px var(--text-main);"></div> Object (O)</div>`;
             images.forEach((img) => {
-                if (img.p.x > -W && img.p.x < W*2) {
-                    const ix = mapX(img.p.x), iy = mapY(img.p.y);
+                // Determine screen bounds using mapped coordinates
+                const ix = mapX(img.p.x), iy = mapY(img.p.y);
+                if (ix > -W && ix < W*2) {
                     ctx.save();
                     ctx.shadowBlur = 15; ctx.shadowColor = img.color; ctx.fillStyle = img.color;
                     ctx.beginPath(); ctx.arc(ix, iy, 5, 0, Math.PI * 2); ctx.fill();
                     ctx.shadowBlur = 0; ctx.fillStyle = "#fff"; ctx.textAlign = "center";
                     ctx.font = "bold 15px 'Segoe UI'"; ctx.fillText(img.label, ix, iy + 22);
                     ctx.font = "11px 'Segoe UI'"; ctx.fillStyle = "var(--text-muted)";
-                    ctx.fillText(`(via E${img.seq.split(',').join('→E')})`, ix, iy + 36);
+                    ctx.fillText(`(E${img.seq.split(',').join('→E')})`, ix, iy + 36);
                     ctx.restore();
+                    
                     legendHTML += `<div class="leg"><div class="leg-dot" style="background: ${img.color}; box-shadow: 0 0 8px ${img.color};"></div> ${img.label} <span style="opacity:0.6; font-weight:normal;">(E${img.seq.split(',').join('→E')})</span></div>`;
                 }
             });
