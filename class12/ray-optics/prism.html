@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Prism & Dispersion | Vidyaalok Lab</title>
+    <title>Prism, Dispersion & Combos | Vidyaalok Lab</title>
 
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
@@ -33,7 +33,6 @@
             --text-muted: #a0aabf;
             --gold: #ffd166;
             --real-img: #00ffaa;
-            --virtual-img: #c7a6ff;
             --border: rgba(0, 229, 255, 0.2);
         }
 
@@ -59,7 +58,6 @@
             letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem;
             display: flex; align-items: center; gap: 8px;
         }
-
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
 
         /* Workspace & Canvas */
@@ -93,80 +91,74 @@
             padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
         }
-
         .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
 
         .hud-content {
             padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px;
             scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
         }
-        
         .hud-content::-webkit-scrollbar { width: 4px; }
         .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
 
+        /* Device Specific HUD Layout */
         @media (min-width: 901px) {
-            .hud-panel {
-                top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px;
-            }
+            .hud-panel { top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px; }
         }
-
         @media (max-width: 900px) {
-            .hud-panel {
-                bottom: 0; left: 0; width: 100%; height: 50vh;
-                border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none;
-            }
+            .hud-panel { bottom: 0; left: 0; width: 100%; height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none; }
         }
 
-        .section-title {
-            font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold;
-        }
+        /* Controls */
+        .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
 
         .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-
         .btn {
-            flex: 1 1 calc(50% - 8px); min-width: 140px;
+            flex: 1 1 calc(50% - 8px); min-width: 130px;
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
             color: var(--text-main); padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.75rem;
             cursor: pointer; transition: all 0.2s ease; text-align: center;
         }
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
-        .btn.full { flex: 1 1 100%; }
 
-        /* Sliders */
         .control-group { margin-bottom: 12px; }
-        .control-group label {
-            display: flex; justify-content: space-between; color: var(--text-muted);
-            font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px;
-        }
+        .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
         .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
         
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
 
+        /* Optical Elements List */
+        .element-list { display: flex; flex-direction: column; gap: 6px; }
+        .element-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 8px 12px;
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+            cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+        }
+        .element-item:hover { border-color: rgba(255,255,255,0.3); }
+        .element-item.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.1); }
+        
+        .editor-panel { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+
         /* Stats & Formulas */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .stat {
-            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center;
-        }
+        .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
         .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .stat span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
         .stat.alert span { color: #ff3366; }
         
         .formula-panel {
             background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
-            text-align: center; color: var(--primary); font-weight: bold; font-size: 0.85rem; overflow-x: auto;
+            text-align: center; color: var(--primary); font-weight: bold; font-size: 0.9rem; overflow-x: auto;
         }
-
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="index.html" class="back-btn">← Chapter 09</a>
-        <h1>Prism & Dispersion</h1>
+        <h1>Prism, Dispersion & Combos</h1>
     </nav>
 
     <div class="workspace">
@@ -183,11 +175,11 @@
                     <button class="btn active" id="btnRay" onclick="setMode('ray')">Ray Diagram</button>
                     <button class="btn" id="btnDispersion" onclick="setMode('dispersion')">Dispersion</button>
                     <button class="btn" id="btnGraph" onclick="setMode('graph')">Deviation Graph</button>
-                    <button class="btn full" id="btnCombo" onclick="setMode('combo')">Prism + Lens Combo</button>
+                    <button class="btn" id="btnCombo" onclick="setMode('combo')">Optical Combos</button>
                 </div>
 
                 <div id="controlsContainer">
-                    <div class="section-title">Optical Properties</div>
+                    <div class="section-title">Prism Properties</div>
                     <div class="control-group">
                         <label>Angle of Prism (A) <span id="aVal">60°</span></label>
                         <input id="aSlider" type="range" min="30" max="90" step="1" value="60">
@@ -200,13 +192,41 @@
                         <label>Angle of Incidence (i) <span id="iVal">45°</span></label>
                         <input id="iSlider" type="range" min="0" max="90" step="1" value="45">
                     </div>
-                    <div class="control-group" id="lensGroup" style="display: none;">
-                        <label>Lens Focal Length (f) <span id="fVal">100 px</span></label>
-                        <input id="fSlider" type="range" min="50" max="250" step="5" value="100">
+                </div>
+
+                <!-- Optical Combo Elements Toolkit -->
+                <div id="comboContainer" style="display: none;">
+                    <div class="section-title">Bring Optical Element</div>
+                    <div class="toolbar">
+                        <button class="btn" onclick="addElement('lens', 'convex')">+ Convex Lens</button>
+                        <button class="btn" onclick="addElement('lens', 'concave')">+ Concave Lens</button>
+                        <button class="btn" onclick="addElement('mirror', 'concave')">+ Concave Mirror</button>
+                        <button class="btn" onclick="addElement('mirror', 'convex')">+ Convex Mirror</button>
+                        <button class="btn" style="flex-basis: 100%;" onclick="addElement('mirror', 'plane')">+ Plane Mirror</button>
+                    </div>
+
+                    <div class="section-title" style="margin-top: 15px;">Optical Path Sequence</div>
+                    <div class="element-list" id="elementList"></div>
+
+                    <div id="editorPanel" class="editor-panel" style="display: none; margin-top: 10px;">
+                        <div class="section-title" id="editorTitle" style="color: var(--text-main);">Edit Element</div>
+                        <div class="control-group">
+                            <label>Position X <span id="elXVal">0 px</span></label>
+                            <input id="elX" type="range" min="-200" max="800" step="5" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>Position Y <span id="elYVal">0 px</span></label>
+                            <input id="elY" type="range" min="-300" max="300" step="5" value="0">
+                        </div>
+                        <div class="control-group" id="focalGroup">
+                            <label>Focal Length (f) <span id="elFVal">100 px</span></label>
+                            <input id="elF" type="range" min="20" max="400" step="5" value="100">
+                        </div>
+                        <button class="btn" style="width: 100%; border-color: rgba(255,51,102,0.4); color: #ff3366;" onclick="deleteSelected()">Remove Element</button>
                     </div>
                 </div>
 
-                <div class="section-title">Analysis & Results</div>
+                <div class="section-title" style="margin-top: 5px;">Analysis & Results</div>
                 <div id="resultsContainer">
                     <!-- Populated dynamically by JS -->
                 </div>
@@ -223,30 +243,50 @@
         const aSlider = document.getElementById("aSlider");
         const nSlider = document.getElementById("nSlider");
         const iSlider = document.getElementById("iSlider");
-        const fSlider = document.getElementById("fSlider");
+        
+        // Combo UI Elements
+        const comboContainer = document.getElementById("comboContainer");
+        const elementListUI = document.getElementById("elementList");
+        const editorPanel = document.getElementById("editorPanel");
+        const elXSlider = document.getElementById("elX");
+        const elYSlider = document.getElementById("elY");
+        const elFSlider = document.getElementById("elF");
         
         let W = 0, H = 0, originX = 0, originY = 0;
         let drawScale = 1; 
         let initialized = false;
         let mode = 'ray'; // 'ray', 'dispersion', 'graph', 'combo'
 
-        // --- DYNAMIC LAYOUT ENGINE ---
+        // Interaction State
+        let isDragging = false;
+        let dragTarget = null;
+        let dragOffsetX = 0, dragOffsetY = 0;
+
+        // Physics Combo State
+        let elements = [];
+        let selectedId = null;
+        let nextId = 1;
+        const rayColors = ['#00e5ff', '#ff007f', '#00ffaa', '#ffd166', '#c7a6ff', '#ff5e00'];
+
+        // --- DYNAMIC AUTO-SCALING LAYOUT ENGINE ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) / 2;
+                originX = 380 + (W - 380) * 0.3; // Prism shifted left to allow space on right
                 originY = H / 2;
-                if(mode === 'combo' || mode === 'graph') originX = 380 + (W - 380) * 0.3; // Shift left for combo/graph
                 drawScale = Math.min(1, H / 600);
             } else {
-                originX = W / 2;
-                const hudHeight = hudPanel.offsetHeight || (H * 0.50);
+                const hudHeight = hudPanel.offsetHeight || (H * 0.45);
                 const visH = H - hudHeight;
+                originX = W * 0.35; // Prism on left side for mobile too
                 originY = visH / 2;
                 
-                if (mode === 'combo') originX = W * 0.25;
-                if (mode === 'graph') originY = visH * 0.4;
+                if (mode === 'graph') {
+                    originX = W / 2;
+                    originY = visH * 0.4;
+                }
                 
-                drawScale = Math.min(1, visH / 450);
+                // Aggressively scale so the entire prism and rays fit in the visible top area
+                drawScale = Math.min(1, visH / 500, W / 800);
             }
         }
 
@@ -282,7 +322,12 @@
             if (mode === 'graph') document.getElementById("btnGraph").classList.add('active');
             if (mode === 'combo') document.getElementById("btnCombo").classList.add('active');
 
-            document.getElementById("lensGroup").style.display = (mode === 'combo') ? "block" : "none";
+            comboContainer.style.display = (mode === 'combo') ? "block" : "none";
+
+            if (mode === 'combo' && elements.length === 0) {
+                // Spawn an initial convex lens to demonstrate combo
+                addElement('lens', 'convex');
+            }
 
             updateLayout();
             updateUI();
@@ -296,11 +341,45 @@
             document.getElementById("aVal").textContent = `${A}°`;
             document.getElementById("nVal").textContent = n.toFixed(2);
             document.getElementById("iVal").textContent = `${i_deg}°`;
-            document.getElementById("fVal").textContent = `${fSlider.value} px`;
 
+            // --- Combo Element UI ---
+            if (mode === 'combo') {
+                const sorted = [...elements].sort((a,b) => a.x - b.x);
+                elementListUI.innerHTML = "";
+                if(sorted.length === 0) elementListUI.innerHTML = "<div style='color:var(--text-muted); font-size:0.8rem; text-align:center;'>No elements in path.</div>";
+                
+                sorted.forEach(el => {
+                    const div = document.createElement("div");
+                    div.className = "element-item" + (el.id === selectedId ? " active" : "");
+                    const name = el.subtype.charAt(0).toUpperCase() + el.subtype.slice(1) + " " + el.type.charAt(0).toUpperCase() + el.type.slice(1);
+                    div.innerHTML = `<span style="color:${el.color}">E${el.id}: ${name}</span> <small>x:${Math.round(el.x)}, y:${Math.round(el.y)}</small>`;
+                    div.onclick = () => { selectedId = el.id; updateUI(); draw(); };
+                    elementListUI.appendChild(div);
+                });
+
+                const sel = elements.find(e => e.id === selectedId);
+                if (sel) {
+                    editorPanel.style.display = "block";
+                    document.getElementById("editorTitle").textContent = `Edit E${sel.id}`;
+                    document.getElementById("editorTitle").style.color = sel.color;
+                    elXSlider.value = sel.x; elYSlider.value = sel.y;
+                    document.getElementById("elXVal").textContent = `${Math.round(sel.x)} px`;
+                    document.getElementById("elYVal").textContent = `${Math.round(sel.y)} px`;
+                    
+                    if (sel.subtype === 'plane') {
+                        document.getElementById("focalGroup").style.display = "none";
+                    } else {
+                        document.getElementById("focalGroup").style.display = "flex";
+                        elFSlider.value = sel.f;
+                        document.getElementById("elFVal").textContent = `${Math.round(sel.f)} px`;
+                    }
+                } else {
+                    editorPanel.style.display = "none";
+                }
+            }
+
+            // --- Physics Math & Formulas ---
             const resultsContainer = document.getElementById("resultsContainer");
-            
-            // Physics Math
             const A_rad = A * Math.PI / 180;
             const i_rad = i_deg * Math.PI / 180;
             
@@ -346,13 +425,12 @@
                     </div>
                 `;
             } else if (mode === 'graph') {
-                // Find minimum deviation
                 const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
                 const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
                 resultsContainer.innerHTML = `
                     <div class="stat-grid">
                         <div class="stat"><strong>Current Deviation (δ)</strong><span>${isTIR ? 'N/A' : delta_deg.toFixed(1) + '°'}</span></div>
-                        <div class="stat"><strong>Minimum Deviation (δ_m)</strong><span style="color:var(--gold);">${d_min_deg.toFixed(1)}°</span></div>
+                        <div class="stat"><strong>Minimum Deviation (δ<sub>m</sub>)</strong><span style="color:var(--gold);">${d_min_deg.toFixed(1)}°</span></div>
                     </div>
                     <div class="formula-panel">
                         \\[ n = \\frac{\\sin\\left(\\frac{A + \\delta_m}{2}\\right)}{\\sin\\left(\\frac{A}{2}\\right)} \\]
@@ -364,12 +442,82 @@
             draw();
         }
 
-        [aSlider, nSlider, iSlider, fSlider].forEach(el => el.addEventListener("input", updateUI));
+        [aSlider, nSlider, iSlider].forEach(el => el.addEventListener("input", updateUI));
+
+        // --- COMBO CONTROLS ---
+        function addElement(type, subtype) {
+            elements.push({ id: nextId++, type, subtype, x: 250, y: 0, f: 120, color: rayColors[(nextId - 1) % rayColors.length], aperture: 200 });
+            selectedId = nextId - 1;
+            updateUI(); draw();
+        }
+        function selectElement(id) { selectedId = id; updateUI(); draw(); }
+        function deleteSelected() { elements = elements.filter(e => e.id !== selectedId); selectedId = null; updateUI(); draw(); }
+
+        elXSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }});
+        elYSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
+        elFSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.f = parseFloat(e.target.value); updateUI(); draw(); }});
+
+        // --- INTERACTION (DRAGGING ELEMENTS) ---
+        function getEventX(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            if (e.touches && e.touches.length > 0) clientX = e.touches[0].clientX;
+            else if (e.changedTouches && e.changedTouches.length > 0) clientX = e.changedTouches[0].clientX;
+            return (clientX - rect.left) * (canvas.width / rect.width);
+        }
+        function getEventY(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) clientY = e.touches[0].clientY;
+            else if (e.changedTouches && e.changedTouches.length > 0) clientY = e.changedTouches[0].clientY;
+            return (clientY - rect.top) * (canvas.height / rect.height);
+        }
+
+        canvas.addEventListener("mousedown", handleInputStart);
+        canvas.addEventListener("mousemove", handleInputMove);
+        window.addEventListener("mouseup", handleInputEnd);
+        canvas.addEventListener("touchstart", handleInputStart, {passive: false});
+        canvas.addEventListener("touchmove", handleInputMove, {passive: false});
+        window.addEventListener("touchend", handleInputEnd);
+
+        function handleInputStart(e) {
+            if (mode !== 'combo' || e.target.closest('.hud-panel')) return; 
+            const cx = getEventX(e); const cy = getEventY(e);
+            const simX = (cx - originX) / drawScale; const simY = (originY - cy) / drawScale;
+
+            for (let i = elements.length - 1; i >= 0; i--) {
+                if (Math.abs(simX - elements[i].x) < 40 && Math.abs(simY - elements[i].y) < 100) {
+                    isDragging = true; dragTarget = elements[i].id; selectedId = elements[i].id;
+                    dragOffsetX = elements[i].x - simX; dragOffsetY = elements[i].y - simY;
+                    updateUI(); draw();
+                    if(e.cancelable) e.preventDefault();
+                    return;
+                }
+            }
+        }
+        function handleInputMove(e) {
+            if (!isDragging || !dragTarget) return;
+            if(e.cancelable) e.preventDefault();
+            const cx = getEventX(e); const cy = getEventY(e);
+            const simX = (cx - originX) / drawScale; const simY = (originY - cy) / drawScale;
+            const sel = elements.find(el => el.id === dragTarget);
+            if (sel) { sel.x = simX + dragOffsetX; sel.y = simY + dragOffsetY; elXSlider.value = sel.x; elYSlider.value = sel.y; }
+            updateUI(); draw();
+        }
+        function handleInputEnd() { isDragging = false; dragTarget = null; }
 
         // --- VECTOR MATH ENGINE ---
-        function getNormal(p1, p2) {
-            let dx = p2.x - p1.x; let dy = p2.y - p1.y; let l = Math.hypot(dx, dy);
-            return { x: dy/l, y: -dx/l }; 
+        function norm(v) { let l = Math.hypot(v.x, v.y) || 1; return { x: v.x/l, y: v.y/l }; }
+        function dot(a, b) { return a.x*b.x + a.y*b.y; }
+        
+        function refract(D, N, n1, n2) {
+            let r = n1 / n2;
+            let c = -dot(D, N);
+            if (c < 0) { N = {x: -N.x, y: -N.y}; c = -c; }
+            let sin2_t = r * r * (1 - c * c);
+            if (sin2_t > 1.0) return { tir: true, D: { x: D.x + 2*c*N.x, y: D.y + 2*c*N.y } };
+            let cos_t = Math.sqrt(1 - sin2_t);
+            return { tir: false, D: { x: r * D.x + (r * c - cos_t) * N.x, y: r * D.y + (r * c - cos_t) * N.y } };
         }
 
         function lineIntersect(p1, d1, a, b) {
@@ -383,33 +531,26 @@
             return null;
         }
 
-        function refract(d_inc, normal, n1, n2) {
-            let cos_i = - (d_inc.x * normal.x + d_inc.y * normal.y);
-            let n_ratio = n1 / n2;
-            let sin2_r = n_ratio * n_ratio * (1 - cos_i * cos_i);
-            if (sin2_r > 1) { 
-                return { dir: { x: d_inc.x + 2 * cos_i * normal.x, y: d_inc.y + 2 * cos_i * normal.y }, tir: true };
-            }
-            let cos_r = Math.sqrt(1 - sin2_r);
-            return {
-                dir: { x: n_ratio * d_inc.x + (n_ratio * cos_i - cos_r) * normal.x, y: n_ratio * d_inc.y + (n_ratio * cos_i - cos_r) * normal.y },
-                tir: false
-            };
-        }
+        // --- DRAWING UTILS ---
+        function mapX(x) { return originX + x * drawScale; }
+        function mapY(y) { return originY - y * drawScale; }
 
         function drawArrow(p1, p2, color, dashed = false) {
+            const sx1 = mapX(p1.x), sy1 = mapY(p1.y);
+            const sx2 = mapX(p2.x), sy2 = mapY(p2.y);
+            
             ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2;
             if (dashed) { ctx.setLineDash([5, 5]); ctx.globalAlpha = 0.5; }
             else { ctx.shadowBlur = 10; ctx.shadowColor = color; }
             
-            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
             ctx.setLineDash([]); ctx.shadowBlur = 0;
             
-            const dx = p2.x - p1.x; const dy = p2.y - p1.y; const len = Math.hypot(dx, dy);
+            const dx = sx2 - sx1; const dy = sy2 - sy1; const len = Math.hypot(dx, dy);
             if (len > 30 && !dashed) {
                 const angle = Math.atan2(dy, dx);
-                const mx = p1.x + (dx / len) * Math.min(len * 0.5, 100);
-                const my = p1.y + (dy / len) * Math.min(len * 0.5, 100);
+                const mx = sx1 + (dx / len) * Math.min(len * 0.5, 100);
+                const my = sy1 + (dy / len) * Math.min(len * 0.5, 100);
                 ctx.beginPath(); ctx.fillStyle = color;
                 ctx.moveTo(mx, my);
                 ctx.lineTo(mx - 12 * Math.cos(angle - 0.4), my - 12 * Math.sin(angle - 0.4));
@@ -417,6 +558,69 @@
                 ctx.closePath(); ctx.fill();
             }
             ctx.restore();
+        }
+
+        function drawNormalAndAngle(p, N, dir, label, color) {
+            const sx = mapX(p.x), sy = mapY(p.y);
+            // Draw Dashed Imaginary Normal
+            ctx.save();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+            ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(sx - N.x * 60, sy + N.y * 60); // Canvas Y inverted
+            ctx.lineTo(sx + N.x * 60, sy - N.y * 60);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw Arc
+            const a_n = Math.atan2(-N.y, N.x); 
+            const a_d = Math.atan2(-dir.y, dir.x);
+            let diff = a_d - a_n;
+            
+            ctx.beginPath();
+            ctx.arc(sx, sy, 35, Math.min(a_n, a_d), Math.max(a_n, a_d));
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+            
+            // Label
+            const mid = a_n + diff / 2;
+            ctx.fillStyle = color; ctx.font = "italic 16px 'Segoe UI'";
+            ctx.fillText(label, sx + 50 * Math.cos(mid), sy + 50 * Math.sin(mid));
+            ctx.restore();
+        }
+
+        function drawElementGeometry(el) {
+            const cx = mapX(el.x); const cy = mapY(el.y); const h = el.aperture * drawScale; 
+            ctx.save();
+            if (el.id === selectedId) { ctx.shadowBlur = 15; ctx.shadowColor = el.color; }
+
+            if (el.type === 'lens') {
+                ctx.strokeStyle = el.color; ctx.fillStyle = el.color.replace(')', ', 0.15)').replace('rgb', 'rgba'); 
+                ctx.lineWidth = 3; ctx.beginPath();
+                if (el.subtype === 'convex') {
+                    ctx.moveTo(cx, cy - h/2); ctx.quadraticCurveTo(cx + 25*drawScale, cy, cx, cy + h/2); ctx.quadraticCurveTo(cx - 25*drawScale, cy, cx, cy - h/2);
+                } else {
+                    ctx.moveTo(cx - 15*drawScale, cy - h/2); ctx.lineTo(cx + 15*drawScale, cy - h/2);
+                    ctx.quadraticCurveTo(cx - 5*drawScale, cy, cx + 15*drawScale, cy + h/2); ctx.lineTo(cx - 15*drawScale, cy + h/2);
+                    ctx.quadraticCurveTo(cx + 5*drawScale, cy, cx - 15*drawScale, cy - h/2);
+                }
+                ctx.fill(); ctx.stroke();
+            } 
+            else if (el.type === 'mirror') {
+                ctx.lineWidth = 4; ctx.strokeStyle = el.color; ctx.beginPath();
+                if (el.subtype === 'plane') {
+                    ctx.moveTo(cx, cy - h/2); ctx.lineTo(cx, cy + h/2); ctx.stroke();
+                    ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
+                    for(let y = cy - h/2 + 5; y < cy + h/2; y += 10) { ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 8, y + 8); ctx.stroke(); }
+                } 
+                else {
+                    let a = (el.subtype === 'concave' ? 1 : -1) / (4 * el.f * drawScale);
+                    for(let y = -h/2; y <= h/2; y += 5) { if(y === -h/2) ctx.moveTo(cx + a*y*y, cy + y); else ctx.lineTo(cx + a*y*y, cy + y); }
+                    ctx.stroke();
+                }
+            }
+            ctx.restore();
+            ctx.fillStyle = el.id === selectedId ? el.color : "#a0aabf"; ctx.font = "bold 13px 'Segoe UI'"; ctx.textAlign = "center";
+            ctx.fillText(`E${el.id}`, cx, cy + h/2 + 20);
         }
 
         // --- MAIN RENDER LOOP ---
@@ -429,25 +633,24 @@
             const i_deg = parseFloat(iSlider.value);
             const A_rad = A * Math.PI / 180;
             
-            // Prism Geometry
-            const side = 240 * drawScale;
-            const apex = { x: originX, y: originY - side * Math.cos(A_rad/2) * 0.5 };
-            const bl = { x: originX - side * Math.sin(A_rad/2), y: apex.y + side * Math.cos(A_rad/2) };
-            const br = { x: originX + side * Math.sin(A_rad/2), y: bl.y };
+            // Prism Geometry (Left entry orientation)
+            const side = 260; // Logical size
+            const apex = { x: 0, y: side * Math.cos(A_rad/2) * 0.5 };
+            const bl = { x: -side * Math.sin(A_rad/2), y: apex.y - side * Math.cos(A_rad/2) };
+            const br = { x: side * Math.sin(A_rad/2), y: bl.y };
 
             // Draw Prism
             ctx.save();
-            ctx.beginPath(); ctx.moveTo(apex.x, apex.y); ctx.lineTo(bl.x, bl.y); ctx.lineTo(br.x, br.y); ctx.closePath();
+            ctx.beginPath(); ctx.moveTo(mapX(apex.x), mapY(apex.y)); ctx.lineTo(mapX(bl.x), mapY(bl.y)); ctx.lineTo(mapX(br.x), mapY(br.y)); ctx.closePath();
             ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill();
             ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 3; ctx.stroke();
-            ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'"; ctx.textAlign = "center";
-            ctx.fillText("A", apex.x, apex.y - 15);
+            ctx.fillStyle = "#fff"; ctx.font = "bold 18px 'Segoe UI'"; ctx.textAlign = "center";
+            ctx.fillText("A", mapX(apex.x), mapY(apex.y) - 15);
             ctx.restore();
 
             // Setup Ray Arrays
             let rays = [];
             if (mode === 'dispersion') {
-                // Red to Violet indices
                 const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
                 const n_vals = [n - 0.02, n - 0.015, n - 0.01, n, n + 0.01, n + 0.02, n + 0.035];
                 for(let k=0; k<7; k++) rays.push({ n: n_vals[k], color: colors[k] });
@@ -455,98 +658,112 @@
                 rays.push({ n: n, color: "#ffffff" });
             }
 
-            // Normals
-            const n_left = getNormal(bl, apex);
-            const n_right = getNormal(apex, br);
-            const n_bottom = getNormal(br, bl);
+            // Normals (pointing INTO the prism)
+            const n_left = norm({ x: apex.y - bl.y, y: -(apex.x - bl.x) });
+            const n_right = norm({ x: br.y - apex.y, y: -(br.x - apex.x) });
+            const n_bottom = norm({ x: 0, y: 1 });
 
-            // Calculate Incident Ray
-            const hitPoint = { x: (apex.x + bl.x)/2, y: (apex.y + bl.y)/2 }; // Midpoint of left face
+            // Incident Ray Setup
+            const hitPoint = { x: (apex.x + bl.x)/2, y: (apex.y + bl.y)/2 }; 
             const normalAngle = Math.atan2(n_left.y, n_left.x);
-            const rayAngle = normalAngle + i_deg * Math.PI / 180; // i is below normal
+            const rayAngle = normalAngle - i_deg * Math.PI / 180; // i is relative to normal
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             const startP = { x: hitPoint.x - d_inc.x * 400, y: hitPoint.y - d_inc.y * 400 };
-
-            // Draw Normal Line at entry
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.3)"; ctx.setLineDash([4,4]); ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(hitPoint.x - n_left.x * 60, hitPoint.y - n_left.y * 60); ctx.lineTo(hitPoint.x + n_left.x * 60, hitPoint.y + n_left.y * 60); ctx.stroke();
-            ctx.setLineDash([]);
 
             // Draw Incident Ray
             drawArrow(startP, hitPoint, "#ffffff");
 
-            // Extension for deviation
-            const extEnd = { x: hitPoint.x + d_inc.x * 300, y: hitPoint.y + d_inc.y * 300 };
-            drawArrow(hitPoint, extEnd, "rgba(255, 255, 255, 0.2)", true);
+            if (mode === 'ray' || mode === 'combo') {
+                drawNormalAndAngle(hitPoint, n_left, {x:-d_inc.x, y:-d_inc.y}, "i", "#ffffff");
+                const extEnd = { x: hitPoint.x + d_inc.x * 300, y: hitPoint.y + d_inc.y * 300 };
+                drawArrow(hitPoint, extEnd, "rgba(255, 255, 255, 0.2)", true);
+            }
+
+            // Draw Combo Elements
+            if (mode === 'combo') {
+                elements.forEach(drawElementGeometry);
+            }
 
             rays.forEach(r => {
                 // 1st Refraction (Air -> Prism)
                 let ref1 = refract(d_inc, n_left, 1.0, r.n);
-                let p2 = lineIntersect(hitPoint, ref1.dir, apex, br); // Check right face
+                let p2 = lineIntersect(hitPoint, ref1.dir, apex, br); 
                 let nextNormal = n_right;
                 
-                if (!p2) { // Hit bottom face
-                    p2 = lineIntersect(hitPoint, ref1.dir, bl, br);
-                    nextNormal = n_bottom;
-                }
+                if (!p2) { p2 = lineIntersect(hitPoint, ref1.dir, bl, br); nextNormal = n_bottom; }
 
                 if (p2) {
                     drawArrow(hitPoint, p2.p, r.color);
+                    
+                    if (mode === 'ray') drawNormalAndAngle(hitPoint, n_left, ref1.dir, "r₁", r.color);
 
                     // 2nd Refraction/TIR (Prism -> Air)
-                    let ref2 = refract(ref1.dir, nextNormal, r.n, 1.0);
+                    // Normal must point INTO the air (so flip nextNormal)
+                    let outNormal = { x: -nextNormal.x, y: -nextNormal.y };
+                    let ref2 = refract(ref1.dir, outNormal, r.n, 1.0);
+                    
+                    if (mode === 'ray') drawNormalAndAngle(p2.p, outNormal, {x:-ref1.dir.x, y:-ref1.dir.y}, "r₂", r.color);
+
                     if (ref2.tir) {
-                        let p3 = lineIntersect(p2.p, ref2.dir, bl, br); // Assuming it hits bottom next
+                        let p3 = lineIntersect(p2.p, ref2.dir, bl, br); 
                         if(p3) {
                             drawArrow(p2.p, p3.p, r.color);
-                            let ref3 = refract(ref2.dir, n_bottom, r.n, 1.0);
-                            let finalEnd = { x: p3.p.x + ref3.dir.x * 400, y: p3.p.y + ref3.dir.y * 400 };
+                            let ref3 = refract(ref2.dir, {x:0, y:-1}, r.n, 1.0);
+                            let finalEnd = { x: p3.p.x + ref3.dir.x * 600, y: p3.p.y + ref3.dir.y * 600 };
                             drawArrow(p3.p, finalEnd, r.color);
                         } else {
-                            let finalEnd = { x: p2.p.x + ref2.dir.x * 400, y: p2.p.y + ref2.dir.y * 400 };
+                            let finalEnd = { x: p2.p.x + ref2.dir.x * 600, y: p2.p.y + ref2.dir.y * 600 };
                             drawArrow(p2.p, finalEnd, r.color);
                         }
                     } else {
                         // Emergent Ray
-                        let finalEnd = { x: p2.p.x + ref2.dir.x * 600, y: p2.p.y + ref2.dir.y * 600 };
-                        drawArrow(p2.p, finalEnd, r.color);
+                        let finalEnd = { x: p2.p.x + ref2.dir.x * 1200, y: p2.p.y + ref2.dir.y * 1200 };
                         
-                        // Combo Mode: Add Lens
+                        if (mode === 'ray') {
+                            drawNormalAndAngle(p2.p, outNormal, ref2.dir, "e", r.color);
+                            // Deviation Arc (between extended incident and emergent)
+                            drawNormalAndAngle(p2.p, d_inc, ref2.dir, "δ", "#ff007f");
+                        }
+
                         if (mode === 'combo') {
-                            const f_lens = parseFloat(fSlider.value) * drawScale;
-                            const lensX = p2.p.x + 200 * drawScale; // Fixed distance for demo
-                            const lensY = p2.p.y + ref2.dir.y * (lensX - p2.p.x) / ref2.dir.x;
+                            // Paraxial tracing through custom combo elements
+                            let curP = p2.p; let curD = ref2.dir;
+                            let b = 0;
                             
-                            // Draw Lens
-                            ctx.save();
-                            ctx.strokeStyle = "#00e5ff"; ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.lineWidth = 3;
-                            ctx.beginPath();
-                            ctx.moveTo(lensX, lensY - 80*drawScale);
-                            ctx.quadraticCurveTo(lensX + 20, lensY, lensX, lensY + 80*drawScale);
-                            ctx.quadraticCurveTo(lensX - 20, lensY, lensX, lensY - 80*drawScale);
-                            ctx.fill(); ctx.stroke();
-                            ctx.restore();
+                            while (b < 5) {
+                                let nextEl = null; let minD = Infinity;
+                                for (let el of elements) {
+                                    let d = (el.x - curP.x) / curD.x;
+                                    if (d > 0.001 && d < minD) { minD = d; nextEl = el; }
+                                }
+                                
+                                if (!nextEl) {
+                                    drawArrow(curP, { x: curP.x + curD.x * 1200, y: curP.y + curD.y * 1200 }, r.color);
+                                    break; 
+                                }
+                                
+                                let hitY = curP.y + minD * curD.y;
+                                if (Math.abs(hitY - nextEl.y) > nextEl.aperture / 2) {
+                                    drawArrow(curP, { x: curP.x + curD.x * 1200, y: curP.y + curD.y * 1200 }, r.color);
+                                    break;
+                                }
 
-                            // Optical Axis for lens
-                            ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.setLineDash([4,4]);
-                            ctx.beginPath(); ctx.moveTo(0, lensY); ctx.lineTo(W, lensY); ctx.stroke(); ctx.setLineDash([]);
-
-                            // Focus Ray
-                            let hitY_lens = lensY - p2.p.y; // Height relative to optical axis
-                            let power = 1 / f_lens;
-                            let new_dy = ref2.dir.y - (hitY_lens) * power * Math.abs(ref2.dir.x);
-                            let final_dir = { x: ref2.dir.x, y: new_dy };
-                            
-                            let lensEnd = { x: lensX + final_dir.x * 600, y: lensY + final_dir.y * 600 };
-                            drawArrow({x: lensX, y: lensY}, lensEnd, r.color);
-                            
-                            // Draw Image Point Intersection with optical axis
-                            let imgX = lensX - (0 - lensY) * final_dir.x / final_dir.y;
-                            if(Math.abs(imgX) < 3000) {
-                                ctx.fillStyle = varColor('--real-img');
-                                ctx.beginPath(); ctx.arc(imgX, lensY, 5, 0, Math.PI*2); ctx.fill();
-                                ctx.fillStyle = "#fff"; ctx.fillText("I", imgX, lensY + 20);
+                                drawArrow(curP, { x: nextEl.x, y: hitY }, r.color);
+                                
+                                let Power = 0;
+                                if (nextEl.type === 'lens') {
+                                    Power = nextEl.subtype === 'convex' ? 1/nextEl.f : -1/nextEl.f;
+                                    curD.y = curD.y - (hitY - nextEl.y) * Power * Math.abs(curD.x);
+                                } else {
+                                    Power = nextEl.subtype === 'plane' ? 0 : (nextEl.subtype === 'concave' ? 1/nextEl.f : -1/nextEl.f);
+                                    curD.y = curD.y - (hitY - nextEl.y) * Power * Math.abs(curD.x);
+                                    curD.x = -curD.x; 
+                                }
+                                curP = { x: nextEl.x, y: hitY };
+                                b++;
                             }
+                        } else {
+                            drawArrow(p2.p, finalEnd, r.color);
                         }
                     }
                 }
@@ -554,8 +771,8 @@
 
             // Deviation Graph Overlay
             if (mode === 'graph') {
-                const gW = 250 * drawScale; const gH = 150 * drawScale;
-                const gX = W - gW - 20; const gY = 20;
+                const gW = 300; const gH = 200;
+                const gX = W / 2 - gW / 2; const gY = H * 0.55;
                 
                 ctx.save();
                 ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
@@ -593,13 +810,12 @@
                     const cY = gY + gH - (delta_deg / 90) * gH;
                     
                     ctx.shadowBlur = 10; ctx.shadowColor = "var(--gold)"; ctx.fillStyle = "var(--gold)";
-                    ctx.beginPath(); ctx.arc(cX, cY, 4, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(cX, cY, 5, 0, Math.PI*2); ctx.fill();
                 }
                 ctx.restore();
             }
         }
 
-        function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
         setMode('ray');
     </script>
 </body>
