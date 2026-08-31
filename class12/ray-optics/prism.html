@@ -279,23 +279,21 @@
         // --- DYNAMIC AUTO-SCALING LAYOUT ENGINE ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) * 0.35; 
+                originX = 380 + (W - 380) * 0.35; // Prism shifted left to allow space on right
                 originY = H / 2;
                 drawScale = Math.min(1, H / 600);
-                if (mode === 'graph') {
-                    originX = 380 + (W - 380) * 0.25; 
-                }
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
                 const visH = H - hudHeight;
-                originX = W * 0.4; 
+                originX = W * 0.4; // Shift prism left for mobile too
                 originY = visH * 0.55; 
                 
                 if (mode === 'graph') {
                     originX = W / 2;
-                    originY = visH * 0.35; 
+                    originY = visH * 0.4;
                 }
                 
+                // Aggressively scale so the entire prism and rays fit in the visible top area
                 drawScale = Math.min(1, visH / 500, W / 800);
             }
         }
@@ -717,7 +715,7 @@
             ctx.restore();
 
             // Apex Angle Arc
-            if (mode === 'ray' || mode === 'combo' || mode === 'graph') {
+            if (mode === 'ray' || mode === 'combo' || mode === 'graph' || mode === 'dispersion') {
                 drawArcBetweenVectors(apex, {x: bl.x - apex.x, y: bl.y - apex.y}, {x: br.x - apex.x, y: br.y - apex.y}, 30 * drawScale, `A=${A}°`, "#ffffff");
             }
 
@@ -763,9 +761,12 @@
                 // Draw Incident Ray
                 drawArrow(startP, hp, "#ffffff");
 
-                if (r.isLabelRay && (mode === 'ray' || mode === 'combo' || mode === 'graph')) {
+                if (r.isLabelRay && (mode === 'ray' || mode === 'combo' || mode === 'graph' || mode === 'dispersion')) {
                     drawDashedNormal(hp, n_left);
-                    drawArcBetweenVectors(hp, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
+                    
+                    if (mode !== 'dispersion') {
+                        drawArcBetweenVectors(hp, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
+                    }
                     
                     if (mode !== 'combo') {
                         const extEnd = { x: hp.x + d_inc.x * 400, y: hp.y + d_inc.y * 400 };
@@ -812,12 +813,15 @@
                         // Emergent Ray
                         let finalEnd = { x: p2.p.x + ref2.dir.x * 1200, y: p2.p.y + ref2.dir.y * 1200 };
                         
-                        if ((mode === 'ray' || mode === 'graph') && r.isLabelRay) {
+                        if ((mode === 'ray' || mode === 'graph' || mode === 'dispersion') && r.isLabelRay) {
                             const e_val = (Math.asin(r.n * Math.sin((A - parseFloat((Math.asin(Math.sin(i_deg * Math.PI/180) / r.n) * 180 / Math.PI))) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
-                            drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
+                            
+                            if (mode !== 'dispersion') {
+                                drawArcBetweenVectors(p2.p, ref2.dir, {x: -nextNormal.x, y: -nextNormal.y}, 40 * drawScale, `e=${e_val}°`, r.color);
+                            }
                             
                             // Deviation
-                            const devP = rayIntersect(hitPoint, d_inc, p2.p, ref2.dir);
+                            const devP = rayIntersect(hp, d_inc, p2.p, ref2.dir);
                             if (devP) {
                                 drawArrow(p2.p, devP, r.color, true);
                                 const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
@@ -879,7 +883,7 @@
                 if (W > 900) {
                     gX = originX + 250 * drawScale; gY = originY - gH / 2;
                 } else {
-                    gX = (W - gW) / 2; gY = originY + 140 * drawScale;
+                    gX = originX - gW / 2; gY = originY + 140 * drawScale;
                 }
                 
                 ctx.save();
