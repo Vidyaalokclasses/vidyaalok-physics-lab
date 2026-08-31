@@ -114,14 +114,14 @@
 
         .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .btn {
-            flex: 1 1 calc(50% - 8px); min-width: 130px;
+            flex: 1 1 calc(33% - 8px); min-width: 100px;
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
             color: var(--text-main); padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.75rem;
             cursor: pointer; transition: all 0.2s ease; text-align: center;
         }
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
-        .btn.full { flex: 1 1 100%; }
+        .btn.half { flex: 1 1 calc(50% - 8px); }
 
         /* Sliders */
         .control-group { margin-bottom: 12px; }
@@ -175,10 +175,10 @@
             
             <div class="hud-content">
                 <div class="toolbar">
-                    <button class="btn active" id="btnRay" onclick="setMode('ray')">Ray Diagram</button>
-                    <button class="btn" id="btnDispersion" onclick="setMode('dispersion')">Dispersion</button>
-                    <button class="btn" id="btnGraph" onclick="setMode('graph')">Deviation Graph</button>
-                    <button class="btn" id="btnCombo" onclick="setMode('combo')">Optical Combos</button>
+                    <button class="btn half active" id="btnRay" onclick="setMode('ray')">Ray Diagram</button>
+                    <button class="btn half" id="btnDispersion" onclick="setMode('dispersion')">Dispersion</button>
+                    <button class="btn half" id="btnGraph" onclick="setMode('graph')">Deviation Graph</button>
+                    <button class="btn half" id="btnCombo" onclick="setMode('combo')">Optical Combos</button>
                 </div>
 
                 <div id="controlsContainer">
@@ -203,9 +203,10 @@
                     <div class="toolbar">
                         <button class="btn" onclick="addElement('lens', 'convex')">+ Convex Lens</button>
                         <button class="btn" onclick="addElement('lens', 'concave')">+ Concave Lens</button>
+                        <button class="btn" onclick="addElement('prism', 'up')">+ Prism</button>
                         <button class="btn" onclick="addElement('mirror', 'concave')">+ Concave Mirror</button>
                         <button class="btn" onclick="addElement('mirror', 'convex')">+ Convex Mirror</button>
-                        <button class="btn" style="flex-basis: 100%;" onclick="addElement('mirror', 'plane')">+ Plane Mirror</button>
+                        <button class="btn" onclick="addElement('mirror', 'plane')">+ Plane Mirror</button>
                     </div>
 
                     <div class="section-title" style="margin-top: 15px;">Optical Path Sequence</div>
@@ -226,7 +227,7 @@
                             <input id="elAngle" type="range" min="-180" max="180" step="1" value="0">
                         </div>
                         <div class="control-group" id="focalGroup">
-                            <label>Focal Length (<i>f</i>) <span id="elFVal">100 cm</span></label>
+                            <label id="focalLabel">Focal Length (<i>f</i>) <span id="elFVal">100 cm</span></label>
                             <input id="elF" type="range" min="20" max="400" step="5" value="100">
                         </div>
                         <button class="btn" style="width: 100%; border-color: rgba(255,51,102,0.4); color: #ff3366;" onclick="deleteSelected()">Remove Element</button>
@@ -287,7 +288,7 @@
                 }
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
-                const visH = H - hudHeight;
+                const visH = H - hudHeight; // Exact pixel height available above HUD
                 originX = W * 0.4; // Shift prism left for mobile too
                 originY = visH * 0.55; 
                 
@@ -381,10 +382,14 @@
                     
                     if (sel.subtype === 'plane') {
                         document.getElementById("focalGroup").style.display = "none";
+                    } else if (sel.type === 'prism') {
+                        document.getElementById("focalGroup").style.display = "flex";
+                        document.getElementById("focalLabel").innerHTML = `Deviation (δ) <span id="elFVal">${(sel.f/10).toFixed(1)}°</span>`;
+                        elFSlider.min = 20; elFSlider.max = 400; // mapped to 2-40 deg
                     } else {
                         document.getElementById("focalGroup").style.display = "flex";
-                        elFSlider.value = sel.f;
-                        document.getElementById("elFVal").textContent = `${Math.round(sel.f)} cm`;
+                        document.getElementById("focalLabel").innerHTML = `Focal Length (f) <span id="elFVal">${Math.round(sel.f)} cm</span>`;
+                        elFSlider.min = 20; elFSlider.max = 400;
                     }
                 } else {
                     editorPanel.style.display = "none";
@@ -675,14 +680,23 @@
                 if (el.subtype === 'plane') {
                     ctx.moveTo(0, -h/2); ctx.lineTo(0, h/2); ctx.stroke();
                     ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
-                    for(let y = -h/2 + 5; y < h/2; y += 10) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(-8, y + 8); ctx.stroke(); }
+                    for(let y = -h/2 + 5; y < h/2; y += 10) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(8, y + 8); ctx.stroke(); }
                 } else {
                     let a = (el.subtype === 'concave' ? 1 : -1) / (4 * el.f);
                     for(let y = -h/2; y <= h/2; y += 5) { if(y === -h/2) ctx.moveTo(a*y*y, y); else ctx.lineTo(a*y*y, y); }
                     ctx.stroke();
                     ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.4)";
-                    for(let y = -h/2 + 10; y < h/2; y += 12) { let px = a*y*y; ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px - 8, y + 8); ctx.stroke(); }
+                    for(let y = -h/2 + 10; y < h/2; y += 12) { let px = a*y*y; ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px + 8, y + 8); ctx.stroke(); }
                 }
+            } else if (el.type === 'prism') {
+                ctx.strokeStyle = el.color; ctx.fillStyle = el.color.replace(')', ', 0.15)').replace('rgb', 'rgba'); 
+                ctx.lineWidth = 3; ctx.beginPath();
+                let pw = 80;
+                ctx.moveTo(0, -h/2); // Apex
+                ctx.lineTo(-pw/2, h/2); // Bottom left
+                ctx.lineTo(pw/2, h/2); // Bottom right
+                ctx.closePath();
+                ctx.fill(); ctx.stroke();
             }
             ctx.restore();
             ctx.fillStyle = el.id === selectedId ? el.color : "#a0aabf"; ctx.font = "bold 13px 'Segoe UI'"; ctx.textAlign = "center";
@@ -730,7 +744,7 @@
                 for(let k=0; k<7; k++) activeRays.push({ n: n_vals[k], color: colors[k], offset: 0, isLabelRay: k===3 });
             } else if (mode === 'combo') {
                 const offsets = [-40, -20, 0, 20, 40];
-                offsets.forEach((off, idx) => activeRays.push({ n: n, color: rayColors[idx % rayColors.length], offset: off, isLabelRay: idx===2 }));
+                offsets.forEach((off, idx) => activeRays.push({ n: n, color: "#ffffff", offset: off, isLabelRay: idx===2 }));
             } else {
                 activeRays.push({ n: n, color: "#ffffff", offset: 0, isLabelRay: true });
             }
@@ -741,13 +755,12 @@
             const n_bottom = getInwardNormal(br, bl, centerP);
 
             // Establish Incident Direction & Midpoint
+            const hitPoint = { x: bl.x + (apex.x - bl.x) * 0.4, y: bl.y + (apex.y - bl.y) * 0.4 };
             const normalAngle = Math.atan2(n_left.y, n_left.x);
             // i_deg is added so ray comes from BOTTOM LEFT heading UP and RIGHT
             const rayAngle = normalAngle + i_deg * Math.PI / 180; 
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             const perp_d = { x: -d_inc.y, y: d_inc.x }; // For generating parallel offset bundles
-
-            const midLeft = { x: bl.x + (apex.x - bl.x) * 0.4, y: bl.y + (apex.y - bl.y) * 0.4 };
 
             // Draw Combo Elements Early
             if (mode === 'combo') elements.forEach(drawElementGeometry);
@@ -755,12 +768,12 @@
             // Main Ray Tracing Execution
             activeRays.forEach(r => {
                 let startP = { 
-                    x: midLeft.x - d_inc.x * 400 + r.offset * perp_d.x, 
-                    y: midLeft.y - d_inc.y * 400 + r.offset * perp_d.y 
+                    x: hitPoint.x - d_inc.x * 400 + r.offset * perp_d.x, 
+                    y: hitPoint.y - d_inc.y * 400 + r.offset * perp_d.y 
                 };
                 
                 let hit1 = lineIntersect(startP, d_inc, apex, bl);
-                if (!hit1) hit1 = { p: midLeft, t: 400 }; 
+                if (!hit1) hit1 = { p: hitPoint, t: 400 }; 
                 const hp = hit1.p;
 
                 // Draw Incident Ray
@@ -822,17 +835,16 @@
                             // Deviation Calculation and Arc
                             const devP = rayIntersect(hp, d_inc, p2.p, ref2.dir);
                             if (devP) {
-                                // Draw backward extension of emergent ray
-                                drawArrow(p2.p, devP, r.color, true);
+                                drawArrow(p2.p, devP, r.color, true); // Backward dashed line
                                 const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
                                 drawArcBetweenVectors(devP, d_inc, ref2.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
                             }
                         }
 
                         if (mode === 'combo') {
-                            // Paraxial tracing through custom combo elements
                             let curP = p2.p; let curD = ref2.dir;
                             let b = 0;
+                            let rayColor = r.color; // Initial emergent color is white
                             
                             while (b < 5) {
                                 let nextEl = null; let minD = Infinity;
@@ -842,17 +854,20 @@
                                 }
                                 
                                 if (!nextEl) {
-                                    drawArrow(curP, { x: curP.x + curD.x * 1200, y: curP.y + curD.y * 1200 }, r.color);
+                                    drawArrow(curP, { x: curP.x + curD.x * 1200, y: curP.y + curD.y * 1200 }, rayColor);
                                     break; 
                                 }
                                 
                                 let hitY = curP.y + minD * curD.y;
                                 if (Math.abs(hitY - nextEl.y) > nextEl.aperture / 2) {
-                                    drawArrow(curP, { x: curP.x + curD.x * 1200, y: curP.y + curD.y * 1200 }, r.color);
+                                    drawArrow(curP, { x: curP.x + curD.x * 1200, y: curP.y + curD.y * 1200 }, rayColor);
                                     break;
                                 }
 
-                                drawArrow(curP, { x: nextEl.x, y: hitY }, r.color);
+                                drawArrow(curP, { x: nextEl.x, y: hitY }, rayColor);
+                                
+                                // Ray changes color AFTER hitting the combo element
+                                rayColor = nextEl.color;
                                 
                                 let Power = 0;
                                 let slope = curD.y / curD.x;
@@ -861,6 +876,13 @@
                                     slope -= (hitY - nextEl.y) * Power * Math.sign(curD.x);
                                     let dirSign = Math.sign(curD.x);
                                     curD = norm({ x: dirSign, y: slope * dirSign });
+                                } else if (nextEl.type === 'prism') {
+                                    let dev_deg = nextEl.f / 10; 
+                                    let bend_angle = (dev_deg * Math.PI / 180);
+                                    let elAngleRad = -nextEl.angle * Math.PI / 180;
+                                    let current_angle = Math.atan2(curD.y, curD.x);
+                                    current_angle += bend_angle * Math.cos(elAngleRad);
+                                    curD = { x: Math.cos(current_angle), y: Math.sin(current_angle) };
                                 } else {
                                     Power = nextEl.subtype === 'plane' ? 0 : (nextEl.subtype === 'concave' ? 1/nextEl.f : -1/nextEl.f);
                                     slope -= (hitY - nextEl.y) * Power * Math.sign(curD.x);
@@ -884,7 +906,7 @@
                 if (W > 900) {
                     gX = originX + 250 * drawScale; gY = originY - gH / 2;
                 } else {
-                    gX = originX - gW / 2; gY = originY + 140 * drawScale;
+                    gX = originX - gW / 2; gY = originY + 100 * drawScale;
                 }
                 
                 ctx.save();
@@ -935,7 +957,6 @@
                 ctx.fillStyle = "var(--gold)"; ctx.fillText("iₘ", px_min - 8, gY + gH + 15);
                 ctx.fillText("δₘ", gX - 25, py_min + 4);
 
-                // Plot Current Point
                 const r1_rad = Math.asin(Math.sin(i_rad) / n);
                 const r2_rad = A_rad - r1_rad;
                 if (n * Math.sin(r2_rad) <= 1) {
