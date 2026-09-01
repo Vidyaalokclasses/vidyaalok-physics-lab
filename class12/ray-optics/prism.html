@@ -32,6 +32,7 @@
             --text-main: #ffffff;
             --text-muted: #a0aabf;
             --gold: #ffd166;
+            --real-img: #00ffaa;
             --border: rgba(0, 229, 255, 0.2);
         }
 
@@ -119,7 +120,6 @@
         }
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
-        .btn.full { flex: 1 1 100%; }
 
         /* Sliders */
         .control-group { margin-bottom: 12px; }
@@ -130,7 +130,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
 
-        /* Optical Elements List */
+        /* Prisms List */
         .element-list { display: flex; flex-direction: column; gap: 6px; }
         .element-item {
             display: flex; justify-content: space-between; align-items: center; padding: 8px 12px;
@@ -182,25 +182,25 @@
                 <div id="controlsContainer">
                     <div class="section-title">Prism Properties</div>
                     <div class="control-group">
-                        <label>Angle of Prism (<i>A</i>) <span id="aVal">60°</span></label>
+                        <label>Angle of Prism (A) <span id="aVal">60°</span></label>
                         <input id="aSlider" type="range" min="30" max="90" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Refractive Index (<i>n</i>) <span id="nVal">1.50</span></label>
+                        <label>Refractive Index (n) <span id="nVal">1.50</span></label>
                         <input id="nSlider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
                     <div class="control-group">
-                        <label>Angle of Incidence (<i>i</i>) <span id="iVal">45°</span></label>
+                        <label>Angle of Incidence (i) <span id="iVal">45°</span></label>
                         <input id="iSlider" type="range" min="0" max="90" step="1" value="45">
                     </div>
                 </div>
 
-                <!-- Multiple Prisms Toolkit -->
+                <!-- Two Prisms Toolkit -->
                 <div id="comboContainer" style="display: none;">
                     <div class="section-title">Bring Optical Element</div>
                     <div class="toolbar">
-                        <button class="btn" onclick="addElement('prism', false)">+ Upright Prism</button>
-                        <button class="btn" onclick="addElement('prism', true)">+ Inverted Prism</button>
+                        <button class="btn" onclick="addPrism(false)">+ Upright Prism</button>
+                        <button class="btn" onclick="addPrism(true)">+ Inverted Prism</button>
                     </div>
 
                     <div class="section-title" style="margin-top: 15px;">Optical Path Sequence</div>
@@ -217,11 +217,11 @@
                             <input id="elY" type="range" min="-300" max="300" step="1" value="0">
                         </div>
                         <div class="control-group">
-                            <label>Apex Angle (<i>A</i>) <span id="elAVal">60°</span></label>
+                            <label>Angle of Prism (A) <span id="elAVal">60°</span></label>
                             <input id="elA" type="range" min="30" max="90" step="1" value="60">
                         </div>
                         <div class="control-group">
-                            <label>Refractive Index (<i>n</i>) <span id="elNVal">1.50</span></label>
+                            <label>Refractive Index (n) <span id="elNVal">1.50</span></label>
                             <input id="elN" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                         </div>
                         <button class="btn" style="width: 100%; border-color: rgba(255,51,102,0.4); color: #ff3366;" onclick="deleteSelected()">Remove Prism</button>
@@ -241,12 +241,10 @@
         const ctx = canvas.getContext("2d");
         const hudPanel = document.getElementById("hudPanel");
         
-        // UI Sliders
         const aSlider = document.getElementById("aSlider");
         const nSlider = document.getElementById("nSlider");
         const iSlider = document.getElementById("iSlider");
         
-        // Combo UI Elements
         const comboContainer = document.getElementById("comboContainer");
         const elementListUI = document.getElementById("elementList");
         const editorPanel = document.getElementById("editorPanel");
@@ -260,37 +258,34 @@
         let initialized = false;
         let mode = 'ray'; // 'ray', 'dispersion', 'graph', 'two_prisms'
 
-        // Interaction State
         let isDragging = false;
         let dragTarget = null;
         let dragOffsetX = 0, dragOffsetY = 0;
 
-        // Dynamic Elements State
-        let elements = [];
+        let prisms = [];
         let selectedId = null;
-        let nextId = 2; // Element 1 is the main prism
+        let nextId = 2;
 
         // --- DYNAMIC AUTO-SCALING LAYOUT ENGINE ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) * 0.4; 
-                originY = H * 0.45;
+                originX = 380 + (W - 380) * 0.35; 
+                originY = H / 2;
                 drawScale = Math.min(1, H / 600);
                 if (mode === 'graph') {
                     originX = 380 + (W - 380) * 0.25; 
                 }
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
-                const visH = H - hudHeight;
-                originX = W * 0.45; 
-                originY = visH * 0.45; 
+                const visH = H - hudHeight; // Exact pixel height available above HUD
+                originX = W * 0.35; // Prism shifted left for mobile
+                originY = visH * 0.5; // Centered vertically in available space
                 
                 if (mode === 'graph') {
                     originX = W / 2;
                     originY = visH * 0.35; 
                 }
-                
-                // Aggressively scale so the entire prism and rays fit in the visible top area
+                // Aggressively scale to ensure scene fits in visible top area
                 drawScale = Math.min(1, visH / 550, W / 800);
             }
         }
@@ -319,9 +314,7 @@
         }, 300);
 
         function initMainPrism() {
-            elements = [{
-                id: 1, type: 'prism', x: 0, y: 0, A: parseFloat(aSlider.value), baseN: parseFloat(nSlider.value), invert: false
-            }];
+            prisms = [{ id: 1, x: 0, y: 0, A: parseFloat(aSlider.value), n: parseFloat(nSlider.value), invert: false }];
             selectedId = 1;
         }
 
@@ -337,11 +330,10 @@
             comboContainer.style.display = (mode === 'two_prisms') ? "block" : "none";
             document.getElementById("controlsContainer").style.display = (mode === 'two_prisms') ? "none" : "block";
 
-            initMainPrism(); // Always reset elements to just the main prism when switching modes
+            initMainPrism(); 
 
             if (mode === 'two_prisms') {
-                // Auto spawn an inverted prism for Newton's recombination experiment
-                elements.push({ id: nextId++, type: 'prism', x: 300, y: -50, A: 60, baseN: 1.50, invert: true });
+                prisms.push({ id: nextId++, x: 260, y: -70, A: 60, n: 1.50, invert: true });
                 selectedId = 1;
             }
 
@@ -354,55 +346,49 @@
             const n = parseFloat(nSlider.value);
             const i_deg = parseFloat(iSlider.value);
             
-            // Sync the main prism (id=1) with the global sliders
-            if (elements.length > 0 && elements[0].id === 1) {
-                elements[0].A = A;
-                elements[0].baseN = n;
+            if (prisms.length > 0 && prisms[0].id === 1) {
+                prisms[0].A = A;
+                prisms[0].n = n;
             }
 
             document.getElementById("aVal").textContent = `${A}°`;
             document.getElementById("nVal").textContent = n.toFixed(2);
             document.getElementById("iVal").textContent = `${i_deg}°`;
 
-            // --- Two Prisms UI ---
             if (mode === 'two_prisms') {
-                const sorted = [...elements].sort((a,b) => a.x - b.x);
+                const sorted = [...prisms].sort((a,b) => a.x - b.x);
                 elementListUI.innerHTML = "";
                 
                 sorted.forEach(el => {
                     const div = document.createElement("div");
                     div.className = "element-item" + (el.id === selectedId ? " active" : "");
                     const name = el.invert ? "Inverted Prism" : "Upright Prism";
-                    div.innerHTML = `<span style="color:var(--text-main)">P${el.id}: ${name}</span> <small>x:${Math.round(el.x)}, y:${Math.round(el.y)}</small>`;
+                    div.innerHTML = `<span style="color:var(--primary)">P${el.id}: ${name}</span> <small>x:${Math.round(el.x)}, y:${Math.round(el.y)}</small>`;
                     div.onclick = () => { selectedId = el.id; updateUI(); draw(); };
                     elementListUI.appendChild(div);
                 });
 
-                const sel = elements.find(e => e.id === selectedId);
+                const sel = prisms.find(e => e.id === selectedId);
                 if (sel) {
                     editorPanel.style.display = "block";
                     document.getElementById("editorTitle").textContent = `Edit P${sel.id}`;
-                    
                     elXSlider.value = sel.x; elYSlider.value = sel.y;
-                    elASlider.value = sel.A; elNSlider.value = sel.baseN;
-
+                    elASlider.value = sel.A; elNSlider.value = sel.n;
                     document.getElementById("elXVal").textContent = `${Math.round(sel.x)} cm`;
                     document.getElementById("elYVal").textContent = `${Math.round(sel.y)} cm`;
                     document.getElementById("elAVal").textContent = `${Math.round(sel.A)}°`;
-                    document.getElementById("elNVal").textContent = `${sel.baseN.toFixed(2)}`;
+                    document.getElementById("elNVal").textContent = `${sel.n.toFixed(2)}`;
                 } else {
                     editorPanel.style.display = "none";
                 }
             }
 
-            // --- Physics Math & Formulas (Only accurate for single main prism in standard modes) ---
             const resultsContainer = document.getElementById("resultsContainer");
             const A_rad = A * Math.PI / 180;
             const i_rad = i_deg * Math.PI / 180;
             
             const r1_rad = Math.asin(Math.sin(i_rad) / n);
             const r1_deg = r1_rad * 180 / Math.PI;
-            
             const r2_rad = A_rad - r1_rad;
             const r2_deg = r2_rad * 180 / Math.PI;
             
@@ -459,40 +445,39 @@
             draw();
         }
 
-        // Sliders trigger global updateUI
         [aSlider, nSlider, iSlider].forEach(el => el.addEventListener("input", updateUI));
 
-        // --- TWO PRISMS CONTROLS ---
-        function addElement(type, invert) {
-            elements.push({ id: nextId++, type: 'prism', x: 250, y: 0, A: 60, baseN: 1.5, invert: invert });
+        function addPrism(invert) {
+            prisms.push({ id: nextId++, type: 'prism', x: 250, y: 0, A: 60, n: 1.5, invert: invert });
             selectedId = nextId - 1;
             updateUI(); draw();
         }
-        function selectElement(id) { selectedId = id; updateUI(); draw(); }
         function deleteSelected() { 
-            if (selectedId === 1) return; // Cannot delete the main prism
-            elements = elements.filter(e => e.id !== selectedId); selectedId = elements.length > 0 ? elements[0].id : null; updateUI(); draw(); 
+            if (selectedId === 1) return; // Main prism cannot be deleted
+            prisms = prisms.filter(e => e.id !== selectedId); 
+            selectedId = prisms.length > 0 ? prisms[0].id : null; 
+            updateUI(); draw(); 
         }
 
-        elXSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }});
-        elYSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
-        elASlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.A = parseFloat(e.target.value); if(sel.id===1){ aSlider.value=sel.A; } updateUI(); draw(); }});
-        elNSlider.addEventListener("input", (e) => { const sel = elements.find(el => el.id === selectedId); if(sel) { sel.baseN = parseFloat(e.target.value); if(sel.id===1){ nSlider.value=sel.baseN; } updateUI(); draw(); }});
+        elXSlider.addEventListener("input", (e) => { const sel = prisms.find(el => el.id === selectedId); if(sel) { sel.x = parseFloat(e.target.value); updateUI(); draw(); }});
+        elYSlider.addEventListener("input", (e) => { const sel = prisms.find(el => el.id === selectedId); if(sel) { sel.y = parseFloat(e.target.value); updateUI(); draw(); }});
+        elASlider.addEventListener("input", (e) => { const sel = prisms.find(el => el.id === selectedId); if(sel) { sel.A = parseFloat(e.target.value); if(sel.id===1){ aSlider.value=sel.A; } updateUI(); draw(); }});
+        elNSlider.addEventListener("input", (e) => { const sel = prisms.find(el => el.id === selectedId); if(sel) { sel.n = parseFloat(e.target.value); if(sel.id===1){ nSlider.value=sel.n; } updateUI(); draw(); }});
 
-        // --- INTERACTION (DRAGGING ELEMENTS) ---
+        // --- INTERACTION ---
         function getEventX(e) {
             const rect = canvas.getBoundingClientRect();
-            let clientX = e.clientX;
-            if (e.touches && e.touches.length > 0) clientX = e.touches[0].clientX;
-            else if (e.changedTouches && e.changedTouches.length > 0) clientX = e.changedTouches[0].clientX;
-            return (clientX - rect.left) * (canvas.width / rect.width);
+            let cx = e.clientX;
+            if (e.touches && e.touches.length > 0) cx = e.touches[0].clientX;
+            else if (e.changedTouches && e.changedTouches.length > 0) cx = e.changedTouches[0].clientX;
+            return (cx - rect.left) * (canvas.width / rect.width);
         }
         function getEventY(e) {
             const rect = canvas.getBoundingClientRect();
-            let clientY = e.clientY;
-            if (e.touches && e.touches.length > 0) clientY = e.touches[0].clientY;
-            else if (e.changedTouches && e.changedTouches.length > 0) clientY = e.changedTouches[0].clientY;
-            return (clientY - rect.top) * (canvas.height / rect.height);
+            let cy = e.clientY;
+            if (e.touches && e.touches.length > 0) cy = e.touches[0].clientY;
+            else if (e.changedTouches && e.changedTouches.length > 0) cy = e.changedTouches[0].clientY;
+            return (cy - rect.top) * (canvas.height / rect.height);
         }
 
         canvas.addEventListener("mousedown", handleInputStart);
@@ -505,12 +490,12 @@
         function handleInputStart(e) {
             if (mode !== 'two_prisms' || e.target.closest('.hud-panel')) return; 
             const cx = getEventX(e); const cy = getEventY(e);
-            const simX = (cx - originX) / drawScale; const simY = -(cy - originY) / drawScale; // Mathematical Y is up
+            const simX = (cx - originX) / drawScale; const simY = -(cy - originY) / drawScale; 
 
-            for (let i = elements.length - 1; i >= 0; i--) {
-                if (Math.abs(simX - elements[i].x) < 80 && Math.abs(simY - elements[i].y) < 120) {
-                    isDragging = true; dragTarget = elements[i].id; selectedId = elements[i].id;
-                    dragOffsetX = elements[i].x - simX; dragOffsetY = elements[i].y - simY;
+            for (let i = prisms.length - 1; i >= 0; i--) {
+                if (Math.abs(simX - prisms[i].x) < 80 && Math.abs(simY - prisms[i].y) < 120) {
+                    isDragging = true; dragTarget = prisms[i].id; selectedId = prisms[i].id;
+                    dragOffsetX = prisms[i].x - simX; dragOffsetY = prisms[i].y - simY;
                     updateUI(); draw();
                     if(e.cancelable) e.preventDefault();
                     return;
@@ -522,7 +507,7 @@
             if(e.cancelable) e.preventDefault();
             const cx = getEventX(e); const cy = getEventY(e);
             const simX = (cx - originX) / drawScale; const simY = -(cy - originY) / drawScale;
-            const sel = elements.find(el => el.id === dragTarget);
+            const sel = prisms.find(el => el.id === dragTarget);
             if (sel) { 
                 sel.x = simX + dragOffsetX; sel.y = simY + dragOffsetY; 
                 elXSlider.value = sel.x; elYSlider.value = sel.y; 
@@ -534,35 +519,36 @@
         // --- VECTOR MATH ENGINE ---
         function dot(a, b) { return a.x*b.x + a.y*b.y; }
         
-        // Mathematical representation of a prism (3 faces)
-        function getPrismFaces(prism) {
+        function getPrismGeometry(prism) {
             const A_rad = prism.A * Math.PI / 180;
             const side = 260; 
+            const h = side * Math.cos(A_rad/2);
+            const w = side * Math.sin(A_rad/2);
             let apex, bl, br;
+            
             if (prism.invert) {
-                apex = { x: prism.x, y: prism.y - side * Math.cos(A_rad/2) * 0.5 };
-                bl = { x: prism.x - side * Math.sin(A_rad/2), y: prism.y + side * Math.cos(A_rad/2) * 0.5 };
-                br = { x: prism.x + side * Math.sin(A_rad/2), y: bl.y };
+                apex = { x: prism.x, y: prism.y - h/2 }; // Apex pointing down
+                bl = { x: prism.x - w, y: prism.y + h/2 };
+                br = { x: prism.x + w, y: prism.y + h/2 };
             } else {
-                apex = { x: prism.x, y: prism.y + side * Math.cos(A_rad/2) * 0.5 };
-                bl = { x: prism.x - side * Math.sin(A_rad/2), y: prism.y - side * Math.cos(A_rad/2) * 0.5 };
-                br = { x: prism.x + side * Math.sin(A_rad/2), y: bl.y };
+                apex = { x: prism.x, y: prism.y + h/2 }; // Apex pointing up
+                bl = { x: prism.x - w, y: prism.y - h/2 };
+                br = { x: prism.x + w, y: prism.y - h/2 };
             }
             
-            // Generate Face and Inward Normal
+            // Build faces with outward normals
             const getFace = (p1, p2) => {
                 let dx = p2.x - p1.x; let dy = p2.y - p1.y;
                 let l = Math.hypot(dx, dy);
-                let nx = dy/l, ny = -dx/l;
+                let nx = dy/l, ny = -dx/l; 
                 let cx = (apex.x + bl.x + br.x)/3; let cy = (apex.y + bl.y + br.y)/3;
                 let mx = (p1.x + p2.x)/2; let my = (p1.y + p2.y)/2;
-                if ((cx - mx)*nx + (cy - my)*ny < 0) { nx = -nx; ny = -ny; }
-                return { p1, p2, normal: {x: nx, y: ny}, prism, apex, bl, br };
+                if ((mx - cx)*nx + (my - cy)*ny < 0) { nx = -nx; ny = -ny; }
+                return { p1, p2, n: {x: nx, y: ny} };
             };
-            return [ getFace(bl, apex), getFace(apex, br), getFace(br, bl) ];
+            return { apex, bl, br, faces: [ getFace(bl, apex), getFace(apex, br), getFace(br, bl) ] };
         }
 
-        // Ray-Line Segment Intersection
         function lineIntersectRaySeg(p, d, a, b) {
             let v1 = p, v2 = {x: p.x + d.x, y: p.y + d.y};
             let v3 = a, v4 = b;
@@ -602,7 +588,7 @@
         function mapX(x) { return originX + x * drawScale; }
         function mapY(y) { return originY - y * drawScale; } // Mathematical Y is UP, Canvas Y is DOWN
 
-        function drawArrow(p1, p2, color, dashed = false) {
+        function drawRaySegment(p1, p2, color, dashed = false) {
             const sx1 = mapX(p1.x), sy1 = mapY(p1.y);
             const sx2 = mapX(p2.x), sy2 = mapY(p2.y);
             
@@ -616,7 +602,6 @@
             const dx = sx2 - sx1; const dy = sy2 - sy1; const len = Math.hypot(dx, dy);
             if (len > 30 && !dashed) {
                 const angle = Math.atan2(dy, dx);
-                // Guaranteed visible arrowhead distance 
                 const mx = sx1 + (dx / len) * Math.min(len * 0.5, 100);
                 const my = sy1 + (dy / len) * Math.min(len * 0.5, 100);
                 ctx.beginPath(); ctx.fillStyle = color;
@@ -628,8 +613,7 @@
             ctx.restore();
         }
 
-        function drawNormalArrow(x, y, dir_screen) {
-            const angle = Math.atan2(dir_screen.y, dir_screen.x);
+        function drawNormalArrow(x, y, angle) {
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x - 8 * Math.cos(angle - 0.4), y - 8 * Math.sin(angle - 0.4));
@@ -643,18 +627,21 @@
             ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
             ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
             ctx.beginPath();
-            // N points INTO prism. We draw it extending outwards and inwards.
-            let px1 = mapX(p.x - N.x * 120); let py1 = mapY(p.y - N.y * 120); // Out
-            let px2 = mapX(p.x + N.x * 120); let py2 = mapY(p.y + N.y * 120); // In
+            
+            // N is outward normal in logical space
+            let px1 = mapX(p.x + N.x * 120); let py1 = mapY(p.y + N.y * 120); // Out
+            let px2 = mapX(p.x - N.x * 120); let py2 = mapY(p.y - N.y * 120); // In
             ctx.moveTo(px1, py1); ctx.lineTo(px2, py2); ctx.stroke();
             
-            // Draw arrows on the normal ends (invert Y for canvas space)
-            drawNormalArrow(px1, py1, {x: -N.x, y: N.y}); 
-            drawNormalArrow(px2, py2, {x: N.x, y: -N.y});
+            // Draw arrows on the normal ends. Canvas Y is inverted
+            const angleOut = Math.atan2(-N.y, N.x);
+            const angleIn = Math.atan2(N.y, -N.x);
+            drawNormalArrow(px1, py1, angleOut); 
+            drawNormalArrow(px2, py2, angleIn);
             ctx.restore();
         }
 
-        function drawArcBetweenVectors(p, v1, v2, radius, label, color) {
+        function drawArcAngle(p, v1, v2, radius, label, color) {
             // Convert physical vectors to screen vectors (invert Y)
             let sv1 = {x: v1.x, y: -v1.y};
             let sv2 = {x: v2.x, y: -v2.y};
@@ -678,7 +665,7 @@
             ctx.arc(mapX(p.x), mapY(p.y), radius, start, end);
             ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
             
-            let mid = (start + end) / 2;
+            let mid = start + (end - start) / 2;
             ctx.fillStyle = color; ctx.font = "italic 13px 'Segoe UI'";
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.fillText(label, mapX(p.x) + (radius + 20) * Math.cos(mid), mapY(p.y) + (radius + 20) * Math.sin(mid));
@@ -690,143 +677,164 @@
             if(!initialized) return;
             ctx.clearRect(0, 0, W, H);
 
-            // Ensure elements exist
-            if (elements.length === 0) initMainPrism();
+            if (prisms.length === 0) initMainPrism();
             
             const i_deg = parseFloat(iSlider.value);
-            
-            // Draw All Prisms
-            let allFaces = elements.flatMap(getPrismFaces);
-            elements.forEach(prism => {
-                const faces = getPrismFaces(prism);
-                const apex = faces[0].apex; const bl = faces[0].bl; const br = faces[0].br;
-                
+            let geometries = prisms.map(p => {
+                let geo = getPrismGeometry(p);
+                geo.n = p.n; geo.id = p.id;
+                return geo;
+            });
+
+            // Draw Prisms
+            geometries.forEach(geo => {
                 ctx.save();
-                ctx.beginPath(); ctx.moveTo(mapX(apex.x), mapY(apex.y)); ctx.lineTo(mapX(bl.x), mapY(bl.y)); ctx.lineTo(mapX(br.x), mapY(br.y)); ctx.closePath();
+                ctx.beginPath(); ctx.moveTo(mapX(geo.apex.x), mapY(geo.apex.y)); ctx.lineTo(mapX(geo.bl.x), mapY(geo.bl.y)); ctx.lineTo(mapX(geo.br.x), mapY(geo.br.y)); ctx.closePath();
                 ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill();
-                ctx.strokeStyle = prism.id === selectedId && mode === 'two_prisms' ? "var(--gold)" : "#00e5ff"; 
-                ctx.lineWidth = prism.id === selectedId ? 4 : 3; ctx.stroke();
+                ctx.strokeStyle = geo.id === selectedId && mode === 'two_prisms' ? "var(--gold)" : "#00e5ff"; 
+                ctx.lineWidth = geo.id === selectedId ? 4 : 3; ctx.stroke();
                 
                 ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'"; ctx.textAlign = "center";
-                let apexDir = prism.invert ? -15 : 15;
-                ctx.fillText("A", mapX(apex.x), mapY(apex.y) - apexDir);
-                ctx.fillText("B", mapX(bl.x) - 15, mapY(bl.y) + apexDir);
-                ctx.fillText("C", mapX(br.x) + 15, mapY(br.y) + apexDir);
+                let apexDir = geo.apex.y > geo.bl.y ? 15 : -15; // Logically up or down
+                ctx.fillText("A", mapX(geo.apex.x), mapY(geo.apex.y) - apexDir);
+                ctx.fillText("B", mapX(geo.bl.x) - 15, mapY(geo.bl.y) + apexDir);
+                ctx.fillText("C", mapX(geo.br.x) + 15, mapY(geo.br.y) + apexDir);
                 ctx.restore();
 
-                // Apex Angle Arc (Only for Main Prism P1 to avoid clutter)
-                if (prism.id === 1 && (mode === 'ray' || mode === 'graph')) {
-                    drawArcBetweenVectors(apex, {x: bl.x - apex.x, y: bl.y - apex.y}, {x: br.x - apex.x, y: br.y - apex.y}, 30 * drawScale, `A=${prism.A}°`, "#ffffff");
+                if (geo.id === 1 && (mode === 'ray' || mode === 'graph')) {
+                    const v1 = {x: geo.bl.x - geo.apex.x, y: geo.bl.y - geo.apex.y};
+                    const v2 = {x: geo.br.x - geo.apex.x, y: geo.br.y - geo.apex.y};
+                    drawArcAngle(geo.apex, v1, v2, 30 * drawScale, `A=${aSlider.value}°`, "#ffffff");
                 }
             });
 
             // Setup Ray Arrays
             let activeRays = [];
-            const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
-            const n_base = elements[0].baseN;
-            const n_vals = [n_base - 0.02, n_base - 0.015, n_base - 0.01, n_base, n_base + 0.01, n_base + 0.02, n_base + 0.035];
+            const n_base = prisms[0].n;
             
-            if (mode === 'dispersion' || mode === 'two_prisms') {
-                for(let k=0; k<7; k++) activeRays.push({ wl: k, color: colors[k], isLabelRay: k===3 });
+            if (mode === 'dispersion') {
+                const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+                const n_vals = [n_base - 0.02, n_base - 0.015, n_base - 0.01, n_base, n_base + 0.01, n_base + 0.02, n_base + 0.035];
+                for(let k=0; k<7; k++) activeRays.push({ wl: k, color: colors[k], offset: 0, isLabelRay: k===3 });
+            } else if (mode === 'two_prisms') {
+                // Shoot a bundle of 5 parallel rays to show dispersion and recombination
+                const colors = ['#ff0000', '#ffff00', '#0000ff']; // Simulate basic spectrum per ray
+                const n_vals = [n_base - 0.02, n_base, n_base + 0.035];
+                const offsets = [-30, -15, 0, 15, 30];
+                offsets.forEach((off, idx) => {
+                    for(let k=0; k<3; k++) {
+                        activeRays.push({ n: n_vals[k], color: colors[k], offset: off, isLabelRay: false });
+                    }
+                });
             } else {
-                activeRays.push({ wl: 3, color: "#ffffff", isLabelRay: true });
+                activeRays.push({ wl: 3, color: "#ffffff", offset: 0, isLabelRay: true });
             }
 
-            // Incident Ray Setup (Fires at the Left Face of Main Prism P1)
-            const mainPrismFaces = getPrismFaces(elements[0]);
-            const leftFace = mainPrismFaces[0]; // bl to apex
-            const n_left = leftFace.normal;
+            // Incident Ray Setup (Fires from Bottom-Left upwards to the Main Prism P1)
+            const mainGeo = geometries[0];
+            const leftFace = mainGeo.faces[0]; // bl to apex
+            const N_out = leftFace.n; 
 
             // Hit point is on lower third of the left face
-            const hitPoint = { x: leftFace.p1.x + (leftFace.p2.x - leftFace.p1.x) * 0.3, y: leftFace.p1.y + (leftFace.p2.y - leftFace.p1.y) * 0.3 };
-            const normalAngle = Math.atan2(n_left.y, n_left.x);
-            // i_deg is added so ray comes from below normal (bottom-left) heading up-right
-            const rayAngle = normalAngle + i_deg * Math.PI / 180; 
-            const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
-            const startP = { x: hitPoint.x - d_inc.x * 500, y: hitPoint.y - d_inc.y * 500 };
+            const hitPoint = { x: leftFace.p1.x + (leftFace.p2.x - leftFace.p1.x) * 0.35, y: leftFace.p1.y + (leftFace.p2.y - leftFace.p1.y) * 0.35 };
+            
+            // i_deg is angle between normal (N_out) and reversed incident ray (-D)
+            const normalAngle = Math.atan2(N_out.y, N_out.x);
+            // Ray comes from bottom-left, so direction is pointing into the prism.
+            // Reversed ray (-D) is at angle (normalAngle - i_deg)
+            const revRayAngle = normalAngle - i_deg * Math.PI / 180; 
+            const d_inc = { x: -Math.cos(revRayAngle), y: -Math.sin(revRayAngle) };
+            const perp_d = { x: -d_inc.y, y: d_inc.x }; // For generating parallel offset bundles
 
-            // Draw Initial Incident Ray (White bundle source)
-            drawArrow(startP, hitPoint, "#ffffff");
-
-            if (mode === 'ray' || mode === 'graph') {
-                drawDashedNormal(hitPoint, n_left);
-                drawArcBetweenVectors(hitPoint, {x: -d_inc.x, y: -d_inc.y}, {x: -n_left.x, y: -n_left.y}, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
-                const extEnd = { x: hitPoint.x + d_inc.x * 500, y: hitPoint.y + d_inc.y * 500 };
-                drawArrow(hitPoint, extEnd, "rgba(255, 255, 255, 0.2)", true); // Extension for deviation
+            // Draw Initial Incident Rays (for the bundle)
+            if (mode === 'two_prisms') {
+                const offsets = [-30, -15, 0, 15, 30];
+                offsets.forEach(off => {
+                    let startP = { x: hitPoint.x - d_inc.x * 600 + off * perp_d.x, y: hitPoint.y - d_inc.y * 600 + off * perp_d.y };
+                    let hp = { x: hitPoint.x + off * perp_d.x, y: hitPoint.y + off * perp_d.y };
+                    drawRaySegment(startP, hp, "#ffffff", false, true);
+                });
             }
 
             // Universal Ray-Polygon Tracing Engine
             activeRays.forEach(ray => {
-                let curP = hitPoint;
-                let curD = d_inc;
+                let curP = { x: hitPoint.x - d_inc.x * 600 + ray.offset * perp_d.x, y: hitPoint.y - d_inc.y * 600 + ray.offset * perp_d.y };
+                let curD = { x: d_inc.x, y: d_inc.y };
                 let bounces = 0;
 
-                // Trace through the prism system
-                while (bounces < 10) {
+                while (bounces < 6) {
                     let bestHit = null;
-                    let minDist = Infinity;
                     
-                    // Look for the next face intersection
-                    for (let face of allFaces) {
-                        let hit = lineIntersectRaySeg(curP, curD, face.p1, face.p2);
-                        if (hit && hit.t > 1e-4 && hit.t < minDist) {
-                            minDist = hit.t;
-                            bestHit = { ...hit, face };
+                    // Look for the next face intersection across ALL prisms
+                    for (let geo of geometries) {
+                        for (let face of geo.faces) {
+                            let hit = lineIntersectRaySeg(curP, curD, face.p1, face.p2);
+                            if (hit && (!bestHit || hit.t < bestHit.t)) {
+                                bestHit = { ...hit, face, geo };
+                            }
                         }
                     }
                     
                     if (!bestHit) {
-                        // Ray exits the system to infinity
-                        let finalEnd = { x: curP.x + curD.x * 1200, y: curP.y + curD.y * 1200 };
-                        drawArrow(curP, finalEnd, ray.color);
+                        let finalEnd = { x: curP.x + curD.x * 1500, y: curP.y + curD.y * 1500 };
+                        drawRaySegment(curP, finalEnd, ray.color, false, true);
                         break; 
                     }
 
-                    // Ray hit a boundary
-                    drawArrow(curP, bestHit.p, ray.color);
+                    // Only draw if it's the main ray (avoid overdrawing incident bundles)
+                    if (bounces > 0 || mode !== 'two_prisms') {
+                        drawRaySegment(curP, bestHit.p, ray.color, false, true);
+                    }
 
-                    // Determine if entering or exiting the prism to get correct N and n_ratio
-                    let N = bestHit.face.normal;
+                    let N = bestHit.face.n; // Outward normal
                     let dot_dN = dot(curD, N);
                     let n1 = 1.0, n2 = 1.0;
                     
                     if (dot_dN < 0) {
-                        // Entering (Air -> Prism)
-                        n2 = getEffectiveRefractiveIndex(bestHit.face.prism.baseN, ray.wl);
+                        // Entering Prism
+                        n2 = mode === 'dispersion' || mode === 'two_prisms' ? getEffectiveRefractiveIndex(bestHit.geo.n, ray.wl) : bestHit.geo.n;
                     } else {
-                        // Exiting (Prism -> Air)
-                        n1 = getEffectiveRefractiveIndex(bestHit.face.prism.baseN, ray.wl);
-                        N = { x: -N.x, y: -N.y }; // Outward normal
+                        // Exiting Prism
+                        n1 = mode === 'dispersion' || mode === 'two_prisms' ? getEffectiveRefractiveIndex(bestHit.geo.n, ray.wl) : bestHit.geo.n;
+                        N = { x: -N.x, y: -N.y }; // Flip normal to face incoming ray
                     }
                     
                     let ref = refract(curD, N, n1, n2);
-                    curD = ref.dir; // If TIR, returns reflected vector
-                    curP = bestHit.p;
 
-                    // Annotation Logic (Only for the primary white ray on the first prism in Ray/Graph modes)
-                    if (ray.isLabelRay && bestHit.face.prism.id === 1 && (mode === 'ray' || mode === 'graph')) {
-                        if (bounces === 0) { // First refraction (entering)
-                            let r1_val = (Math.asin(Math.sin(i_deg * Math.PI/180) / n2) * 180 / Math.PI).toFixed(1);
-                            drawArcBetweenVectors(curP, curD, N, 40 * drawScale, `r₁=${r1_val}°`, ray.color);
-                        } else if (bounces === 1 && !ref.tir) { // Second refraction (exiting)
-                            drawDashedNormal(curP, {x: -N.x, y: -N.y}); // Draw normal pointing inward for arc
-                            let r2_val = (elements[0].A - parseFloat((Math.asin(Math.sin(i_deg * Math.PI/180) / n1) * 180 / Math.PI))).toFixed(1);
-                            drawArcBetweenVectors(curP, {x: -ray.inD.x, y: -ray.inD.y}, {x: -N.x, y: -N.y}, 40 * drawScale, `r₂=${r2_val}°`, ray.color);
+                    // Annotations (Only for the primary label ray on Prism 1)
+                    if (ray.isLabelRay && bestHit.geo.id === 1 && (mode === 'ray' || mode === 'graph')) {
+                        if (bounces === 0) {
+                            drawDashedNormal(bestHit.p, bestHit.face.n);
+                            drawArcAngle(bestHit.p, {x: -curD.x, y: -curD.y}, bestHit.face.n, 40 * drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
                             
-                            let e_val = (Math.asin(n1 * Math.sin(parseFloat(r2_val) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
-                            drawArcBetweenVectors(curP, curD, N, 40 * drawScale, `e=${e_val}°`, ray.color);
+                            // Extended incident for deviation
+                            let extEnd = { x: bestHit.p.x + curD.x * 500, y: bestHit.p.y + curD.y * 500 };
+                            drawRaySegment(bestHit.p, extEnd, "rgba(255, 255, 255, 0.2)", true, false);
+
+                            const r1_val = (Math.asin(Math.sin(i_deg * Math.PI/180) / n2) * 180 / Math.PI).toFixed(1);
+                            drawArcAngle(bestHit.p, ref.dir, {x: -bestHit.face.n.x, y: -bestHit.face.n.y}, 40 * drawScale, `r₁=${r1_val}°`, ray.color);
+
+                        } else if (bounces === 1 && !ref.tir) {
+                            drawDashedNormal(bestHit.p, {x: -N.x, y: -N.y}); // Re-flip normal to point outward for drawing
                             
-                            // Deviation
-                            const devP = rayIntersectLine(hitPoint, d_inc, curP, curD);
+                            const r2_val = (parseFloat(aSlider.value) - parseFloat((Math.asin(Math.sin(i_deg * Math.PI/180) / n1) * 180 / Math.PI))).toFixed(1);
+                            drawArcAngle(bestHit.p, {x: -curD.x, y: -curD.y}, N, 40 * drawScale, `r₂=${r2_val}°`, ray.color);
+                            
+                            const e_val = (Math.asin(n1 * Math.sin(parseFloat(r2_val) * Math.PI/180)) * 180 / Math.PI).toFixed(1);
+                            drawArcAngle(bestHit.p, ref.dir, {x: -N.x, y: -N.y}, 40 * drawScale, `e=${e_val}°`, ray.color);
+                            
+                            // Angle of Deviation Calculation
+                            const devP = rayIntersectLine(hitPoint, d_inc, bestHit.p, ref.dir);
                             if (devP) {
-                                drawArrow(curP, devP, ray.color, true); // Backward dashed line
-                                const dev_val = (i_deg + parseFloat(e_val) - elements[0].A).toFixed(1);
-                                drawArcBetweenVectors(devP, d_inc, curD, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
+                                drawRaySegment(bestHit.p, devP, ray.color, true, false); // Backward dashed line
+                                const dev_val = (i_deg + parseFloat(e_val) - parseFloat(aSlider.value)).toFixed(1);
+                                drawArcAngle(devP, d_inc, ref.dir, 30 * drawScale, `δ=${dev_val}°`, "#ffd166");
                             }
                         }
                     }
-                    // Save incoming direction for annotations on next bounce
-                    ray.inD = curD;
+
+                    curD = ref.dir;
+                    curP = bestHit.p;
                     bounces++;
                 }
             });
@@ -835,14 +843,13 @@
             if (mode === 'graph') {
                 const gW = 300 * drawScale; const gH = 200 * drawScale;
                 let gX = originX - gW / 2; 
-                let gY = originY + 120 * drawScale;
+                let gY = originY - gH - 50 * drawScale; // Position graph safely above HUD and prism
                 
                 ctx.save();
                 ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.rect(gX, gY, gW, gH);
-                ctx.fill(); ctx.stroke(); ctx.clip(); // Confine graph strictly to box
+                ctx.fill(); ctx.stroke(); ctx.clip(); 
                 
-                // Draw Axes inside box
                 ctx.beginPath();
                 ctx.moveTo(gX, gY); ctx.lineTo(gX, gY + gH);
                 ctx.lineTo(gX + gW, gY + gH);
@@ -872,7 +879,7 @@
                 }
                 ctx.strokeStyle = "var(--primary)"; ctx.lineWidth = 2; ctx.stroke();
 
-                // Plot Minimum Deviation Point (i_m, delta_m)
+                // Plot Minimum Deviation Point (iₘ, δₘ)
                 const i_min_rad = Math.asin(baseN * Math.sin(A_rad / 2));
                 const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
                 const i_min_deg = i_min_rad * 180 / Math.PI;
