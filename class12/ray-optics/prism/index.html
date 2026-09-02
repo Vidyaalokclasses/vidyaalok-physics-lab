@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Prism Ray Diagram | Vidyaalok Lab</title>
     
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -12,11 +13,6 @@
       gtag('js', new Date());
       gtag('config', 'G-L8DFSQTR66');
     </script>
-
-    <script>
-        window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] }, svg: { fontCache: 'global' } };
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
     <style>
         :root {
@@ -39,6 +35,7 @@
             overflow: hidden; display: flex; flex-direction: column;
         }
 
+        /* Top Navigation */
         .navbar {
             padding: 12px 20px; background: rgba(7, 11, 25, 0.8);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -55,6 +52,7 @@
 
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
 
+        /* Workspace & Canvas */
         .workspace {
             position: relative; flex-grow: 1; width: 100%; display: flex; overflow: hidden;
             background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%);
@@ -62,17 +60,18 @@
 
         canvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10; touch-action: none;
+            z-index: 10; touch-action: none; cursor: crosshair;
         }
 
         .watermark {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 60%; height: 60%;
-            background-image: url('../../../logo.png'); background-size: contain;
+            background-image: url('../../logo.png'); background-size: contain;
             background-repeat: no-repeat; background-position: center;
             opacity: 0.06; pointer-events: none; z-index: 0;
         }
 
+        /* HUD Panel */
         .hud-panel {
             position: absolute; z-index: 50; background: var(--panel-bg);
             backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -92,14 +91,19 @@
             scrollbar-width: thin; scrollbar-color: var(--primary) transparent;
         }
 
+        .hud-content::-webkit-scrollbar { width: 4px; }
+        .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+        /* Device Specific HUD Layout */
         @media (min-width: 901px) {
             .hud-panel { top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px; }
         }
 
         @media (max-width: 900px) {
-            .hud-panel { bottom: 0; left: 0; width: 100%; height: 40vh; border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none; }
+            .hud-panel { bottom: 0; left: 0; width: 100%; height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none; }
         }
 
+        /* Controls */
         .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
 
         .control-group { margin-bottom: 12px; }
@@ -110,6 +114,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
 
+        /* Stats & Formulas */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
         .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
@@ -118,14 +123,14 @@
 
         .formula-panel {
             background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
-            text-align: center; color: var(--primary); font-weight: bold; font-size: 0.9rem; overflow-x: auto;
+            text-align: center; color: var(--primary); font-weight: bold; font-size: 1rem; overflow-x: auto;
+            display: flex; flex-direction: column; gap: 8px; font-family: 'Segoe UI', serif; font-style: italic;
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <!-- Make sure this link points back to your main chapter 9 hub -->
-        <a href="../index.html" class="back-btn">← Back</a>
+        <a href="../index.html" class="back-btn">← Back to Dashboard</a>
         <h1>Prism Ray Diagram</h1>
     </nav>
 
@@ -163,9 +168,10 @@
                         <div class="stat" id="eBox"><strong>Emergence (e)</strong><span id="eOut">0°</span></div>
                         <div class="stat" id="dBox"><strong>Deviation (δ)</strong><span id="dOut">0°</span></div>
                     </div>
+                    <!-- Clean HTML/CSS Formula to prevent MathJax clipping on mobile -->
                     <div class="formula-panel">
-                        \\[ r_1 + r_2 = A \\]
-                        \\[ \\delta = i + e - A \\]
+                        <div>r₁ + r₂ = A</div>
+                        <div>δ = i + e - A</div>
                     </div>
                 </div>
             </div>
@@ -185,16 +191,20 @@
         let drawScale = 1; 
         let initialized = false;
 
+        // --- MOBILE SCALING LOGIC ---
         function updateLayout() {
             if (W > 900) {
+                // Desktop
                 originX = 380 + (W - 380) * 0.4; 
                 originY = H * 0.6;
                 drawScale = Math.min(1, H / 500);
             } else {
-                const hudHeight = hudPanel.offsetHeight || (H * 0.4);
-                const visH = H - hudHeight;
-                originX = W * 0.5; 
-                originY = visH * 0.7; 
+                // Mobile: Calculate exact pixel height available ABOVE the HUD
+                const hudHeight = hudPanel.offsetHeight || (H * 0.45);
+                const visH = H - hudHeight; 
+                originX = W * 0.5; // Perfectly centered
+                originY = visH * 0.6; // Anchored to bottom-middle of visible area
+                // Scale mathematically to fit visible window
                 drawScale = Math.min(1, visH / 400, W / 600);
             }
         }
@@ -221,7 +231,7 @@
 
         [aSlider, nSlider, iSlider].forEach(el => el.addEventListener("input", updateUI));
 
-        // --- MATH UTILS ---
+        // --- VECTOR MATH UTILS ---
         function mapX(x) { return originX + x * drawScale; }
         function mapY(y) { return originY - y * drawScale; } // Standard Cartesian: +Y is UP
 
@@ -241,6 +251,7 @@
             const len = Math.hypot(dx, dy);
             if(len > 30 && !dashed) {
                 const angle = Math.atan2(dy, dx);
+                // Guaranteed visible arrowhead distance
                 const mx = sx1 + (dx/len) * Math.min(len * 0.6, 120);
                 const my = sy1 + (dy/len) * Math.min(len * 0.6, 120);
                 ctx.beginPath();
@@ -252,17 +263,18 @@
             ctx.restore();
         }
 
-        function drawNormalLine(x, y, nx, ny) {
+        function drawDashedNormal(x, y, nx, ny) {
             ctx.save();
             ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
             const sx = mapX(x), sy = mapY(y);
             const snx = nx, sny = -ny; // Invert Y for screen space normal
             
-            const p1x = sx - snx * 100, p1y = sy - sny * 100; // Outward
-            const p2x = sx + snx * 100, p2y = sy + sny * 100; // Inward
+            // Draw through boundary
+            const p1x = sx + snx * 120, p1y = sy + sny * 120; // Outward
+            const p2x = sx - snx * 120, p2y = sy - sny * 120; // Inward
             ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.stroke();
             
-            // Arrows on normal
+            // Double Arrowheads on normal
             const a1 = Math.atan2(sny, snx);
             const a2 = Math.atan2(-sny, -snx);
             ctx.fillStyle = "rgba(255,255,255,0.7)";
@@ -271,18 +283,21 @@
             ctx.restore();
         }
 
-        function drawArcLabel(x, y, a1, a2, radius, label, color) {
+        function drawArcLabel(x, y, v1, v2, radius, label, color) {
             ctx.save();
             const sx = mapX(x), sy = mapY(y);
-            // Convert physical angles to screen angles (invert direction)
-            let sa1 = -a1; let sa2 = -a2;
-            if(sa1 < 0) sa1 += 2*Math.PI; if(sa2 < 0) sa2 += 2*Math.PI;
             
-            let start = Math.min(sa1, sa2);
-            let end = Math.max(sa1, sa2);
+            // Convert physical vectors to screen vectors (invert Y)
+            let a1 = Math.atan2(-v1.y, v1.x);
+            let a2 = Math.atan2(-v2.y, v2.x);
+            
+            if(a1 < 0) a1 += 2*Math.PI; if(a2 < 0) a2 += 2*Math.PI;
+            
+            let start = Math.min(a1, a2);
+            let end = Math.max(a1, a2);
             if(end - start > Math.PI) {
-                start = Math.max(sa1, sa2);
-                end = Math.min(sa1, sa2) + 2*Math.PI;
+                start = Math.max(a1, a2);
+                end = Math.min(a1, a2) + 2*Math.PI;
             }
 
             ctx.beginPath(); ctx.arc(sx, sy, radius, start, end);
@@ -291,7 +306,7 @@
             const mid = (start + end)/2;
             ctx.fillStyle = color; ctx.font = "italic 14px 'Segoe UI'";
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText(label, sx + (radius + 15)*Math.cos(mid), sy + (radius + 15)*Math.sin(mid));
+            ctx.fillText(label, sx + (radius + 20)*Math.cos(mid), sy + (radius + 20)*Math.sin(mid));
             ctx.restore();
         }
 
@@ -305,6 +320,7 @@
             return null;
         }
 
+        // --- MAIN RENDER LOOP ---
         function draw() {
             if(!initialized) return;
             ctx.clearRect(0, 0, W, H);
@@ -318,9 +334,11 @@
             const side = 300;
             
             // Prism Geometry
-            const apex = { x: 0, y: side * Math.cos(A_rad/2) };
-            const bl = { x: -side * Math.sin(A_rad/2), y: 0 };
-            const br = { x: side * Math.sin(A_rad/2), y: 0 };
+            const h = side * Math.cos(A_rad/2);
+            const w = side * Math.sin(A_rad/2);
+            const apex = { x: 0, y: h * 0.5 };
+            const bl = { x: -w, y: -h * 0.5 };
+            const br = { x: w, y: -h * 0.5 };
 
             ctx.save();
             ctx.beginPath(); ctx.moveTo(mapX(apex.x), mapY(apex.y)); ctx.lineTo(mapX(bl.x), mapY(bl.y)); ctx.lineTo(mapX(br.x), mapY(br.y)); ctx.closePath();
@@ -333,57 +351,64 @@
             ctx.restore();
 
             // Apex Angle Arc
-            drawArcLabel(apex.x, apex.y, Math.atan2(bl.y-apex.y, bl.x-apex.x), Math.atan2(br.y-apex.y, br.x-apex.x), 30*drawScale, `A=${A}°`, "#fff");
+            drawArcLabel(apex.x, apex.y, {x: bl.x-apex.x, y: bl.y-apex.y}, {x: br.x-apex.x, y: br.y-apex.y}, 35*drawScale, `A=${A}°`, "#fff");
 
             // --- OPTICS CALCULATIONS ---
-            // Left Face Normal (Outward)
-            const n1_ang = Math.atan2(apex.x - bl.x, apex.y - bl.y); // Perpendicular to left face
-            const n1x = Math.cos(n1_ang), n1y = Math.sin(n1_ang);
             
-            // Incident Ray (From Bottom Left)
-            const inc_ang = n1_ang - i_rad; 
-            const dx_inc = Math.cos(inc_ang), dy_inc = Math.sin(inc_ang);
+            // Left Face Outward Normal
+            const l_len = Math.hypot(apex.x - bl.x, apex.y - bl.y);
+            const n1_out = { x: -(apex.y - bl.y)/l_len, y: (apex.x - bl.x)/l_len }; 
+            const n1_in = { x: -n1_out.x, y: -n1_out.y };
             
-            // Hit point on left face
+            // INCIDENT RAY: Math to guarantee it comes from bottom-left
+            const normalAngle = Math.atan2(n1_out.y, n1_out.x); // points Up-Left
+            const rayAngle = normalAngle - Math.PI + i_rad; // points Up-Right towards prism
+            const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
+            
+            // Hit point on left face (35% up from base)
             const hit1 = { x: bl.x + (apex.x - bl.x)*0.35, y: bl.y + (apex.y - bl.y)*0.35 };
-            const startX = hit1.x - dx_inc * 400, startY = hit1.y - dy_inc * 400;
+            const startX = hit1.x - d_inc.x * 400, startY = hit1.y - d_inc.y * 400;
 
+            // Draw Incident Ray & Normal
             drawArrowLine(startX, startY, hit1.x, hit1.y, "#ffffff");
-            drawNormalLine(hit1.x, hit1.y, n1x, n1y);
-            drawArcLabel(hit1.x, hit1.y, inc_ang, n1_ang, 40*drawScale, `i=${i_deg.toFixed(1)}°`, "#fff");
+            drawDashedNormal(hit1.x, hit1.y, n1_out.x, n1_out.y);
+            drawArcLabel(hit1.x, hit1.y, {x: -d_inc.x, y: -d_inc.y}, n1_out, 45*drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
 
             // Extension of incident ray
-            drawArrowLine(hit1.x, hit1.y, hit1.x + dx_inc*400, hit1.y + dy_inc*400, "rgba(255,255,255,0.2)", true);
+            drawArrowLine(hit1.x, hit1.y, hit1.x + d_inc.x*400, hit1.y + d_inc.y*400, "rgba(255,255,255,0.2)", true);
 
-            // Refraction 1
+            // Refraction 1 (Snell's Law: 1 * sin(i) = n * sin(r1))
             const sin_r1 = Math.sin(i_rad) / n;
             const r1_rad = Math.asin(sin_r1);
             const r1_deg = r1_rad * 180 / Math.PI;
             
-            const ref1_ang = n1_ang - r1_rad; // Bends towards normal
-            const dx_ref1 = Math.cos(ref1_ang), dy_ref1 = Math.sin(ref1_ang);
+            // Refracted ray angle relative to inward normal
+            const in_normal_angle = Math.atan2(n1_in.y, n1_in.x);
+            const ref1_ang = in_normal_angle + r1_rad; // Bends towards normal
+            const d_ref1 = { x: Math.cos(ref1_ang), y: Math.sin(ref1_ang) };
             
-            let hit2 = lineIntersect(hit1.x, hit1.y, dx_ref1, dy_ref1, apex.x, apex.y, br.x, br.y);
-            if(!hit2) hit2 = lineIntersect(hit1.x, hit1.y, dx_ref1, dy_ref1, bl.x, bl.y, br.x, br.y); // Fallback to base
+            let hit2 = lineIntersect(hit1.x, hit1.y, d_ref1.x, d_ref1.y, apex.x, apex.y, br.x, br.y);
+            if(!hit2) hit2 = lineIntersect(hit1.x, hit1.y, d_ref1.x, d_ref1.y, bl.x, bl.y, br.x, br.y); // Fallback to base
 
             if(hit2) {
+                // Ray inside prism
                 drawArrowLine(hit1.x, hit1.y, hit2.x, hit2.y, "#ffffff");
-                drawArcLabel(hit1.x, hit1.y, ref1_ang, n1_ang - Math.PI, 40*drawScale, `r₁=${r1_deg.toFixed(1)}°`, "#ffffff");
+                drawArcLabel(hit1.x, hit1.y, d_ref1, n1_in, 45*drawScale, `r₁=${r1_deg.toFixed(1)}°`, "#ffffff");
 
-                // Right Face Normal (Outward)
-                const n2_ang = Math.atan2(br.x - apex.x, br.y - apex.y);
-                const n2x = Math.cos(n2_ang), n2y = Math.sin(n2_ang);
-                drawNormalLine(hit2.x, hit2.y, n2x, n2y);
+                // Right Face Outward Normal
+                const r_len = Math.hypot(br.x - apex.x, br.y - apex.y);
+                const n2_out = { x: -(br.y - apex.y)/r_len, y: (br.x - apex.x)/r_len };
+                const n2_in = { x: -n2_out.x, y: -n2_out.y };
+                drawDashedNormal(hit2.x, hit2.y, n2_out.x, n2_out.y);
 
                 const r2_rad = A_rad - r1_rad;
                 const r2_deg = r2_rad * 180 / Math.PI;
-                const in_n2_ang = n2_ang + Math.PI; // Inward normal
-                drawArcLabel(hit2.x, hit2.y, ref1_ang, in_n2_ang, 40*drawScale, `r₂=${r2_deg.toFixed(1)}°`, "#ffffff");
+                drawArcLabel(hit2.x, hit2.y, {x: -d_ref1.x, y: -d_ref1.y}, n2_in, 45*drawScale, `r₂=${r2_deg.toFixed(1)}°`, "#ffffff");
 
                 document.getElementById('r1Out').textContent = `${r1_deg.toFixed(1)}°`;
                 document.getElementById('r2Out').textContent = `${r2_deg.toFixed(1)}°`;
 
-                // Refraction 2
+                // Refraction 2 (Snell's Law: n * sin(r2) = 1 * sin(e))
                 let isTIR = false;
                 let e_rad = 0, e_deg = 0, delta_deg = 0;
                 
@@ -394,7 +419,7 @@
                     document.getElementById('eBox').classList.add('alert');
                     document.getElementById('dBox').classList.add('alert');
                     
-                    const tir_ang = in_n2_ang + r2_rad;
+                    const tir_ang = Math.atan2(n2_in.y, n2_in.x) + r2_rad;
                     drawArrowLine(hit2.x, hit2.y, hit2.x + Math.cos(tir_ang)*400, hit2.y + Math.sin(tir_ang)*400, "#ffffff");
                 } else {
                     e_rad = Math.asin(n * Math.sin(r2_rad));
@@ -406,47 +431,25 @@
                     document.getElementById('eBox').classList.remove('alert');
                     document.getElementById('dBox').classList.remove('alert');
 
-                    const em_ang = n2_ang + e_rad; // Bends away from normal
-                    const dx_em = Math.cos(em_ang), dy_em = Math.sin(em_ang);
+                    // Emergent Ray Angle
+                    const out_normal_angle = Math.atan2(n2_out.y, n2_out.x);
+                    const em_ang = out_normal_angle - e_rad; // Bends away from normal towards base
+                    const d_em = { x: Math.cos(em_ang), y: Math.sin(em_ang) };
                     
-                    drawArrowLine(hit2.x, hit2.y, hit2.x + dx_em*600, hit2.y + dy_em*600, "#ffffff");
-                    drawArcLabel(hit2.x, hit2.y, em_ang, n2_ang, 40*drawScale, `e=${e_deg.toFixed(1)}°`, "#ffffff");
+                    drawArrowLine(hit2.x, hit2.y, hit2.x + d_em.x*600, hit2.y + d_em.y*600, "#ffffff");
+                    drawArcLabel(hit2.x, hit2.y, d_em, n2_out, 45*drawScale, `e=${e_deg.toFixed(1)}°`, "#ffffff");
 
-                    // Deviation
-                    const cross = dx_inc*dy_em - dy_inc*dx_em;
+                    // Deviation Angle & Intersection
+                    const cross = d_inc.x * d_em.y - d_inc.y * d_em.x;
                     if(Math.abs(cross) > 1e-5) {
-                        const t = ((hit2.x - hit1.x)*dy_em - (hit2.y - hit1.y)*dx_em) / cross;
-                        const devX = hit1.x + t*dx_inc, devY = hit1.y + t*dy_inc;
-                        drawArrowLine(hit2.x, hit2.y, devX, devY, "#ffffff", true);
-                        drawArcLabel(devX, devY, inc_ang, em_ang, 30*drawScale, `δ=${delta_deg.toFixed(1)}°`, "#ffd166");
+                        const t = ((hit2.x - hit1.x)*d_em.y - (hit2.y - hit1.y)*d_em.x) / cross;
+                        const devX = hit1.x + t*d_inc.x, devY = hit1.y + t*d_inc.y;
+                        drawArrowLine(hit2.x, hit2.y, devX, devY, "#ffffff", true); // Ext backward
+                        drawArcLabel(devX, devY, d_inc, d_em, 35*drawScale, `δ=${delta_deg.toFixed(1)}°`, "#ffd166");
                     }
                 }
             }
         }
-        
-        function drawArcLabel(x, y, a1, a2, radius, label, color) {
-            ctx.save();
-            const sx = mapX(x), sy = mapY(y);
-            let sa1 = -a1; let sa2 = -a2;
-            if(sa1 < 0) sa1 += 2*Math.PI; if(sa2 < 0) sa2 += 2*Math.PI;
-            
-            let start = Math.min(sa1, sa2);
-            let end = Math.max(sa1, sa2);
-            if(end - start > Math.PI) {
-                start = Math.max(sa1, sa2);
-                end = Math.min(sa1, sa2) + 2*Math.PI;
-            }
-
-            ctx.beginPath(); ctx.arc(sx, sy, radius, start, end);
-            ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.stroke();
-            
-            const mid = (start + end)/2;
-            ctx.fillStyle = color; ctx.font = "italic 14px 'Segoe UI'";
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText(label, sx + (radius + 20)*Math.cos(mid), sy + (radius + 20)*Math.sin(mid));
-            ctx.restore();
-        }
-
     </script>
 </body>
 </html>
