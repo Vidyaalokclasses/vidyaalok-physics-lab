@@ -137,12 +137,10 @@
 
         .formula-panel {
             background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
-            text-align: center; color: var(--primary); font-weight: bold; font-size: 0.95rem; overflow-x: auto;
+            text-align: center; color: var(--primary); font-weight: bold; font-size: 0.9rem; overflow-x: auto;
             display: flex; flex-direction: column; gap: 8px; font-family: 'Segoe UI', serif; font-style: italic; letter-spacing: 1px;
         }
-        .math-eqn {
-            font-size: 1rem; color: var(--primary); font-style: italic; font-family: 'Times New Roman', Times, serif;
-        }
+        .math-eqn { font-size: 1.05rem; color: var(--primary); font-style: italic; font-family: 'Times New Roman', Times, serif; }
         .math-eqn sub { font-size: 0.7rem; font-style: normal; }
         .math-eqn sup { font-size: 0.7rem; font-style: normal; }
     </style>
@@ -178,11 +176,11 @@
                     </div>
                     <div class="control-group">
                         <label>Base Refractive Index n <span id="nVal">1.50</span></label>
-                        <input id="nSlider" type="range" min="1.3" max="2.0" step="0.01" value="1.50">
+                        <input id="nSlider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
                     <div class="control-group">
                         <label>Angle of Incidence i <span id="iVal">45°</span></label>
-                        <input id="iSlider" type="range" min="20" max="80" step="1" value="45">
+                        <input id="iSlider" type="range" min="0" max="85" step="1" value="45">
                     </div>
                 </div>
 
@@ -219,14 +217,14 @@
         // --- MOBILE SCALING LOGIC ---
         function updateLayout() {
             if (W > 900) {
-                originX = 380 + (W - 380) * 0.45; 
+                originX = 380 + (W - 380) * 0.4; 
                 originY = H * 0.6;
                 drawScale = Math.min(1, H / 500);
             } else {
                 const hudHeight = hudPanel.offsetHeight || (H * 0.45);
-                const visH = H - hudHeight; 
-                originX = W * 0.5; 
-                originY = visH * 0.65; 
+                const visH = H - hudHeight; // Calculate exact pixel height ABOVE hud
+                originX = W * 0.5; // Center horizontally
+                originY = visH * 0.7; // Anchor near bottom of visible window
                 drawScale = Math.min(1, visH / 400, W / 600);
             }
         }
@@ -243,6 +241,16 @@
             }
         });
         resizeObserver.observe(document.querySelector('.workspace'));
+
+        setTimeout(() => {
+            if (!initialized && canvas.parentElement.clientWidth > 10) {
+                W = canvas.parentElement.clientWidth;
+                H = canvas.parentElement.clientHeight || 500; 
+                canvas.width = W; canvas.height = H;
+                initialized = true; 
+                updateLayout(); draw();
+            }
+        }, 300);
 
         function updateUI() {
             document.getElementById("aVal").textContent = `${aSlider.value}°`;
@@ -300,6 +308,7 @@
             ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
             ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
             ctx.beginPath();
+            
             let screen_N = { x: N.x, y: -N.y };
             
             let px1 = mapX(p.x) + screen_N.x * 120; let py1 = mapY(p.y) + screen_N.y * 120; // Outward
@@ -349,7 +358,7 @@
             let c = -dot(D, N);
             if (c < 0) { N = {x: -N.x, y: -N.y}; c = -c; }
             let sin2_t = r * r * (1 - c * c);
-            if (sin2_t > 1.0) return { tir: true };
+            if (sin2_t > 1.0) return { tir: true, dir: { x: D.x + 2*c*N.x, y: D.y + 2*c*N.y } };
             let cos_t = Math.sqrt(1 - sin2_t);
             return { tir: false, dir: { x: r * D.x + (r * c - cos_t) * N.x, y: r * D.y + (r * c - cos_t) * N.y } };
         }
@@ -400,75 +409,98 @@
             ctx.fillText("C", mapX(br.x) + 15, mapY(br.y) + 15);
             ctx.restore();
 
-            drawArcLabel(apex.x, apex.y, Math.atan2(bl.y-apex.y, bl.x-apex.x), Math.atan2(br.y-apex.y, br.x-apex.x), 35*drawScale, `A=${A}°`, "#fff");
-
-            // Define prism edges for intersection loop
             const edges = [
-                { a: bl, b: apex, n: getOutwardNormal(bl, apex, center) }, // left face
-                { a: apex, b: br, n: getOutwardNormal(apex, br, center) }, // right face
-                { a: br, b: bl, n: getOutwardNormal(br, bl, center) }  // base
+                { a: bl, b: apex, n: getOutwardNormal(bl, apex, center) }, 
+                { a: apex, b: br, n: getOutwardNormal(apex, br, center) }, 
+                { a: br, b: bl, n: getOutwardNormal(br, bl, center) }  
             ];
 
             const n1_out = edges[0].n; 
-            const n1_in = { x: -n1_out.x, y: -n1_out.y };
-            const in_normal_angle = Math.atan2(n1_in.y, n1_in.x); 
-            
-            // Incident Ray (From Bottom Left heading up-right)
-            const rayAngle = in_normal_angle - i_rad; 
+            const inwardNormalAngle = Math.atan2(-n1_out.y, -n1_out.x);
+            // CRITICAL FIX: Ray angle is anchored to bottom-left (+ i_rad moves it up)
+            const rayAngle = inwardNormalAngle + i_rad; 
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             
-            const hit1 = { x: bl.x + (apex.x - bl.x)*0.35, y: bl.y + (apex.y - bl.y)*0.35 };
-            const startX = hit1.x - d_inc.x * 400, startY = hit1.y - d_inc.y * 400;
+            const hitTarget = { x: bl.x + (apex.x - bl.x)*0.35, y: bl.y + (apex.y - bl.y)*0.35 };
+            const startX = hitTarget.x - d_inc.x * 400, startY = hitTarget.y - d_inc.y * 400;
 
-            // Draw Incident Ray & Normal
-            drawArrowLine(startX, startY, hit1.x, hit1.y, "#ffffff", false, true);
-            drawDashedNormal(hit1.x, hit1.y, n1_out.x, n1_out.y);
-            drawArcLabel(hit1.x, hit1.y, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(n1_out.y, n1_out.x), 40*drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
-
-            // Wavelength colors (Red to Violet)
-            const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
-            // Exaggerated indices to make dispersion highly visible
-            const n_vals = [n_base - 0.05, n_base - 0.03, n_base - 0.01, n_base, n_base + 0.02, n_base + 0.04, n_base + 0.07];
+            const colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#00e5ff', '#4b0082', '#9400d3'];
+            // Broad dispersion factor to make the separation massive and obvious
+            const n_vals = [n_base - 0.05, n_base - 0.03, n_base - 0.01, n_base, n_base + 0.03, n_base + 0.06, n_base + 0.10];
 
             let dev_v = "TIR", dev_r = "TIR";
+            let drewIncident = false;
 
             for(let k = 0; k < 7; k++) {
                 let n = n_vals[k];
                 let col = colors[k];
                 
-                // Refraction 1
-                let ref1 = refract(d_inc, n1_out, 1.0, n);
-                if(ref1.tir) continue;
-                
-                // Find next intersection inside the prism
-                let bestHit = null;
+                let bestHit1 = null;
                 const eps = 1e-4;
-                for(let edge of edges) {
-                    let hit = lineIntersect(hit1.x + ref1.dir.x*eps, hit1.y + ref1.dir.y*eps, ref1.dir.x, ref1.dir.y, edge.a.x, edge.a.y, edge.b.x, edge.b.y);
-                    if (hit && (!bestHit || hit.t < bestHit.t)) bestHit = { ...hit, n: edge.n };
+                for (let edge of edges) {
+                    let hit = lineIntersect(startX, startY, d_inc.x, d_inc.y, edge.a.x, edge.a.y, edge.b.x, edge.b.y);
+                    if (hit && (!bestHit1 || hit.t < bestHit1.t)) {
+                        bestHit1 = { ...hit, n: edge.n };
+                    }
+                }
+                
+                if (!bestHit1) continue;
+
+                // Draw Incident Ray & Normal once
+                if (!drewIncident) {
+                    drawArrowLine(startX, startY, bestHit1.x, bestHit1.y, "#ffffff");
+                    drawDashedNormal({x: bestHit1.x, y: bestHit1.y}, bestHit1.n);
+                    drawArcLabel(bestHit1.x, bestHit1.y, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(bestHit1.n.y, bestHit1.n.x), 40*drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
+                    drewIncident = true;
                 }
 
-                if(bestHit) {
-                    drawArrowLine(hit1.x, hit1.y, bestHit.x, bestHit.y, col, false, false);
+                // Refraction 1
+                let ref1 = refract(d_inc, bestHit1.n, 1.0, n);
+                if (ref1.tir) continue;
+
+                // Find next intersection inside the prism
+                let bestHit2 = null;
+                const px = bestHit1.x + ref1.dir.x * eps;
+                const py = bestHit1.y + ref1.dir.y * eps;
+                for(let edge of edges) {
+                    let hit2 = lineIntersect(px, py, ref1.dir.x, ref1.dir.y, edge.a.x, edge.a.y, edge.b.x, edge.b.y);
+                    if (hit2 && hit2.t > 0 && (!bestHit2 || hit2.t < bestHit2.t)) {
+                        bestHit2 = { ...hit2, n: edge.n };
+                    }
+                }
+
+                if(bestHit2) {
+                    drawArrowLine(bestHit1.x, bestHit1.y, bestHit2.x, bestHit2.y, col, false, false);
+                    
+                    if(k === 3) {
+                        const r1_val = (Math.asin(Math.sin(i_rad) / n) * 180 / Math.PI).toFixed(1);
+                        drawArcLabel(bestHit1.x, bestHit1.y, Math.atan2(-ref1.dir.y, -ref1.dir.x), Math.atan2(bestHit1.n.y, bestHit1.n.x), 40*drawScale, `r₁=${r1_val}°`, col);
+                    }
 
                     // Refraction 2 (Emergence or TIR)
-                    let inNormal2 = { x: -bestHit.n.x, y: -bestHit.n.y };
+                    let inNormal2 = { x: -bestHit2.n.x, y: -bestHit2.n.y };
                     let ref2 = refract(ref1.dir, inNormal2, n, 1.0);
                     
+                    if (k === 3) {
+                        drawDashedNormal({x: bestHit2.x, y: bestHit2.y}, bestHit2.n);
+                        const r2_val = (A - parseFloat((Math.asin(Math.sin(i_rad) / n) * 180 / Math.PI))).toFixed(1);
+                        drawArcLabel(bestHit2.x, bestHit2.y, Math.atan2(-ref1.dir.y, -ref1.dir.x), Math.atan2(inNormal2.y, -inNormal2.x), 40*drawScale, `r₂=${r2_val}°`, col);
+                    }
+
                     if (ref2.tir) {
                         // TIR Occurs: Bounce inside the prism!
                         let tirDir = reflect(ref1.dir, inNormal2);
                         
                         let bestHit3 = null;
-                        const px = bestHit.x + tirDir.x * eps;
-                        const py = bestHit.y + tirDir.y * eps;
+                        const p3x = bestHit2.x + tirDir.x * eps;
+                        const p3y = bestHit2.y + tirDir.y * eps;
                         for(let edge of edges) {
-                            let hit3 = lineIntersect(px, py, tirDir.x, tirDir.y, edge.a.x, edge.a.y, edge.b.x, edge.b.y);
+                            let hit3 = lineIntersect(p3x, py, tirDir.x, tirDir.y, edge.a.x, edge.a.y, edge.b.x, edge.b.y);
                             if (hit3 && (!bestHit3 || hit3.t < bestHit3.t)) bestHit3 = { ...hit3, n: edge.n };
                         }
 
                         if(bestHit3) {
-                            drawArrowLine(bestHit.x, bestHit.y, bestHit3.x, bestHit3.y, col, false, true);
+                            drawArrowLine(bestHit2.x, bestHit2.y, bestHit3.x, bestHit3.y, col, false, true);
                             
                             // Exit bottom face
                             let inNormal3 = { x: -bestHit3.n.x, y: -bestHit3.n.y };
@@ -480,12 +512,12 @@
                                 drawArrowLine(bestHit3.x, bestHit3.y, bestHit3.x + tirDir.x*800, bestHit3.y + tirDir.y*800, col, false, true);
                             }
                         } else {
-                            drawArrowLine(bestHit.x, bestHit.y, bestHit.x + tirDir.x*800, bestHit.y + tirDir.y*800, col, false, true);
+                            drawArrowLine(bestHit2.x, bestHit2.y, bestHit2.x + tirDir.x*800, bestHit2.y + tirDir.y*800, col, false, true);
                         }
                         
                     } else {
                         // Normal Emergence
-                        drawArrowLine(bestHit.x, bestHit.y, bestHit.x + ref2.dir.x*800, bestHit.y + ref2.dir.y*800, col, false, true);
+                        drawArrowLine(bestHit2.x, bestHit2.y, bestHit2.x + ref2.dir.x*800, bestHit2.y + ref2.dir.y*800, col, false, true);
                         
                         // Calculate Deviation for Red and Violet
                         const e_rad = Math.asin(n * Math.sin(A_rad - Math.asin(Math.sin(i_rad)/n)));
@@ -494,6 +526,10 @@
                         
                         if(k === 0) dev_r = delta_deg;
                         if(k === 6) dev_v = delta_deg;
+                        
+                        if (k === 3) {
+                            drawArcLabel(bestHit2.x, bestHit2.y, Math.atan2(-ref2.dir.y, -ref2.dir.x), Math.atan2(-bestHit2.n.y, bestHit2.n.x), 40*drawScale, `e=${e_deg.toFixed(1)}°`, col);
+                        }
                     }
                 }
             }
