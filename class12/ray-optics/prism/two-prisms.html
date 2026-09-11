@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Two Prisms Recombination | Vidyaalok Lab</title>
-    
-    <!-- Google Analytics -->
+    <title>Two Prisms | Vidyaalok Lab</title>
+
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -18,78 +17,48 @@
         :root { --primary: #00e5ff; --secondary: #ff007f; --bg-dark: #070b19; --panel-bg: rgba(7, 11, 25, 0.85); --text-main: #ffffff; --text-muted: #a0aabf; --gold: #ffd166; --border: rgba(0, 229, 255, 0.2); }
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; }
-        
-        /* Top Navigation */
         .navbar { padding: 12px 20px; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 100; position: relative; }
         .back-btn { color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
-        
-        /* Flexbox Layout ensuring exact visible bounds */
-        .workspace { display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 70px); overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
-        .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; }
+        .workspace { position: relative; flex-grow: 1; width: 100%; display: flex; overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; cursor: crosshair; }
-        
-        /* Dynamic Centered Watermark */
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; height: 75%; background-image: url('../../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
-        
-        /* HUD Panel */
-        .hud-panel { width: 380px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 50; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; background-image: url('../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.06; pointer-events: none; z-index: 0; }
+        .hud-panel { position: absolute; z-index: 50; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.7); transition: all 0.3s ease; }
         .hud-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
         .hud-content { padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
         .hud-content::-webkit-scrollbar { width: 4px; }
         .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
-        
-        @media (max-width: 900px) { 
-            .workspace { flex-direction: column; }
-            .hud-panel { width: 100%; height: 45vh; border-left: none; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); } 
-        }
-        
-        /* Controls & Tools */
+        @media (min-width: 901px) { .hud-panel { top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px; } }
+        @media (max-width: 900px) { .hud-panel { bottom: 0; left: 0; width: 100%; height: 50vh; border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none; } }
         .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 10px; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .btn { flex: 1 1 calc(50% - 8px); min-width: 130px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; text-align: center; text-decoration: none; display: inline-block; }
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); pointer-events: none; }
-        
         .control-group { margin-bottom: 12px; }
         .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
         .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
-        
-        /* Stats & Formula Panel */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
         .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-        .stat span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
-        .stat.alert span { color: #ff3366; }
-        
-        .formula-panel { background: rgba(0,0,0,0.3); padding: 14px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; align-items: center; }
-        .math-eqn-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--primary); font-size: 1.1rem; }
-        .math-eqn-row sub { font-size: 0.75rem; font-style: normal; }
+        .stat span { font-size: 1.05rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
+        .hint { font-size: 0.68rem; color: var(--text-muted); line-height: 1.4; margin-top: -4px; }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <a href="../index.html" class="back-btn">← Dashboard</a>
-        <h1>Two Prisms Recombination</h1>
+        <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+        <h1>Two Prisms</h1>
     </nav>
-
     <div class="workspace">
-        <!-- Canvas Layer -->
-        <div class="canvas-wrapper" id="simWrapper">
-            <div class="watermark"></div>
-            <canvas id="simCanvas"></canvas>
-        </div>
-
-        <!-- HUD Panel -->
+        <div class="watermark"></div>
+        <canvas id="simCanvas"></canvas>
         <div class="hud-panel" id="hudPanel">
-            <div class="hud-header">
-                <h2>Controls</h2>
-            </div>
-            
+            <div class="hud-header"><h2>Controls</h2></div>
             <div class="hud-content">
                 <div class="toolbar">
                     <a href="index.html" class="btn">Ray Diagram</a>
@@ -97,438 +66,350 @@
                     <a href="deviation-graph.html" class="btn">Deviation Graph</a>
                     <a href="two-prisms.html" class="btn active">Two Prisms</a>
                 </div>
-
                 <div id="controlsContainer">
-                    <div class="section-title">Prism 1 (Upright)</div>
+                    <div class="section-title">Prism 1 Properties</div>
                     <div class="control-group">
-                        <label>Angle of Prism A₁ <span id="a1Val">60°</span></label>
-                        <input id="a1Slider" type="range" min="30" max="75" step="1" value="60">
+                        <label>Angle of Prism 1 (A₁) <span id="aVal">60°</span></label>
+                        <input id="aSlider" type="range" min="30" max="80" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Refractive Index n₁ <span id="n1Val">1.50</span></label>
-                        <input id="n1Slider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
+                        <label>Refractive Index 1 (n₁) <span id="nVal">1.50</span></label>
+                        <input id="nSlider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
                     <div class="control-group">
-                        <label>Angle of Incidence i <span id="iVal">45°</span></label>
+                        <label>Angle of Incidence (i) <span id="iVal">45°</span></label>
                         <input id="iSlider" type="range" min="0" max="85" step="1" value="45">
                     </div>
-
-                    <div class="section-title" style="margin-top: 10px;">Prism 2 (Inverted)</div>
+                </div>
+                <div id="twoPrismsContainer">
+                    <div class="section-title">Prism 2 Properties</div>
                     <div class="control-group">
-                        <label>Angle of Prism A₂ <span id="a2Val">60°</span></label>
-                        <input id="a2Slider" type="range" min="30" max="75" step="1" value="60">
+                        <label>Angle of Prism 2 (A₂) <span id="a2Val">60°</span></label>
+                        <input id="a2Slider" type="range" min="30" max="80" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Refractive Index n₂ <span id="n2Val">1.50</span></label>
-                        <input id="n2Slider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
+                        <label>Refractive Index 2 (n₂) <span id="n22Val">1.50</span></label>
+                        <input id="n22Slider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
+                    </div>
+                    <div class="control-group">
+                        <label>Gap Between Prisms <span id="gapVal">160</span></label>
+                        <input id="gapSlider" type="range" min="40" max="320" step="10" value="160">
+                    </div>
+                    <div class="control-group">
+                        <label>Orientation</label>
+                        <div class="toolbar" style="margin-bottom:0;">
+                            <button class="btn" id="btnUpright" onclick="setP2Inverted(false)">Upright</button>
+                            <button class="btn active" id="btnInverted" onclick="setP2Inverted(true)">Inverted</button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="section-title" style="margin-top: 5px;">Analysis & Results</div>
-                <div id="resultsContainer">
-                    <div class="stat-grid">
-                        <div class="stat" id="dRedBox"><strong>Net Deviation (Red)</strong><span id="dRedOut">0°</span></div>
-                        <div class="stat" id="dVioletBox"><strong>Net Deviation (Violet)</strong><span id="dVioletOut">0°</span></div>
-                        <div class="stat" style="grid-column: span 2;"><strong>Net Angular Dispersion</strong><span id="dispOut">0°</span></div>
-                    </div>
-                    <div class="formula-panel">
-                        <div class="math-eqn-row">
-                            <span>&delta;<sub>net</sub></span> <span>=</span> <span>&delta;<sub>1</sub> - &delta;<sub>2</sub></span>
-                        </div>
-                        <div class="math-eqn-row" style="font-size: 0.85rem; margin-top: 4px; color: var(--text-muted); font-family: 'Segoe UI', sans-serif;">
-                            Recombination occurs when &delta;<sub>net</sub> = 0
-                        </div>
-                    </div>
+                <div class="section-title">Dispersion</div>
+                <div class="control-group">
+                    <label>Dispersion Boost <span id="boostVal">2.5×</span></label>
+                    <input id="boostSlider" type="range" min="1" max="6" step="0.5" value="2.5">
+                    <div class="hint">Exaggerates the colour spread visually (real glass separates colours only slightly) — 1× is physically realistic, higher values make the fan-out easier to see.</div>
+                </div>
+                <div class="section-title" style="margin-top:5px;">Analysis &amp; Results</div>
+                <div class="stat-grid">
+                    <div class="stat"><strong>Net Deviation (&delta;<sub>net</sub>)</strong><span id="netDevOut">0°</span></div>
+                    <div class="stat"><strong>Spread (V&harr;R)</strong><span id="spreadOut">0°</span></div>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
         const canvas = document.getElementById("simCanvas");
         const ctx = canvas.getContext("2d");
-        
-        // UI Sliders
-        const a1Slider = document.getElementById("a1Slider");
-        const n1Slider = document.getElementById("n1Slider");
-        const iSlider = document.getElementById("iSlider");
-        const a2Slider = document.getElementById("a2Slider");
-        const n2Slider = document.getElementById("n2Slider");
-        
-        let W = 0, H = 0, originX = 0, originY = 0;
-        let drawScale = 1; 
-        let initialized = false;
+        const hudPanel = document.getElementById("hudPanel");
+        const aSlider = document.getElementById("aSlider"), nSlider = document.getElementById("nSlider"), iSlider = document.getElementById("iSlider");
+        const a2Slider = document.getElementById("a2Slider"), n22Slider = document.getElementById("n22Slider"), gapSlider = document.getElementById("gapSlider");
+        const boostSlider = document.getElementById("boostSlider");
 
-        const dispColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#00e5ff', '#4b0082', '#9400d3'];
+        let p2Inverted = true;
+        let W = 0, H = 0, originX = 0, originY = 0, drawScale = 1, initialized = false;
 
-        function updateLayout() {
-            const isDesktop = window.innerWidth > 900;
-            if (isDesktop) {
-                originX = W * 0.35; 
-                originY = H * 0.65;
-                drawScale = Math.min(1, H / 450);
-            } else {
-                const hudHeight = document.getElementById('hudPanel').offsetHeight;
-                const visH = H - hudHeight; // Exact pixel height available above HUD
-                originX = W * 0.20; 
-                originY = visH * 0.65; 
-                drawScale = Math.min(1, visH / 400, W / 750); // Scale down mathematically
-            }
+        // Simplified visible spectrum: each colour is a small refractive-index offset from the slider's
+        // base index (n1/n2), scaled by the Dispersion Boost slider for visibility.
+        const SPECTRUM = [
+            { key: 'V', color: '#8a5cff', dn:  0.022 },
+            { key: 'B', color: '#3aa0ff', dn:  0.013 },
+            { key: 'G', color: '#33e0a0', dn:  0.005 },
+            { key: 'Y', color: '#ffd166', dn: -0.004 },
+            { key: 'O', color: '#ff9f43', dn: -0.012 },
+            { key: 'R', color: '#ff5577', dn: -0.022 }
+        ];
+
+        function updateUI() {
+            document.getElementById("aVal").textContent = `${aSlider.value}°`;
+            document.getElementById("nVal").textContent = parseFloat(nSlider.value).toFixed(2);
+            document.getElementById("iVal").textContent = `${iSlider.value}°`;
+            document.getElementById("a2Val").textContent = `${a2Slider.value}°`;
+            document.getElementById("n22Val").textContent = parseFloat(n22Slider.value).toFixed(2);
+            document.getElementById("gapVal").textContent = gapSlider.value;
+            document.getElementById("boostVal").textContent = `${parseFloat(boostSlider.value).toFixed(1)}×`;
+            draw();
         }
+        [aSlider, nSlider, iSlider, a2Slider, n22Slider, gapSlider, boostSlider].forEach(el => el.addEventListener("input", updateUI));
+        function setP2Inverted(val) { p2Inverted = val; document.getElementById("btnInverted").classList.toggle("active", val); document.getElementById("btnUpright").classList.toggle("active", !val); draw(); }
 
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
-                W = Math.floor(entry.contentRect.width);
-                H = Math.floor(entry.contentRect.height);
-                canvas.width = W;
-                canvas.height = H;
-                updateLayout();
-                if (!initialized && W > 10 && H > 10) { initialized = true; draw(); } 
-                else if (initialized) draw();
+                W = Math.floor(entry.contentRect.width); H = Math.floor(entry.contentRect.height);
+                canvas.width = W; canvas.height = H;
+                if (!initialized && W > 10 && H > 10) initialized = true;
+                if (initialized) draw();
             }
         });
-        resizeObserver.observe(document.getElementById('simWrapper'));
+        resizeObserver.observe(document.querySelector('.workspace'));
+        setTimeout(() => { if (!initialized) { W = canvas.parentElement.clientWidth; H = canvas.parentElement.clientHeight || 500; canvas.width = W; canvas.height = H; initialized = true; draw(); } }, 300);
 
-        setTimeout(() => {
-            if (!initialized && canvas.parentElement.clientWidth > 10) {
-                W = canvas.parentElement.clientWidth;
-                H = canvas.parentElement.clientHeight || 500; 
-                canvas.width = W;
-                canvas.height = H;
-                initialized = true; 
-                updateLayout();
-                draw();
-            }
-        }, 300);
-
-        function updateUI() {
-            document.getElementById("a1Val").textContent = `${a1Slider.value}°`;
-            document.getElementById("n1Val").textContent = parseFloat(n1Slider.value).toFixed(2);
-            document.getElementById("iVal").textContent = `${iSlider.value}°`;
-            document.getElementById("a2Val").textContent = `${a2Slider.value}°`;
-            document.getElementById("n2Val").textContent = parseFloat(n2Slider.value).toFixed(2);
-            draw();
-        }
-
-        [a1Slider, n1Slider, iSlider, a2Slider, n2Slider].forEach(el => el.addEventListener("input", updateUI));
-
-        // --- VECTOR MATH UTILS ---
         function mapX(x) { return originX + x * drawScale; }
-        function mapY(y) { return originY - y * drawScale; } // +Y is UP
+        function mapY(y) { return originY - y * drawScale; }
         function dot(a, b) { return a.x*b.x + a.y*b.y; }
-
-        function drawArrowLine(x1, y1, x2, y2, color, dashed=false, showArrow=true) {
-            ctx.save();
-            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
-            if(dashed) { ctx.setLineDash([5,5]); ctx.globalAlpha = 0.5; }
-            else { ctx.shadowBlur = 8; ctx.shadowColor = color; }
-            
-            const sx1 = mapX(x1), sy1 = mapY(y1);
-            const sx2 = mapX(x2), sy2 = mapY(y2);
-            
-            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
-            ctx.setLineDash([]); ctx.shadowBlur = 0;
-
-            const dx = sx2 - sx1, dy = sy2 - sy1;
-            const len = Math.hypot(dx, dy);
-            // Draw arrowhead
-            if(showArrow && len > 25 && !dashed) {
-                const angle = Math.atan2(dy, dx);
-                const mx = sx1 + (dx/len) * Math.min(len * 0.65, 120);
-                const my = sy1 + (dy/len) * Math.min(len * 0.65, 120);
-                ctx.beginPath();
-                ctx.moveTo(mx, my);
-                ctx.lineTo(mx - 10 * Math.cos(angle - 0.4), my - 10 * Math.sin(angle - 0.4));
-                ctx.lineTo(mx - 10 * Math.cos(angle + 0.4), my - 10 * Math.sin(angle + 0.4));
-                ctx.closePath(); ctx.fill();
-            }
-            ctx.restore();
-        }
-
         function getOutwardNormal(p1, p2, center) {
-            let dx = p2.x - p1.x, dy = p2.y - p1.y, l = Math.hypot(dx, dy), n = { x: dy/l, y: -dx/l }; 
+            let dx = p2.x - p1.x, dy = p2.y - p1.y, l = Math.hypot(dx, dy), n = { x: dy/l, y: -dx/l };
             let mid = { x: (p1.x + p2.x)/2, y: (p1.y + p2.y)/2 }, toCenter = { x: center.x - mid.x, y: center.y - mid.y };
-            if (dot(n, toCenter) > 0) { n.x = -n.x; n.y = -n.y; } 
-            return n;
+            if (dot(n, toCenter) > 0) { n.x = -n.x; n.y = -n.y; } return n;
         }
-
-        function drawDashedNormal(p, N) {
-            ctx.save();
-            ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
-            const sx = mapX(p.x), sy = mapY(p.y);
-            const snx = N.x, sny = -N.y; 
-            
-            const p1x = sx + snx * 80 * drawScale, p1y = sy + sny * 80 * drawScale; 
-            const p2x = sx - snx * 80 * drawScale, p2y = sy - sny * 80 * drawScale; 
-            ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.stroke();
-            
-            const a1 = Math.atan2(sny, snx);
-            const a2 = Math.atan2(-sny, -snx);
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
-            ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p1x - 7*Math.cos(a1-0.4), p1y - 7*Math.sin(a1-0.4)); ctx.lineTo(p1x - 7*Math.cos(a1+0.4), p1y - 7*Math.sin(a1+0.4)); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(p2x, p2y); ctx.lineTo(p2x - 7*Math.cos(a2-0.4), p2y - 7*Math.sin(a2-0.4)); ctx.lineTo(p2x - 7*Math.cos(a2+0.4), p2y - 7*Math.sin(a2+0.4)); ctx.fill();
-            ctx.restore();
-        }
-
-        function drawArcLabel(x, y, a1, a2, radius, label, color) {
-            ctx.save();
-            const sx = mapX(x), sy = mapY(y);
-            let sa1 = -a1; let sa2 = -a2; // Invert angle for Canvas
-            if(sa1 < 0) sa1 += 2*Math.PI; if(sa2 < 0) sa2 += 2*Math.PI;
-            
-            let start = Math.min(sa1, sa2);
-            let end = Math.max(sa1, sa2);
-            if(end - start > Math.PI) {
-                start = Math.max(sa1, sa2);
-                end = Math.min(sa1, sa2) + 2*Math.PI;
-            }
-
-            ctx.beginPath(); ctx.arc(sx, sy, radius, start, end);
-            ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([2,2]); ctx.stroke();
-            
-            const mid = (start + end)/2;
-            ctx.fillStyle = color; ctx.font = "italic 14px 'Segoe UI'";
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText(label, sx + (radius + 18)*Math.cos(mid), sy + (radius + 18)*Math.sin(mid));
-            ctx.restore();
-        }
-
         function refract(D, N, n1, n2) {
-            let r = n1 / n2;
-            let c = -dot(D, N);
+            let r = n1 / n2, c = -dot(D, N);
             if (c < 0) { N = {x: -N.x, y: -N.y}; c = -c; }
             let sin2_t = r * r * (1 - c * c);
             if (sin2_t > 1.0) return { tir: true };
-            let cos_t = Math.sqrt(1 - sin2_t);
-            return { tir: false, dir: { x: r * D.x + (r * c - cos_t) * N.x, y: r * D.y + (r * c - cos_t) * N.y } };
+            return { tir: false, dir: { x: r * D.x + (r * c - Math.sqrt(1 - sin2_t)) * N.x, y: r * D.y + (r * c - Math.sqrt(1 - sin2_t)) * N.y } };
         }
-
-        function reflect(D, N) {
-            let cosI = -(D.x*N.x + D.y*N.y);
-            let outN = {x: N.x, y: N.y};
-            if (cosI < 0) { outN = {x: -N.x, y: -N.y}; cosI = -cosI; }
-            return { x: D.x + 2 * cosI * outN.x, y: D.y + 2 * cosI * outN.y };
-        }
-
         function lineIntersect(p1, d1, a, b) {
             let v1 = p1, v2 = {x: p1.x + d1.x, y: p1.y + d1.y}, v3 = a, v4 = b;
             let denom = (v1.x - v2.x)*(v3.y - v4.y) - (v1.y - v2.y)*(v3.x - v4.x);
             if (Math.abs(denom) < 1e-6) return null;
             let t = ((v1.x - v3.x)*(v3.y - v4.y) - (v1.y - v3.y)*(v3.x - v4.x)) / denom;
             let u = -((v1.x - v2.x)*(v1.y - v3.y) - (v1.y - v2.y)*(v1.x - v3.x)) / denom;
-            // Removed the center dependency to prevent flipped normals!
-            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y } }; 
-            return null;
+            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y } }; return null;
+        }
+        function getPrismPoints(offsetX, A_rad, inverted, n) {
+            const side = 260, h = side * Math.cos(A_rad/2), w = side * Math.sin(A_rad/2);
+            let pts = !inverted ? [ {x: offsetX, y: h*0.5}, {x: offsetX - w, y: -h*0.5}, {x: offsetX + w, y: -h*0.5} ] : [ {x: offsetX, y: -h*0.5}, {x: offsetX - w, y: h*0.5}, {x: offsetX + w, y: h*0.5} ];
+            const center = { x: offsetX, y: (pts[0].y + pts[1].y + pts[2].y) / 3 };
+            let edges = !inverted ? [ {a: pts[1], b: pts[0], n: getOutwardNormal(pts[1], pts[0], center)}, {a: pts[0], b: pts[2], n: getOutwardNormal(pts[0], pts[2], center)}, {a: pts[2], b: pts[1], n: getOutwardNormal(pts[2], pts[1], center)} ] : [ {a: pts[1], b: pts[2], n: getOutwardNormal(pts[1], pts[2], center)}, {a: pts[2], b: pts[0], n: getOutwardNormal(pts[2], pts[0], center)}, {a: pts[0], b: pts[1], n: getOutwardNormal(pts[0], pts[1], center)} ];
+            return { pts, edges, n, A_rad, inverted };
+        }
+        function getPrismIntersection(p, d, prism) {
+            let bestHit = null; const eps = 1e-4; const px = p.x + d.x * eps, py = p.y + d.y * eps;
+            for (let edge of prism.edges) {
+                let hit = lineIntersect({x: px, y: py}, d, edge.a, edge.b);
+                if (hit && hit.t > 0 && (!bestHit || hit.t < bestHit.t)) bestHit = { t: hit.t + eps, p: { x: p.x + (hit.t + eps)*d.x, y: p.y + (hit.t + eps)*d.y }, n: edge.n };
+            } return bestHit;
+        }
+        function drawArrowLine(p1, p2, color, dashed=false, showArrow=true) {
+            const sx1 = mapX(p1.x), sy1 = mapY(p1.y), sx2 = mapX(p2.x), sy2 = mapY(p2.y);
+            ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+            if(dashed) { ctx.setLineDash([6,5]); ctx.globalAlpha = 0.6; } else { ctx.shadowBlur = 8; ctx.shadowColor = color; }
+            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
+            const dx = sx2 - sx1, dy = sy2 - sy1, len = Math.hypot(dx, dy);
+            if(showArrow && len > 25 && !dashed) {
+                const angle = Math.atan2(dy, dx), mx = sx1 + (dx/len) * Math.min(len * 0.6, 110), my = sy1 + (dy/len) * Math.min(len * 0.6, 110);
+                ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - 10*Math.cos(angle-0.4), my - 10*Math.sin(angle-0.4)); ctx.lineTo(mx - 10*Math.cos(angle+0.4), my - 10*Math.sin(angle+0.4)); ctx.closePath(); ctx.fill();
+            } ctx.restore();
+        }
+        function drawLabel(x, y, text, color, dy=0, size=12) {
+            const sx = mapX(x), sy = mapY(y) + dy;
+            ctx.save(); ctx.fillStyle = color; ctx.font = `bold ${size}px 'Segoe UI'`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.shadowBlur = 4; ctx.shadowColor = 'rgba(0,0,0,0.9)';
+            ctx.fillText(text, sx, sy);
+            ctx.restore();
+        }
+        function drawNormalLine(x, y, nx, ny, len = 85) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 1.3; ctx.setLineDash([4, 4]);
+            const sx = mapX(x), sy = mapY(y);
+            const snx = nx, sny = -ny; // invert Y for screen space
+            ctx.beginPath(); ctx.moveTo(sx + snx*len, sy + sny*len); ctx.lineTo(sx - snx*len, sy - sny*len); ctx.stroke();
+            ctx.restore();
+        }
+        function drawArcLabel(x, y, a1, a2, radius, label, color) {
+            ctx.save();
+            const sx = mapX(x), sy = mapY(y);
+            let sa1 = -a1, sa2 = -a2;
+            if (sa1 < 0) sa1 += 2*Math.PI; if (sa2 < 0) sa2 += 2*Math.PI;
+            let start = Math.min(sa1, sa2), end = Math.max(sa1, sa2);
+            if (end - start > Math.PI) { start = Math.max(sa1, sa2); end = Math.min(sa1, sa2) + 2*Math.PI; }
+            ctx.beginPath(); ctx.arc(sx, sy, radius, start, end);
+            ctx.strokeStyle = color; ctx.lineWidth = 1.3; ctx.setLineDash([3, 3]); ctx.stroke();
+            const mid = (start + end) / 2;
+            ctx.fillStyle = color; ctx.font = "italic 12px 'Segoe UI'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.shadowBlur = 4; ctx.shadowColor = 'rgba(0,0,0,0.9)';
+            ctx.fillText(label, sx + (radius + 14)*Math.cos(mid), sy + (radius + 14)*Math.sin(mid));
+            ctx.restore();
+        }
+        function annotateSurface(pt, dIn, dOut, nOut, entering, inLabel, outLabel, color) {
+            drawNormalLine(pt.x, pt.y, nOut.x, nOut.y);
+            const inSideDir = entering ? nOut : { x: -nOut.x, y: -nOut.y };
+            const revIn = { x: -dIn.x, y: -dIn.y };
+            drawArcLabel(pt.x, pt.y, Math.atan2(revIn.y, revIn.x), Math.atan2(inSideDir.y, inSideDir.x), 28,
+                `${inLabel}=${(Math.acos(Math.max(-1, Math.min(1, dot(revIn, inSideDir)))) * 180/Math.PI).toFixed(1)}°`, color);
+            if (dOut) {
+                const outSideDir = entering ? { x: -nOut.x, y: -nOut.y } : nOut;
+                drawArcLabel(pt.x, pt.y, Math.atan2(dOut.y, dOut.x), Math.atan2(outSideDir.y, outSideDir.x), 28,
+                    `${outLabel}=${(Math.acos(Math.max(-1, Math.min(1, dot(dOut, outSideDir)))) * 180/Math.PI).toFixed(1)}°`, color);
+            }
+        }
+        function angleBetweenDeg(d1, d2) {
+            let a1 = Math.atan2(d1.y, d1.x), a2 = Math.atan2(d2.y, d2.x);
+            let diff = (a2 - a1) * 180 / Math.PI;
+            while (diff > 180) diff -= 360; while (diff < -180) diff += 360;
+            return diff;
         }
 
         function draw() {
-            if(!initialized) return;
+            if (!initialized) return;
             ctx.clearRect(0, 0, W, H);
-            
-            const A1_rad = parseFloat(a1Slider.value) * Math.PI / 180;
-            const n1_base = parseFloat(n1Slider.value);
+
+            const A1_rad = parseFloat(aSlider.value) * Math.PI / 180;
+            const n1 = parseFloat(nSlider.value);
+            const i_rad = parseFloat(iSlider.value) * Math.PI / 180;
             const A2_rad = parseFloat(a2Slider.value) * Math.PI / 180;
-            const n2_base = parseFloat(n2Slider.value);
-            const i_deg = parseFloat(iSlider.value);
-            const i_rad = i_deg * Math.PI / 180;
+            const n2 = parseFloat(n22Slider.value);
+            const gap = parseFloat(gapSlider.value);
+            const boost = parseFloat(boostSlider.value);
 
-            const side = 240; 
-            const gap = 30; // Visible gap for scattering
-            
-            // --- PRISM 1 (Upright) ---
-            const h1 = side * Math.cos(A1_rad/2);
-            const w1 = side * Math.sin(A1_rad/2);
-            const p1_pts = [ {x: 0, y: h1/2}, {x: -w1, y: -h1/2}, {x: w1, y: -h1/2} ];
-            const p1_center = { x: 0, y: (p1_pts[0].y + p1_pts[1].y + p1_pts[2].y) / 3 };
-            const p1_edges = [
-                { a: p1_pts[1], b: p1_pts[0], n: getOutwardNormal(p1_pts[1], p1_pts[0], p1_center) }, // Left
-                { a: p1_pts[0], b: p1_pts[2], n: getOutwardNormal(p1_pts[0], p1_pts[2], p1_center) }, // Right
-                { a: p1_pts[2], b: p1_pts[1], n: getOutwardNormal(p1_pts[2], p1_pts[1], p1_center) }  // Base
-            ];
+            const s1 = 260 * Math.sin(A1_rad/2), s2 = 260 * Math.sin(A2_rad/2);
+            const p1 = getPrismPoints(0, A1_rad, false, n1);
+            const p2 = getPrismPoints(s1 + gap + s2, A2_rad, p2Inverted, n2);
+            const prisms = [p1, p2];
 
-            // --- PRISM 2 (Inverted, with gap) ---
-            const h2 = side * Math.cos(A2_rad/2);
-            const w2 = side * Math.sin(A2_rad/2);
-            const p2_offsetX = w1 + gap; // perfectly aligned parallel faces
-            const p2_pts = [ {x: p2_offsetX, y: -h2/2}, {x: p2_offsetX - w2, y: h2/2}, {x: p2_offsetX + w2, y: h2/2} ]; 
-            const p2_center = { x: p2_offsetX, y: (p2_pts[0].y + p2_pts[1].y + p2_pts[2].y) / 3 };
-            const p2_edges = [
-                { a: p2_pts[1], b: p2_pts[0], n: getOutwardNormal(p2_pts[1], p2_pts[0], p2_center) }, // Left 
-                { a: p2_pts[0], b: p2_pts[2], n: getOutwardNormal(p2_pts[0], p2_pts[2], p2_center) }, // Right
-                { a: p2_pts[2], b: p2_pts[1], n: getOutwardNormal(p2_pts[2], p2_pts[1], p2_center) }  // Top Base
-            ];
+            // Exact drawable area beside/above the HUD on THIS device — bounding box of both
+            // prisms (plus margin for rays/labels) is scaled+centred to fit it on any screen.
+            const allPts = [...p1.pts, ...p2.pts];
+            let minX = Math.min(...allPts.map(p => p.x)), maxX = Math.max(...allPts.map(p => p.x));
+            let minY = Math.min(...allPts.map(p => p.y)), maxY = Math.max(...allPts.map(p => p.y));
+            minX -= 210; maxX += 300; minY -= 170; maxY += 170;
+            const bboxW = maxX - minX, bboxH = maxY - minY;
 
-            const prisms = [ { edges: p1_edges, baseN: n1_base }, { edges: p2_edges, baseN: n2_base } ];
+            let availW, availH, offX, offY;
+            if (W > 900) {
+                offX = 410; offY = 20; availW = Math.max(W - 430, 100); availH = Math.max(H - 40, 100);
+            } else {
+                const hudH = hudPanel.offsetHeight || (H * 0.5);
+                offX = 10; offY = 10; availW = Math.max(W - 20, 100); availH = Math.max(H - hudH - 20, 100);
+            }
 
-            // Draw Prisms & Labels
-            ctx.save();
-            ctx.beginPath(); ctx.moveTo(mapX(p1_pts[0].x), mapY(p1_pts[0].y)); ctx.lineTo(mapX(p1_pts[1].x), mapY(p1_pts[1].y)); ctx.lineTo(mapX(p1_pts[2].x), mapY(p1_pts[2].y)); ctx.closePath();
-            ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill(); ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2; ctx.stroke();
-            
-            ctx.beginPath(); ctx.moveTo(mapX(p2_pts[0].x), mapY(p2_pts[0].y)); ctx.lineTo(mapX(p2_pts[1].x), mapY(p2_pts[1].y)); ctx.lineTo(mapX(p2_pts[2].x), mapY(p2_pts[2].y)); ctx.closePath();
-            ctx.fillStyle = "rgba(255, 0, 127, 0.15)"; ctx.fill(); ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 2; ctx.stroke();
-            
-            ctx.fillStyle = "#fff"; ctx.font = "bold 15px 'Segoe UI'"; ctx.textAlign = "center";
-            ctx.fillText("A₁", mapX(p1_pts[0].x), mapY(p1_pts[0].y) - 10);
-            ctx.fillText("A₂", mapX(p2_pts[0].x), mapY(p2_pts[0].y) + 20);
-            ctx.restore();
+            drawScale = Math.min(availW / bboxW, availH / bboxH, 1.1);
+            if (!isFinite(drawScale) || drawScale <= 0) drawScale = 0.35;
+            const bcx = (minX + maxX) / 2, bcy = (minY + maxY) / 2;
+            originX = offX + availW / 2 - bcx * drawScale;
+            originY = offY + availH / 2 + bcy * drawScale;
 
-            // Incident Ray Setup (From Bottom Left)
-            const n_left = p1_edges[0].n; 
-            const inwardNormalAngle = Math.atan2(-n_left.y, -n_left.x);
-            const rayAngle = inwardNormalAngle + i_rad; 
+            prisms.forEach(prism => {
+                ctx.save(); ctx.beginPath(); ctx.moveTo(mapX(prism.pts[0].x), mapY(prism.pts[0].y)); ctx.lineTo(mapX(prism.pts[1].x), mapY(prism.pts[1].y)); ctx.lineTo(mapX(prism.pts[2].x), mapY(prism.pts[2].y)); ctx.closePath();
+                ctx.fillStyle = "rgba(0, 229, 255, 0.13)"; ctx.fill(); ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
+            });
+
+            const outNormalLeft = p1.edges[0].n;
+            const inwardNormalAngle = Math.atan2(-outNormalLeft.y, -outNormalLeft.x);
+            const rayAngle = inwardNormalAngle + i_rad;
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
-            
-            const hitTarget = { x: p1_pts[1].x + (p1_pts[0].x - p1_pts[1].x)*0.4, y: p1_pts[1].y + (p1_pts[0].y - p1_pts[1].y)*0.4 };
-            const startP = { x: hitTarget.x - d_inc.x * 400, y: hitTarget.y - d_inc.y * 400 };
+            const hitTarget = { x: p1.pts[1].x + (p1.pts[0].x - p1.pts[1].x)*0.35, y: p1.pts[1].y + (p1.pts[0].y - p1.pts[1].y)*0.35 };
+            const startP = { x: hitTarget.x - d_inc.x*420, y: hitTarget.y - d_inc.y*420 };
 
-            // Find Entry Point on P1
-            let entryHit = null;
-            for(let e of p1_edges) {
-                let hit = lineIntersect(startP, d_inc, e.a, e.b);
-                if(hit && (!entryHit || hit.t < entryHit.t)) { entryHit = { ...hit, n: e.n }; }
-            }
-            if(!entryHit) entryHit = { p: hitTarget, n: n_left };
+            drawArrowLine(startP, hitTarget, "#f5f5f5");
+            drawLabel(startP.x, startP.y, "White Light", "#f5f5f5", -16, 12);
 
-            // 1. Draw Initial White Ray & Normal
-            drawArrowLine(startP.x, startP.y, entryHit.p.x, entryHit.p.y, "#ffffff");
-            drawDashedNormal(entryHit.p, entryHit.n);
-            drawArcLabel(entryHit.p.x, entryHit.p.y, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(entryHit.n.y, entryHit.n.x), 35*drawScale, `i=${parseFloat(iSlider.value).toFixed(0)}°`, "#ffffff");
-            
-            // Draw Dashed Extended Ray to compare final deviation
-            const extendedEnd = { x: entryHit.p.x + d_inc.x * 850, y: entryHit.p.y + d_inc.y * 850 };
-            drawArrowLine(entryHit.p.x, entryHit.p.y, extendedEnd.x, extendedEnd.y, "rgba(255,255,255,0.25)", true, false);
-
-            ctx.fillStyle = "#fff"; ctx.font = "italic 14px 'Segoe UI'"; ctx.textAlign = "left";
-            ctx.fillText("white light", mapX(startP.x) + 20, mapY(startP.y) - 10);
-            
-            // Exaggerated Wavelength variations for visible Dispersion
-            const n_offsets = [-0.08, -0.05, -0.02, 0, 0.02, 0.05, 0.08]; // Red -> Violet
-            let dev_v = "TIR", dev_r = "TIR";
-
-            // Ray Tracer Loop
-            for(let k=0; k<7; k++) {
-                let col = dispColors[k];
-                let n1_k = n1_base + n_offsets[k];
-                let n2_k = n2_base + n_offsets[k];
-
-                // 1. Refract at entry point
-                let ref0 = refract(d_inc, entryHit.n, 1.0, n1_k);
-                if(ref0.tir) continue;
-
-                let curP = entryHit.p;
-                let curD = ref0.dir;
-                let rayPath = [curP];
-                let escaped = false;
-                let totalDev = null;
-                let finalNormal = null;
-
-                for(let b=0; b<4; b++) { 
-                    let bestHit = null;
-                    let hitPrism = -1;
-
-                    for(let pIdx=0; pIdx<prisms.length; pIdx++) {
-                        for(let e of prisms[pIdx].edges) {
-                            let stepP = { x: curP.x + curD.x * 1e-4, y: curP.y + curD.y * 1e-4 };
-                            let hit = lineIntersect(stepP, curD, e.a, e.b);
-                            if(hit && hit.t > 0 && (!bestHit || hit.t < bestHit.t)) {
-                                bestHit = { ...hit, n: e.n }; // Uses correct precalculated normal
-                                hitPrism = pIdx;
-                            }
+            function traceColor(dn, colorStr, label, showLabel, doDraw, dashed, annotate) {
+                let currentP = { x: startP.x, y: startP.y };
+                let currentD = { x: d_inc.x, y: d_inc.y };
+                let hitsLog = [];
+                for (let bounce = 0; bounce < 5; bounce++) {
+                    let bestHit = null, hitIdx = -1;
+                    for (let pIdx = 0; pIdx < prisms.length; pIdx++) {
+                        let hit = getPrismIntersection(currentP, currentD, prisms[pIdx]);
+                        if (hit && (!bestHit || hit.t < bestHit.t)) { bestHit = hit; hitIdx = pIdx; }
+                    }
+                    if (!bestHit) {
+                        const endP = { x: currentP.x + currentD.x * 520, y: currentP.y + currentD.y * 520 };
+                        if (doDraw) {
+                            drawArrowLine(currentP, endP, colorStr, dashed, !dashed);
+                            if (showLabel) drawLabel(endP.x, endP.y, label, colorStr, -14, 13);
                         }
+                        return { finalDir: currentD, exitP: currentP, exited: true, hits: hitsLog };
                     }
-
-                    if(!bestHit) {
-                        rayPath.push({ x: curP.x + curD.x * 600, y: curP.y + curD.y * 600 });
-                        escaped = true;
-                        
-                        let angleIn = Math.atan2(d_inc.y, d_inc.x);
-                        let angleOut = Math.atan2(curD.y, curD.x);
-                        let dev = (angleOut - angleIn) * 180 / Math.PI;
-                        if(dev < -180) dev += 360;
-                        if(dev > 180) dev -= 360;
-                        totalDev = -dev; 
-                        break; 
-                    }
-                    
-                    rayPath.push(bestHit.p);
-
-                    let dotOut = dot(curD, bestHit.n);
-                    let curN, nextN;
-                    if(dotOut > 0) { 
-                        // Exiting prism into Air (or into gap)
-                        curN = (hitPrism === 0) ? n1_k : n2_k;
-                        nextN = 1.0;
-                        finalNormal = bestHit.n;
-                    } else { 
-                        // Entering prism
-                        curN = 1.0;
-                        nextN = (hitPrism === 0) ? n1_k : n2_k;
-                    }
-
-                    let ref = refract(curD, bestHit.n, curN, nextN);
-                    if(ref.tir) {
-                        curD = reflect(curD, bestHit.n);
-                    } else {
-                        curD = ref.dir;
-                    }
-                    curP = bestHit.p;
+                    if (doDraw) drawArrowLine(currentP, bestHit.p, colorStr, dashed, !dashed);
+                    let dotOut = dot(currentD, bestHit.n);
+                    let entering = dotOut < 0;
+                    let nEff = Math.min(2.1, Math.max(1.02, prisms[hitIdx].n + dn));
+                    let n1v = entering ? 1.0 : nEff;
+                    let n2v = entering ? nEff : 1.0;
+                    let nextD = refract(currentD, bestHit.n, n1v, n2v);
+                    const dOutVec = nextD.tir ? null : nextD.dir;
+                    if (annotate) hitsLog.push({ point: bestHit.p, dIn: currentD, dOut: dOutVec, nOut: bestHit.n, entering });
+                    if (nextD.tir) return { finalDir: null, exitP: bestHit.p, exited: false, hits: hitsLog };
+                    currentD = nextD.dir; currentP = bestHit.p;
                 }
+                return { finalDir: currentD, exitP: currentP, exited: true, hits: hitsLog };
+            }
 
-                // Draw specific ray path segments
-                for(let i=0; i<rayPath.length - 1; i++) {
-                    let isLast = i === rayPath.length - 2;
-                    let showArr = isLast || (i === 1 && k === 0); 
-                    drawArrowLine(rayPath[i].x, rayPath[i].y, rayPath[i+1].x, rayPath[i+1].y, col, false, showArr);
-                    
-                    if (escaped && isLast && (k===0 || k===6)) {
-                        ctx.fillStyle = col; ctx.textAlign = "left";
-                        ctx.fillText(k===0 ? "R" : "V", mapX(rayPath[i+1].x) + 5, mapY(rayPath[i+1].y) + (k===0 ? 10 : -10));
-                        
-                        if (finalNormal) {
-                            drawDashedNormal(rayPath[i], finalNormal);
-                            const dir_out = { x: rayPath[i+1].x - rayPath[i].x, y: rayPath[i+1].y - rayPath[i].y };
-                            const angle_out = Math.atan2(dir_out.y, dir_out.x);
-                            const angle_norm = Math.atan2(finalNormal.y, finalNormal.x);
-                            let e_val = (angle_out - angle_norm) * 180 / Math.PI;
-                            if (e_val < -180) e_val += 360;
-                            if (e_val > 180) e_val -= 360;
-                            drawArcLabel(rayPath[i].x, rayPath[i].y, angle_out, angle_norm, 35*drawScale, `e=${Math.abs(e_val).toFixed(0)}°`, col);
-                        }
-                    }
-                    if (i === 1 && (k===0 || k===6)) {
-                        ctx.fillStyle = col; ctx.textAlign = "center";
-                        ctx.fillText(k===0 ? "R" : "V", mapX(rayPath[i].x + (rayPath[i+1].x - rayPath[i].x)*0.5), mapY(rayPath[i].y + (rayPath[i+1].y - rayPath[i].y)*0.5) - 10);
-                    }
-                }
+            // Spectrum rays (dispersion boost applied)
+            let vFinal = null, rFinal = null;
+            SPECTRUM.forEach(c => {
+                const showLabel = (c.key === 'V' || c.key === 'R');
+                const res = traceColor(c.dn * boost, c.color, c.key, showLabel, true, false, false);
+                if (c.key === 'V') vFinal = res.finalDir;
+                if (c.key === 'R') rFinal = res.finalDir;
+            });
 
-                if(escaped) {
-                    if(k===0) dev_r = totalDev.toFixed(2);
-                    if(k===6) dev_v = totalDev.toFixed(2);
+            // Reference (dn=0) ray, drawn thin/dashed and fully annotated with normals + angle labels
+            const ref = traceColor(0, "rgba(225,230,240,0.85)", '', false, true, true, true);
+
+            const surfaceLabels = [
+                { in: 'i', out: 'r₁' },
+                { in: 'r₂', out: 'e₁' },
+                { in: 'i₂', out: 'r₃' },
+                { in: 'r₄', out: 'e₂' }
+            ];
+            ref.hits.forEach((h, idx) => {
+                const lbl = surfaceLabels[idx] || { in: `i${idx}`, out: `r${idx}` };
+                annotateSurface(h.point, h.dIn, h.dOut, h.nOut, h.entering, lbl.in, lbl.out, "#e8ecf5");
+            });
+
+            // Deviation caused by prism 1 alone (delta1), geometrically at the intersection of the
+            // incident line extended forward and the prism-1 exit ray extended backward
+            if (ref.hits.length >= 2 && ref.hits[1].dOut) {
+                const exitDir = ref.hits[1].dOut, exitPt = ref.hits[1].point;
+                const cross = d_inc.x*exitDir.y - d_inc.y*exitDir.x;
+                if (Math.abs(cross) > 1e-5) {
+                    const t = ((exitPt.x - startP.x)*exitDir.y - (exitPt.y - startP.y)*exitDir.x) / cross;
+                    const ix = startP.x + t*d_inc.x, iy = startP.y + t*d_inc.y;
+                    const delta1 = Math.abs(angleBetweenDeg(d_inc, exitDir));
+                    drawArcLabel(ix, iy, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(exitDir.y, exitDir.x), 24, `δ₁=${delta1.toFixed(1)}°`, "#ffd166");
                 }
             }
 
-            // Results Parsing
-            let dispText = "N/A";
-            if(dev_r !== "TIR" && dev_v !== "TIR") {
-                let disp = Math.abs(parseFloat(dev_v) - parseFloat(dev_r));
-                dispText = `${disp.toFixed(2)}°`;
-                
-                // If the prisms perfectly recombine the light (zero net deviation/dispersion)
-                if (Math.abs(parseFloat(dev_r)) < 0.5 && Math.abs(parseFloat(dev_v)) < 0.5) {
-                    document.getElementById('dRedBox').style.borderColor = "var(--real-img)";
-                    document.getElementById('dVioletBox').style.borderColor = "var(--real-img)";
-                    ctx.fillStyle = "#fff"; ctx.textAlign = "center";
-                    ctx.fillText("parallel", mapX(extendedEnd.x) - 10, mapY(extendedEnd.y) - 15);
-                } else {
-                    document.getElementById('dRedBox').style.borderColor = "rgba(255, 255, 255, 0.05)";
-                    document.getElementById('dVioletBox').style.borderColor = "rgba(255, 255, 255, 0.05)";
+            // Net system deviation (delta_net) + "parallel" reference guide
+            if (ref.exited && ref.finalDir) {
+                const finalDir = ref.finalDir, exitPt = ref.exitP;
+                const netDev = angleBetweenDeg(d_inc, finalDir);
+
+                const cross2 = d_inc.x*finalDir.y - d_inc.y*finalDir.x;
+                if (Math.abs(cross2) > 1e-5) {
+                    const t2 = ((exitPt.x - startP.x)*finalDir.y - (exitPt.y - startP.y)*finalDir.x) / cross2;
+                    const ix2 = startP.x + t2*d_inc.x, iy2 = startP.y + t2*d_inc.y;
+                    drawArcLabel(ix2, iy2, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(finalDir.y, finalDir.x), 40, `δnet=${Math.abs(netDev).toFixed(1)}°`, "#ffd166");
                 }
+
+                const guideStart = { x: exitPt.x - d_inc.x*40, y: exitPt.y - d_inc.y*40 };
+                const guideEnd = { x: exitPt.x + d_inc.x*480, y: exitPt.y + d_inc.y*480 };
+                drawArrowLine(guideStart, guideEnd, "rgba(255,255,255,0.5)", true, false);
+                drawLabel(guideEnd.x, guideEnd.y, "parallel", "rgba(255,255,255,0.75)", -12, 12);
+
+                document.getElementById('netDevOut').textContent = `${netDev.toFixed(1)}°`;
+            } else {
+                document.getElementById('netDevOut').textContent = "N/A";
             }
-            
-            document.getElementById('dRedOut').textContent = dev_r !== "TIR" ? `${dev_r}°` : "TIR";
-            document.getElementById('dVioletOut').textContent = dev_v !== "TIR" ? `${dev_v}°` : "TIR";
-            document.getElementById('dispOut').textContent = dispText;
+
+            if (vFinal && rFinal) {
+                document.getElementById('spreadOut').textContent = `${Math.abs(angleBetweenDeg(vFinal, rFinal)).toFixed(1)}°`;
+            } else {
+                document.getElementById('spreadOut').textContent = "N/A";
+            }
         }
     </script>
 </body>
