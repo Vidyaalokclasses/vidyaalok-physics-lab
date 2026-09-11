@@ -30,7 +30,7 @@
         .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; cursor: crosshair; }
         
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; background-image: url('../../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.06; pointer-events: none; z-index: 0; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 85%; background-image: url('../../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
         
         .hud-panel { width: 380px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 50; }
         .hud-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
@@ -63,9 +63,12 @@
         .stat span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
         .stat.alert span { color: #ff3366; }
         
-        .formula-panel { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--primary); font-weight: bold; font-size: 0.95rem; display: flex; flex-direction: column; gap: 8px; font-family: 'Segoe UI', serif; font-style: italic; }
-        .math-eqn { font-size: 1.05rem; color: var(--primary); font-style: italic; font-family: 'Times New Roman', Times, serif; letter-spacing: 1px; }
-        .math-eqn sub { font-size: 0.7rem; font-style: normal; }
+        .formula-panel { background: rgba(0,0,0,0.3); padding: 14px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        .math-eqn-row { display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--primary); font-size: 1.05rem; }
+        .math-eqn-row sub { font-size: 0.7rem; font-style: normal; }
+        .math-frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.35; font-size: 0.95rem; }
+        .math-frac-num, .math-frac-den { padding: 0 4px; white-space: nowrap; }
+        .math-frac-line { width: 100%; height: 1px; background: var(--primary); margin: 2px 0; }
     </style>
 </head>
 <body>
@@ -112,11 +115,19 @@
                 <div class="section-title" style="margin-top: 5px;">Analysis & Results</div>
                 <div id="resultsContainer">
                     <div class="stat-grid">
-                        <div class="stat"><strong>Current Deviation (&delta;)</strong><span id="dOut">0°</span></div>
+                        <div class="stat" id="dBox"><strong>Current Deviation (&delta;)</strong><span id="dOut">0°</span></div>
                         <div class="stat"><strong>Minimum Deviation (&delta;<sub>m</sub>)</strong><span id="dmOut" style="color:var(--gold);">0°</span></div>
                     </div>
                     <div class="formula-panel">
-                        <div class="math-eqn">n = sin((A + &delta;<sub>m</sub>)/2) / sin(A/2)</div>
+                        <div class="math-eqn-row">
+                            <span>n</span>
+                            <span>=</span>
+                            <span class="math-frac">
+                                <span class="math-frac-num">sin[(A + &delta;<sub>m</sub>) / 2]</span>
+                                <span class="math-frac-line"></span>
+                                <span class="math-frac-den">sin(A / 2)</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -137,6 +148,7 @@
 
         function updateLayout() {
             // W and H are natively the exact dimensions of the visible canvas wrapper
+            // (i.e. exactly the pixel space left above/beside the HUD panel on this device)
             const isDesktop = window.innerWidth > 900;
             if (isDesktop) {
                 originX = W * 0.35; // Shift left for graph
@@ -488,8 +500,6 @@
             }
             ctx.restore(); 
         }
-
-        setMode('graph');
     </script>
 </body>
 </html>
