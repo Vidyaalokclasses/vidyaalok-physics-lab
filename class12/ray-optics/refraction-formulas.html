@@ -37,7 +37,7 @@
         .formula-wrapper { position: relative; flex-grow: 1; height: 100%; overflow-y: auto; padding: 30px 40px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
         .formula-wrapper::-webkit-scrollbar { width: 5px; }
         .formula-wrapper::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-image: url('/logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.06; pointer-events: none; z-index: 0; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-image: url('../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.06; pointer-events: none; z-index: 0; }
         .content { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; }
 
         .topic-header { font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 4px; }
@@ -69,11 +69,11 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="/class12/ray-optics/refraction/index.html" class="back-btn">← Refraction Dashboard</a>
+        <a href="index.html" class="back-btn">← Ray Optics Dashboard</a>
         <h1>Refraction Formulas</h1>
     </nav>
 
-    <div class="workspace">
+    <div class="workspace" id="refraction">
         <div class="sidebar" id="sidebar"></div>
         <div class="formula-wrapper" id="formulaWrapper">
             <div class="watermark" id="watermark"></div>
