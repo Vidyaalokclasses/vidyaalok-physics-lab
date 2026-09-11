@@ -25,11 +25,7 @@
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
         
         /* Flexbox Layout ensuring exact visible bounds */
-        .workspace {
-            display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 70px);
-            overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%);
-        }
-        
+        .workspace { display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 70px); overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
         .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; cursor: crosshair; }
         
@@ -63,7 +59,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
         
-        /* Stats & Formula Panel (Pure HTML/CSS Math) */
+        /* Stats & Formula Panel */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
         .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
@@ -82,11 +78,13 @@
     </nav>
 
     <div class="workspace">
+        <!-- Canvas Layer -->
         <div class="canvas-wrapper" id="simWrapper">
             <div class="watermark"></div>
             <canvas id="simCanvas"></canvas>
         </div>
 
+        <!-- HUD Panel -->
         <div class="hud-panel" id="hudPanel">
             <div class="hud-header">
                 <h2>Controls</h2>
@@ -103,25 +101,25 @@
                 <div id="controlsContainer">
                     <div class="section-title">Prism 1 (Upright)</div>
                     <div class="control-group">
-                        <label>Angle of Prism (A₁) <span id="a1Val">60°</span></label>
+                        <label>Angle of Prism A₁ <span id="a1Val">60°</span></label>
                         <input id="a1Slider" type="range" min="30" max="75" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Refractive Index (n₁) <span id="n1Val">1.50</span></label>
+                        <label>Refractive Index n₁ <span id="n1Val">1.50</span></label>
                         <input id="n1Slider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
                     <div class="control-group">
-                        <label>Angle of Incidence (i) <span id="iVal">45°</span></label>
+                        <label>Angle of Incidence i <span id="iVal">45°</span></label>
                         <input id="iSlider" type="range" min="0" max="85" step="1" value="45">
                     </div>
 
                     <div class="section-title" style="margin-top: 10px;">Prism 2 (Inverted)</div>
                     <div class="control-group">
-                        <label>Angle of Prism (A₂) <span id="a2Val">60°</span></label>
+                        <label>Angle of Prism A₂ <span id="a2Val">60°</span></label>
                         <input id="a2Slider" type="range" min="30" max="75" step="1" value="60">
                     </div>
                     <div class="control-group">
-                        <label>Refractive Index (n₂) <span id="n2Val">1.50</span></label>
+                        <label>Refractive Index n₂ <span id="n2Val">1.50</span></label>
                         <input id="n2Slider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
                 </div>
@@ -150,6 +148,7 @@
         const canvas = document.getElementById("simCanvas");
         const ctx = canvas.getContext("2d");
         
+        // UI Sliders
         const a1Slider = document.getElementById("a1Slider");
         const n1Slider = document.getElementById("n1Slider");
         const iSlider = document.getElementById("iSlider");
@@ -167,13 +166,13 @@
             if (isDesktop) {
                 originX = W * 0.35; 
                 originY = H * 0.65;
-                drawScale = Math.min(1, H / 500);
+                drawScale = Math.min(1, H / 450);
             } else {
                 const hudHeight = document.getElementById('hudPanel').offsetHeight;
-                const visH = H - hudHeight;
-                originX = W * 0.25; 
-                originY = visH * 0.7; // Lowered to ensure P2 doesn't clip
-                drawScale = Math.min(1, visH / 450, W / 600);
+                const visH = H - hudHeight; // Exact pixel height available above HUD
+                originX = W * 0.20; 
+                originY = visH * 0.65; 
+                drawScale = Math.min(1, visH / 400, W / 750); // Scale down mathematically
             }
         }
 
@@ -181,7 +180,8 @@
             for (let entry of entries) {
                 W = Math.floor(entry.contentRect.width);
                 H = Math.floor(entry.contentRect.height);
-                canvas.width = W; canvas.height = H;
+                canvas.width = W;
+                canvas.height = H;
                 updateLayout();
                 if (!initialized && W > 10 && H > 10) { initialized = true; draw(); } 
                 else if (initialized) draw();
@@ -193,8 +193,11 @@
             if (!initialized && canvas.parentElement.clientWidth > 10) {
                 W = canvas.parentElement.clientWidth;
                 H = canvas.parentElement.clientHeight || 500; 
-                canvas.width = W; canvas.height = H;
-                initialized = true; updateLayout(); draw();
+                canvas.width = W;
+                canvas.height = H;
+                initialized = true; 
+                updateLayout();
+                draw();
             }
         }, 300);
 
@@ -209,8 +212,9 @@
 
         [a1Slider, n1Slider, iSlider, a2Slider, n2Slider].forEach(el => el.addEventListener("input", updateUI));
 
+        // --- VECTOR MATH UTILS ---
         function mapX(x) { return originX + x * drawScale; }
-        function mapY(y) { return originY - y * drawScale; }
+        function mapY(y) { return originY - y * drawScale; } // +Y is UP
         function dot(a, b) { return a.x*b.x + a.y*b.y; }
 
         function drawArrowLine(x1, y1, x2, y2, color, dashed=false, showArrow=true) {
@@ -241,14 +245,11 @@
             ctx.restore();
         }
 
-        function drawNormalArrow(x, y, dir_screen) {
-            const angle = Math.atan2(dir_screen.y, dir_screen.x);
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - 7*Math.cos(angle-0.4), y - 7*Math.sin(angle-0.4));
-            ctx.lineTo(x - 7*Math.cos(angle+0.4), y - 7*Math.sin(angle+0.4));
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
-            ctx.fill();
+        function getOutwardNormal(p1, p2, center) {
+            let dx = p2.x - p1.x, dy = p2.y - p1.y, l = Math.hypot(dx, dy), n = { x: dy/l, y: -dx/l }; 
+            let mid = { x: (p1.x + p2.x)/2, y: (p1.y + p2.y)/2 }, toCenter = { x: center.x - mid.x, y: center.y - mid.y };
+            if (dot(n, toCenter) > 0) { n.x = -n.x; n.y = -n.y; } 
+            return n;
         }
 
         function drawDashedNormal(p, N) {
@@ -261,8 +262,11 @@
             const p2x = sx - snx * 80 * drawScale, p2y = sy - sny * 80 * drawScale; 
             ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.stroke();
             
-            drawNormalArrow(p1x, p1y, {x: snx, y: sny});
-            drawNormalArrow(p2x, p2y, {x: -snx, y: -sny});
+            const a1 = Math.atan2(sny, snx);
+            const a2 = Math.atan2(-sny, -snx);
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p1x - 7*Math.cos(a1-0.4), p1y - 7*Math.sin(a1-0.4)); ctx.lineTo(p1x - 7*Math.cos(a1+0.4), p1y - 7*Math.sin(a1+0.4)); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(p2x, p2y); ctx.lineTo(p2x - 7*Math.cos(a2-0.4), p2y - 7*Math.sin(a2-0.4)); ctx.lineTo(p2x - 7*Math.cos(a2+0.4), p2y - 7*Math.sin(a2+0.4)); ctx.fill();
             ctx.restore();
         }
 
@@ -283,17 +287,10 @@
             ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([2,2]); ctx.stroke();
             
             const mid = (start + end)/2;
-            ctx.fillStyle = color; ctx.font = "italic 13px 'Segoe UI'";
+            ctx.fillStyle = color; ctx.font = "italic 14px 'Segoe UI'";
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText(label, sx + (radius + 14)*Math.cos(mid), sy + (radius + 14)*Math.sin(mid));
+            ctx.fillText(label, sx + (radius + 18)*Math.cos(mid), sy + (radius + 18)*Math.sin(mid));
             ctx.restore();
-        }
-
-        function getOutwardNormal(p1, p2, center) {
-            let dx = p2.x - p1.x, dy = p2.y - p1.y, l = Math.hypot(dx, dy), n = { x: dy/l, y: -dx/l }; 
-            let mid = { x: (p1.x + p2.x)/2, y: (p1.y + p2.y)/2 }, toCenter = { x: center.x - mid.x, y: center.y - mid.y };
-            if (dot(n, toCenter) > 0) { n.x = -n.x; n.y = -n.y; } 
-            return n;
         }
 
         function refract(D, N, n1, n2) {
@@ -319,7 +316,8 @@
             if (Math.abs(denom) < 1e-6) return null;
             let t = ((v1.x - v3.x)*(v3.y - v4.y) - (v1.y - v3.y)*(v3.x - v4.x)) / denom;
             let u = -((v1.x - v2.x)*(v1.y - v3.y) - (v1.y - v2.y)*(v1.x - v3.x)) / denom;
-            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y }, n: getOutwardNormal(a,b,{x:0,y:0}) }; 
+            // Removed the center dependency to prevent flipped normals!
+            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y } }; 
             return null;
         }
 
@@ -335,6 +333,7 @@
             const i_rad = i_deg * Math.PI / 180;
 
             const side = 240; 
+            const gap = 30; // Visible gap for scattering
             
             // --- PRISM 1 (Upright) ---
             const h1 = side * Math.cos(A1_rad/2);
@@ -347,10 +346,10 @@
                 { a: p1_pts[2], b: p1_pts[1], n: getOutwardNormal(p1_pts[2], p1_pts[1], p1_center) }  // Base
             ];
 
-            // --- PRISM 2 (Inverted, locked precisely to the right face of P1) ---
+            // --- PRISM 2 (Inverted, with gap) ---
             const h2 = side * Math.cos(A2_rad/2);
             const w2 = side * Math.sin(A2_rad/2);
-            const p2_offsetX = w1 + 1; // 1px mathematical gap to prevent collision bugs while visually touching
+            const p2_offsetX = w1 + gap; // perfectly aligned parallel faces
             const p2_pts = [ {x: p2_offsetX, y: -h2/2}, {x: p2_offsetX - w2, y: h2/2}, {x: p2_offsetX + w2, y: h2/2} ]; 
             const p2_center = { x: p2_offsetX, y: (p2_pts[0].y + p2_pts[1].y + p2_pts[2].y) / 3 };
             const p2_edges = [
@@ -369,7 +368,7 @@
             ctx.beginPath(); ctx.moveTo(mapX(p2_pts[0].x), mapY(p2_pts[0].y)); ctx.lineTo(mapX(p2_pts[1].x), mapY(p2_pts[1].y)); ctx.lineTo(mapX(p2_pts[2].x), mapY(p2_pts[2].y)); ctx.closePath();
             ctx.fillStyle = "rgba(255, 0, 127, 0.15)"; ctx.fill(); ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 2; ctx.stroke();
             
-            ctx.fillStyle = "#fff"; ctx.font = "bold 14px 'Segoe UI'"; ctx.textAlign = "center";
+            ctx.fillStyle = "#fff"; ctx.font = "bold 15px 'Segoe UI'"; ctx.textAlign = "center";
             ctx.fillText("A₁", mapX(p1_pts[0].x), mapY(p1_pts[0].y) - 10);
             ctx.fillText("A₂", mapX(p2_pts[0].x), mapY(p2_pts[0].y) + 20);
             ctx.restore();
@@ -380,7 +379,7 @@
             const rayAngle = inwardNormalAngle + i_rad; 
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             
-            const hitTarget = { x: p1_pts[1].x + (p1_pts[0].x - p1_pts[1].x)*0.35, y: p1_pts[1].y + (p1_pts[0].y - p1_pts[1].y)*0.35 };
+            const hitTarget = { x: p1_pts[1].x + (p1_pts[0].x - p1_pts[1].x)*0.4, y: p1_pts[1].y + (p1_pts[0].y - p1_pts[1].y)*0.4 };
             const startP = { x: hitTarget.x - d_inc.x * 400, y: hitTarget.y - d_inc.y * 400 };
 
             // Find Entry Point on P1
@@ -400,9 +399,9 @@
             const extendedEnd = { x: entryHit.p.x + d_inc.x * 850, y: entryHit.p.y + d_inc.y * 850 };
             drawArrowLine(entryHit.p.x, entryHit.p.y, extendedEnd.x, extendedEnd.y, "rgba(255,255,255,0.25)", true, false);
 
-            ctx.fillStyle = "#fff"; ctx.font = "italic 13px 'Segoe UI'"; ctx.textAlign = "left";
+            ctx.fillStyle = "#fff"; ctx.font = "italic 14px 'Segoe UI'"; ctx.textAlign = "left";
             ctx.fillText("white light", mapX(startP.x) + 20, mapY(startP.y) - 10);
-
+            
             // Exaggerated Wavelength variations for visible Dispersion
             const n_offsets = [-0.08, -0.05, -0.02, 0, 0.02, 0.05, 0.08]; // Red -> Violet
             let dev_v = "TIR", dev_r = "TIR";
@@ -424,17 +423,16 @@
                 let totalDev = null;
                 let finalNormal = null;
 
-                for(let b=0; b<3; b++) { 
+                for(let b=0; b<4; b++) { 
                     let bestHit = null;
                     let hitPrism = -1;
 
                     for(let pIdx=0; pIdx<prisms.length; pIdx++) {
                         for(let e of prisms[pIdx].edges) {
-                            // Micro step to safely escape current face
                             let stepP = { x: curP.x + curD.x * 1e-4, y: curP.y + curD.y * 1e-4 };
                             let hit = lineIntersect(stepP, curD, e.a, e.b);
                             if(hit && hit.t > 0 && (!bestHit || hit.t < bestHit.t)) {
-                                bestHit = { ...hit, n: e.n };
+                                bestHit = { ...hit, n: e.n }; // Uses correct precalculated normal
                                 hitPrism = pIdx;
                             }
                         }
@@ -458,7 +456,7 @@
                     let dotOut = dot(curD, bestHit.n);
                     let curN, nextN;
                     if(dotOut > 0) { 
-                        // Exiting prism
+                        // Exiting prism into Air (or into gap)
                         curN = (hitPrism === 0) ? n1_k : n2_k;
                         nextN = 1.0;
                         finalNormal = bestHit.n;
@@ -487,7 +485,7 @@
                         ctx.fillStyle = col; ctx.textAlign = "left";
                         ctx.fillText(k===0 ? "R" : "V", mapX(rayPath[i+1].x) + 5, mapY(rayPath[i+1].y) + (k===0 ? 10 : -10));
                         
-                        if (finalNormal && k===0) {
+                        if (finalNormal) {
                             drawDashedNormal(rayPath[i], finalNormal);
                             const dir_out = { x: rayPath[i+1].x - rayPath[i].x, y: rayPath[i+1].y - rayPath[i].y };
                             const angle_out = Math.atan2(dir_out.y, dir_out.x);
@@ -497,6 +495,10 @@
                             if (e_val > 180) e_val -= 360;
                             drawArcLabel(rayPath[i].x, rayPath[i].y, angle_out, angle_norm, 35*drawScale, `e=${Math.abs(e_val).toFixed(0)}°`, col);
                         }
+                    }
+                    if (i === 1 && (k===0 || k===6)) {
+                        ctx.fillStyle = col; ctx.textAlign = "center";
+                        ctx.fillText(k===0 ? "R" : "V", mapX(rayPath[i].x + (rayPath[i+1].x - rayPath[i].x)*0.5), mapY(rayPath[i].y + (rayPath[i+1].y - rayPath[i].y)*0.5) - 10);
                     }
                 }
 
