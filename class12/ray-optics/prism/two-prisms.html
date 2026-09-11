@@ -25,16 +25,12 @@
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
         
         /* Flexbox Layout ensuring exact visible bounds */
-        .workspace {
-            display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 70px);
-            overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%);
-        }
-        
+        .workspace { display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 70px); overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
         .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; cursor: crosshair; }
         
         /* Dynamic Centered Watermark */
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 75%; height: 75%; background-image: url('../../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('../../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
         
         /* HUD Panel */
         .hud-panel { width: 380px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 50; }
@@ -63,7 +59,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
         
-        /* Stats & Formula Panel (Pure HTML/CSS Math) */
+        /* Stats & Formula Panel (Pure HTML/CSS) */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
         .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
@@ -71,28 +67,24 @@
         .stat.alert span { color: #ff3366; }
         
         .formula-panel { background: rgba(0,0,0,0.3); padding: 14px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; align-items: center; }
-        .math-eqn-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--primary); font-size: 1.05rem; }
-        .math-eqn-row sub { font-size: 0.7rem; font-style: normal; }
+        .math-eqn-row { display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--primary); font-size: 1.1rem; }
+        .math-eqn-row sub { font-size: 0.75rem; font-style: normal; }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <a href="../index.html" class="back-btn">← Dashboard</a>
-        <h1>Two Prisms (Recombination)</h1>
+        <h1>Two Prisms Recombination</h1>
     </nav>
 
     <div class="workspace">
-        <!-- Canvas Layer -->
         <div class="canvas-wrapper" id="simWrapper">
             <div class="watermark"></div>
             <canvas id="simCanvas"></canvas>
         </div>
 
-        <!-- HUD Panel -->
         <div class="hud-panel" id="hudPanel">
-            <div class="hud-header">
-                <h2>Controls</h2>
-            </div>
+            <div class="hud-header"><h2>Controls</h2></div>
             
             <div class="hud-content">
                 <div class="toolbar">
@@ -126,10 +118,6 @@
                         <label>Refractive Index (n₂) <span id="n2Val">1.50</span></label>
                         <input id="n2Slider" type="range" min="1.1" max="2.0" step="0.01" value="1.50">
                     </div>
-                    <div class="control-group">
-                        <label>Gap Between Prisms <span id="gapVal">30 px</span></label>
-                        <input id="gapSlider" type="range" min="5" max="100" step="1" value="30">
-                    </div>
                 </div>
 
                 <div class="section-title" style="margin-top: 5px;">Analysis & Results</div>
@@ -137,13 +125,13 @@
                     <div class="stat-grid">
                         <div class="stat" id="dRedBox"><strong>Net Deviation (Red)</strong><span id="dRedOut">0°</span></div>
                         <div class="stat" id="dVioletBox"><strong>Net Deviation (Violet)</strong><span id="dVioletOut">0°</span></div>
-                        <div class="stat" style="grid-column: span 2;"><strong>Angular Dispersion</strong><span id="dispOut">0°</span></div>
+                        <div class="stat" style="grid-column: span 2;"><strong>Net Angular Dispersion</strong><span id="dispOut">0°</span></div>
                     </div>
                     <div class="formula-panel">
                         <div class="math-eqn-row">
                             <span>&delta;<sub>net</sub></span> <span>=</span> <span>&delta;<sub>1</sub> - &delta;<sub>2</sub></span>
                         </div>
-                        <div class="math-eqn-row" style="font-size: 0.9rem; margin-top: 4px; color: var(--text-muted);">
+                        <div class="math-eqn-row" style="font-size: 0.85rem; margin-top: 4px; color: var(--text-muted); font-family: 'Segoe UI', sans-serif;">
                             Recombination occurs when &delta;<sub>net</sub> = 0
                         </div>
                     </div>
@@ -156,13 +144,11 @@
         const canvas = document.getElementById("simCanvas");
         const ctx = canvas.getContext("2d");
         
-        // UI Sliders
         const a1Slider = document.getElementById("a1Slider");
         const n1Slider = document.getElementById("n1Slider");
         const iSlider = document.getElementById("iSlider");
         const a2Slider = document.getElementById("a2Slider");
         const n2Slider = document.getElementById("n2Slider");
-        const gapSlider = document.getElementById("gapSlider");
         
         let W = 0, H = 0, originX = 0, originY = 0;
         let drawScale = 1; 
@@ -171,17 +157,15 @@
         const dispColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#00e5ff', '#4b0082', '#9400d3'];
 
         function updateLayout() {
-            // W and H perfectly match the empty space of canvas-wrapper via ResizeObserver
             const isDesktop = window.innerWidth > 900;
             if (isDesktop) {
-                // Shift right slightly to give space for incident ray
-                originX = W * 0.35; 
+                originX = W * 0.4; 
                 originY = H * 0.65;
-                drawScale = Math.min(1, H / 500);
+                drawScale = Math.min(1, H / 450);
             } else {
-                originX = W * 0.25; 
+                originX = W * 0.3; 
                 originY = H * 0.65; 
-                drawScale = Math.min(1, H / 450, W / 700);
+                drawScale = Math.min(1, H / 350, W / 600);
             }
         }
 
@@ -189,8 +173,7 @@
             for (let entry of entries) {
                 W = Math.floor(entry.contentRect.width);
                 H = Math.floor(entry.contentRect.height);
-                canvas.width = W;
-                canvas.height = H;
+                canvas.width = W; canvas.height = H;
                 updateLayout();
                 if (!initialized && W > 10 && H > 10) { initialized = true; draw(); } 
                 else if (initialized) draw();
@@ -202,11 +185,8 @@
             if (!initialized && canvas.parentElement.clientWidth > 10) {
                 W = canvas.parentElement.clientWidth;
                 H = canvas.parentElement.clientHeight || 500; 
-                canvas.width = W;
-                canvas.height = H;
-                initialized = true; 
-                updateLayout();
-                draw();
+                canvas.width = W; canvas.height = H;
+                initialized = true; updateLayout(); draw();
             }
         }, 300);
 
@@ -216,22 +196,20 @@
             document.getElementById("iVal").textContent = `${iSlider.value}°`;
             document.getElementById("a2Val").textContent = `${a2Slider.value}°`;
             document.getElementById("n2Val").textContent = parseFloat(n2Slider.value).toFixed(2);
-            document.getElementById("gapVal").textContent = `${gapSlider.value} px`;
             draw();
         }
 
-        [a1Slider, n1Slider, iSlider, a2Slider, n2Slider, gapSlider].forEach(el => el.addEventListener("input", updateUI));
+        [a1Slider, n1Slider, iSlider, a2Slider, n2Slider].forEach(el => el.addEventListener("input", updateUI));
 
-        // --- VECTOR MATH UTILS ---
         function mapX(x) { return originX + x * drawScale; }
-        function mapY(y) { return originY - y * drawScale; } // +Y is UP
+        function mapY(y) { return originY - y * drawScale; }
         function dot(a, b) { return a.x*b.x + a.y*b.y; }
 
         function drawArrowLine(x1, y1, x2, y2, color, dashed=false, showArrow=true) {
             ctx.save();
             ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
             if(dashed) { ctx.setLineDash([5,5]); ctx.globalAlpha = 0.5; }
-            else { ctx.shadowBlur = 10; ctx.shadowColor = color; }
+            else { ctx.shadowBlur = 8; ctx.shadowColor = color; }
             
             const sx1 = mapX(x1), sy1 = mapY(y1);
             const sx2 = mapX(x2), sy2 = mapY(y2);
@@ -241,17 +219,59 @@
 
             const dx = sx2 - sx1, dy = sy2 - sy1;
             const len = Math.hypot(dx, dy);
-            if(showArrow && len > 30 && !dashed) {
+            // Draw arrowhead
+            if(showArrow && len > 25 && !dashed) {
                 const angle = Math.atan2(dy, dx);
-                // Draw head slightly past halfway for visibility
-                const mx = sx1 + (dx/len) * Math.min(len * 0.6, 120);
-                const my = sy1 + (dy/len) * Math.min(len * 0.6, 120);
+                const mx = sx1 + (dx/len) * Math.min(len * 0.65, 120);
+                const my = sy1 + (dy/len) * Math.min(len * 0.65, 120);
                 ctx.beginPath();
                 ctx.moveTo(mx, my);
                 ctx.lineTo(mx - 10 * Math.cos(angle - 0.4), my - 10 * Math.sin(angle - 0.4));
                 ctx.lineTo(mx - 10 * Math.cos(angle + 0.4), my - 10 * Math.sin(angle + 0.4));
                 ctx.closePath(); ctx.fill();
             }
+            ctx.restore();
+        }
+
+        function drawNormalLine(x, y, nx, ny) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
+            const sx = mapX(x), sy = mapY(y);
+            const snx = nx, sny = -ny; // Invert Y for screen space normal
+            
+            const p1x = sx + snx * 80, p1y = sy + sny * 80; // Outward
+            const p2x = sx - snx * 80, p2y = sy - sny * 80; // Inward
+            ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.stroke();
+            
+            // Arrows on normal
+            const a1 = Math.atan2(sny, snx);
+            const a2 = Math.atan2(-sny, -snx);
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p1x - 7*Math.cos(a1-0.4), p1y - 7*Math.sin(a1-0.4)); ctx.lineTo(p1x - 7*Math.cos(a1+0.4), p1y - 7*Math.sin(a1+0.4)); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(p2x, p2y); ctx.lineTo(p2x - 7*Math.cos(a2-0.4), p2y - 7*Math.sin(a2-0.4)); ctx.lineTo(p2x - 7*Math.cos(a2+0.4), p2y - 7*Math.sin(a2+0.4)); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawArcLabel(x, y, a1, a2, radius, label, color) {
+            ctx.save();
+            const sx = mapX(x), sy = mapY(y);
+            let sa1 = -a1; let sa2 = -a2; // Invert angle for Canvas
+            if(sa1 < 0) sa1 += 2*Math.PI; if(sa2 < 0) sa2 += 2*Math.PI;
+            
+            let start = Math.min(sa1, sa2);
+            let end = Math.max(sa1, sa2);
+            if(end - start > Math.PI) {
+                start = Math.max(sa1, sa2);
+                end = Math.min(sa1, sa2) + 2*Math.PI;
+            }
+
+            ctx.beginPath(); ctx.arc(sx, sy, radius, start, end);
+            ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([2,2]); ctx.stroke();
+            
+            const mid = (start + end)/2;
+            ctx.fillStyle = color; ctx.font = "italic 13px 'Segoe UI'";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(label, sx + (radius + 14)*Math.cos(mid), sy + (radius + 14)*Math.sin(mid));
             ctx.restore();
         }
 
@@ -273,7 +293,7 @@
         }
 
         function reflect(D, N) {
-            let cosI = -dot(D, N);
+            let cosI = -(D.x*N.x + D.y*N.y);
             let outN = {x: N.x, y: N.y};
             if (cosI < 0) { outN = {x: -N.x, y: -N.y}; cosI = -cosI; }
             return { x: D.x + 2 * cosI * outN.x, y: D.y + 2 * cosI * outN.y };
@@ -285,11 +305,10 @@
             if (Math.abs(denom) < 1e-6) return null;
             let t = ((v1.x - v3.x)*(v3.y - v4.y) - (v1.y - v3.y)*(v3.x - v4.x)) / denom;
             let u = -((v1.x - v2.x)*(v1.y - v3.y) - (v1.y - v2.y)*(v1.x - v3.x)) / denom;
-            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y }, n: getOutwardNormal(a,b,{x:0,y:0}) }; // Center doesn't matter here for normal orientation as it's precalculated
+            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y }, n: getOutwardNormal(a,b,{x:0,y:0}) }; 
             return null;
         }
 
-        // --- MAIN RENDER LOOP ---
         function draw() {
             if(!initialized) return;
             ctx.clearRect(0, 0, W, H);
@@ -298,10 +317,11 @@
             const n1_base = parseFloat(n1Slider.value);
             const A2_rad = parseFloat(a2Slider.value) * Math.PI / 180;
             const n2_base = parseFloat(n2Slider.value);
-            const i_rad = parseFloat(iSlider.value) * Math.PI / 180;
-            const gap = parseFloat(gapSlider.value);
+            const i_deg = parseFloat(iSlider.value);
+            const i_rad = i_deg * Math.PI / 180;
 
             const side = 240; 
+            const gap = 2; // Mathematical gap to prevent boundary collision bugs
             
             // --- PRISM 1 (Upright) ---
             const h1 = side * Math.cos(A1_rad/2);
@@ -314,12 +334,11 @@
                 { a: p1_pts[2], b: p1_pts[1], n: getOutwardNormal(p1_pts[2], p1_pts[1], p1_center) }  // Base
             ];
 
-            // --- PRISM 2 (Inverted, aligned to the right face of P1) ---
+            // --- PRISM 2 (Inverted, locked precisely to the right face of P1) ---
             const h2 = side * Math.cos(A2_rad/2);
             const w2 = side * Math.sin(A2_rad/2);
-            // Anchor P2 relative to P1's right face to make the gap uniform
             const p2_offsetX = w1 + gap + w2; 
-            const p2_pts = [ {x: p2_offsetX, y: -h2/2}, {x: p2_offsetX - w2, y: h2/2}, {x: p2_offsetX + w2, y: h2/2} ]; // Inverted
+            const p2_pts = [ {x: p2_offsetX, y: -h2/2}, {x: p2_offsetX - w2, y: h2/2}, {x: p2_offsetX + w2, y: h2/2} ]; 
             const p2_center = { x: p2_offsetX, y: (p2_pts[0].y + p2_pts[1].y + p2_pts[2].y) / 3 };
             const p2_edges = [
                 { a: p2_pts[1], b: p2_pts[0], n: getOutwardNormal(p2_pts[1], p2_pts[0], p2_center) }, // Left 
@@ -329,22 +348,26 @@
 
             const prisms = [ { edges: p1_edges, baseN: n1_base }, { edges: p2_edges, baseN: n2_base } ];
 
-            // Draw Prisms
+            // Draw Prisms & Labels
             ctx.save();
-            // Prism 1
             ctx.beginPath(); ctx.moveTo(mapX(p1_pts[0].x), mapY(p1_pts[0].y)); ctx.lineTo(mapX(p1_pts[1].x), mapY(p1_pts[1].y)); ctx.lineTo(mapX(p1_pts[2].x), mapY(p1_pts[2].y)); ctx.closePath();
-            ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill(); ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2; ctx.stroke();
-            // Prism 2
+            ctx.fillStyle = "rgba(0, 229, 255, 0.12)"; ctx.fill(); ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2; ctx.stroke();
+            
             ctx.beginPath(); ctx.moveTo(mapX(p2_pts[0].x), mapY(p2_pts[0].y)); ctx.lineTo(mapX(p2_pts[1].x), mapY(p2_pts[1].y)); ctx.lineTo(mapX(p2_pts[2].x), mapY(p2_pts[2].y)); ctx.closePath();
-            ctx.fillStyle = "rgba(255, 0, 127, 0.15)"; ctx.fill(); ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = "rgba(255, 0, 127, 0.12)"; ctx.fill(); ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 2; ctx.stroke();
+            
+            ctx.fillStyle = "#fff"; ctx.font = "bold 14px 'Segoe UI'"; ctx.textAlign = "center";
+            ctx.fillText("A₁", mapX(p1_pts[0].x), mapY(p1_pts[0].y) - 10);
+            ctx.fillText("A₂", mapX(p2_pts[0].x), mapY(p2_pts[0].y) + 20);
             ctx.restore();
 
             // Incident Ray Setup (From Bottom Left)
             const n_left = p1_edges[0].n; 
             const inwardNormalAngle = Math.atan2(-n_left.y, -n_left.x);
-            const rayAngle = inwardNormalAngle + i_rad; 
+            const rayAngle = inwardNormalAngle + i_rad; // Positive i_rad pushes the ray UPWARD
             const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
             
+            // Strike lower half of the first prism
             const hitTarget = { x: p1_pts[1].x + (p1_pts[0].x - p1_pts[1].x)*0.35, y: p1_pts[1].y + (p1_pts[0].y - p1_pts[1].y)*0.35 };
             const startP = { x: hitTarget.x - d_inc.x * 400, y: hitTarget.y - d_inc.y * 400 };
 
@@ -356,22 +379,23 @@
             }
             if(!entryHit) entryHit = { p: hitTarget, n: n_left };
 
-            // 1. Draw Initial White Ray
+            // 1. Draw Initial White Ray & Normal
             drawArrowLine(startP.x, startP.y, entryHit.p.x, entryHit.p.y, "#ffffff");
+            drawDashedNormal(entryHit.p.x, entryHit.p.y, entryHit.n.x, entryHit.n.y);
+            drawArcLabel(entryHit.p.x, entryHit.p.y, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(entryHit.n.y, entryHit.n.x), 35*drawScale, `i=${i_deg.toFixed(0)}°`, "#ffffff");
             
             // Draw Dashed Extended Ray to compare final deviation
-            const extendedEnd = { x: entryHit.p.x + d_inc.x * 900, y: entryHit.p.y + d_inc.y * 900 };
-            drawArrowLine(entryHit.p.x, entryHit.p.y, extendedEnd.x, extendedEnd.y, "rgba(255,255,255,0.2)", true, false);
+            const extendedEnd = { x: entryHit.p.x + d_inc.x * 800, y: entryHit.p.y + d_inc.y * 800 };
+            drawArrowLine(entryHit.p.x, entryHit.p.y, extendedEnd.x, extendedEnd.y, "rgba(255,255,255,0.25)", true, false);
 
             ctx.fillStyle = "#fff"; ctx.font = "italic 13px 'Segoe UI'"; ctx.textAlign = "left";
             ctx.fillText("white light", mapX(startP.x) + 20, mapY(startP.y) - 10);
-            ctx.fillText("parallel", mapX(extendedEnd.x) - 40, mapY(extendedEnd.y) - 10);
-
-            // Wavelength variations for Dispersion
-            const n_offsets = [-0.04, -0.02, 0, 0.02, 0.04, 0.06, 0.08]; // Red -> Violet
+            
+            // Exaggerated Wavelength variations for visible Dispersion
+            const n_offsets = [-0.08, -0.05, -0.02, 0, 0.02, 0.05, 0.08]; // Red -> Violet
             let dev_v = "TIR", dev_r = "TIR";
 
-            // Ray Tracer
+            // Ray Tracer Loop
             for(let k=0; k<7; k++) {
                 let col = dispColors[k];
                 let n1 = n1_base + n_offsets[k];
@@ -380,19 +404,19 @@
                 let curP = entryHit.p;
                 let curD = d_inc;
                 
-                // Track path for this color
                 let rayPath = [curP];
                 let escaped = false;
                 let totalDev = null;
+                let finalNormal = null;
 
-                for(let b=0; b<4; b++) { // max 4 bounces (enter P1, exit P1, enter P2, exit P2)
+                for(let b=0; b<4; b++) { 
                     let bestHit = null;
-                    let nextN = 1.0; // Air by default
+                    let nextN = 1.0; 
                     let curN = 1.0;
 
                     for(let p=0; p<prisms.length; p++) {
                         for(let e of prisms[p].edges) {
-                            // Micro step to avoid self-intersection
+                            // Micro step to safely escape current face
                             let stepP = { x: curP.x + curD.x * 1e-4, y: curP.y + curD.y * 1e-4 };
                             let hit = lineIntersect(stepP, curD, e.a, e.b);
                             if(hit && hit.t > 0 && (!bestHit || hit.t < bestHit.t)) {
@@ -405,25 +429,24 @@
                         rayPath.push({ x: curP.x + curD.x * 600, y: curP.y + curD.y * 600 });
                         escaped = true;
                         
-                        // Calc final deviation if it fully escaped
                         let angleIn = Math.atan2(d_inc.y, d_inc.x);
                         let angleOut = Math.atan2(curD.y, curD.x);
                         let dev = (angleOut - angleIn) * 180 / Math.PI;
                         if(dev < -180) dev += 360;
                         if(dev > 180) dev -= 360;
-                        totalDev = -dev; // Customary sign
-
+                        totalDev = -dev; 
                         break; 
                     }
                     
                     rayPath.push(bestHit.p);
 
-                    // Refraction logic
+                    // Refraction physics
                     let dotOut = dot(curD, bestHit.n);
                     if(dotOut > 0) {
-                        // Exiting prism
+                        // Exiting prism into Air (or into gap)
                         curN = prisms[bestHit.pIdx].baseN + n_offsets[k];
                         nextN = 1.0;
+                        finalNormal = bestHit.n; // Record the last exit normal for emergence label
                     } else {
                         // Entering prism
                         curN = 1.0;
@@ -439,17 +462,28 @@
                     curP = bestHit.p;
                 }
 
-                // Draw specific ray path
+                // Draw specific ray path segments
                 for(let i=0; i<rayPath.length - 1; i++) {
                     let isLast = i === rayPath.length - 2;
                     drawArrowLine(rayPath[i].x, rayPath[i].y, rayPath[i+1].x, rayPath[i+1].y, col, false, isLast);
                     
-                    // Add text tags for Red and Violet on the final emergent ray
-                    if (isLast && (k===0 || k===6)) {
+                    if (escaped && isLast && (k===0 || k===6)) {
                         ctx.fillStyle = col; ctx.textAlign = "left";
                         ctx.fillText(k===0 ? "R" : "V", mapX(rayPath[i+1].x) + 5, mapY(rayPath[i+1].y) + (k===0 ? 10 : -10));
+                        
+                        // Draw Emergence Normal and Label for the outermost rays
+                        if (finalNormal) {
+                            drawDashedNormal(rayPath[i].x, rayPath[i].y, finalNormal.x, finalNormal.y);
+                            const dir_out = { x: rayPath[i+1].x - rayPath[i].x, y: rayPath[i+1].y - rayPath[i].y };
+                            const angle_out = Math.atan2(dir_out.y, dir_out.x);
+                            const angle_norm = Math.atan2(finalNormal.y, finalNormal.x);
+                            let e_val = (angle_out - angle_norm) * 180 / Math.PI;
+                            if (e_val < -180) e_val += 360;
+                            if (e_val > 180) e_val -= 360;
+                            drawArcLabel(rayPath[i].x, rayPath[i].y, angle_out, angle_norm, 35*drawScale, `e=${Math.abs(e_val).toFixed(0)}°`, col);
+                        }
                     }
-                    // Add tag in the gap
+                    // Add internal tags in the gap
                     if (i === 1 && (k===0 || k===6)) {
                         ctx.fillStyle = col; ctx.textAlign = "center";
                         ctx.fillText(k===0 ? "R" : "V", mapX(rayPath[i].x + (rayPath[i+1].x - rayPath[i].x)*0.5), mapY(rayPath[i].y + (rayPath[i+1].y - rayPath[i].y)*0.5) - 10);
@@ -457,27 +491,33 @@
                 }
 
                 if(escaped) {
-                    if(k===0) dev_r = totalDev.toFixed(2);
-                    if(k===6) dev_v = totalDev.toFixed(2);
+                    if(k===0) dev_r = totalDev;
+                    if(k===6) dev_v = totalDev;
                 }
             }
 
-            document.getElementById('dROut').textContent = dev_r !== "TIR" ? `${dev_r}°` : "TIR";
-            document.getElementById('dVioletOut').textContent = dev_v !== "TIR" ? `${dev_v}°` : "TIR";
-            
+            // Results Parsing
+            let dispText = "N/A";
             if(dev_r !== "TIR" && dev_v !== "TIR") {
-                let disp = Math.abs(parseFloat(dev_v) - parseFloat(dev_r));
-                document.getElementById('dispOut').textContent = `${disp.toFixed(2)}°`;
-                if(Math.abs(parseFloat(dev_r)) < 0.5 && Math.abs(parseFloat(dev_v)) < 0.5) {
+                let disp = Math.abs(dev_v - dev_r);
+                dispText = `${disp.toFixed(2)}°`;
+                
+                // If the prisms perfectly recombine the light (zero net deviation/dispersion)
+                if (Math.abs(dev_r) < 0.5 && Math.abs(dev_v) < 0.5) {
                     document.getElementById('dRedBox').style.borderColor = "var(--real-img)";
                     document.getElementById('dVioletBox').style.borderColor = "var(--real-img)";
+                    ctx.fillStyle = "#fff"; ctx.textAlign = "center";
+                    ctx.fillText("parallel", mapX(extendedEnd.x) - 10, mapY(extendedEnd.y) - 15);
                 } else {
                     document.getElementById('dRedBox').style.borderColor = "rgba(255, 255, 255, 0.05)";
                     document.getElementById('dVioletBox').style.borderColor = "rgba(255, 255, 255, 0.05)";
                 }
             }
+            
+            document.getElementById('dRedOut').textContent = dev_r !== "TIR" ? `${dev_r.toFixed(2)}°` : "TIR";
+            document.getElementById('dVioletOut').textContent = dev_v !== "TIR" ? `${dev_v.toFixed(2)}°` : "TIR";
+            document.getElementById('dispOut').textContent = dispText;
         }
-        
     </script>
 </body>
 </html>
