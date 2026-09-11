@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Refraction Formulas | Vidyaalok Lab</title>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <style>
+        :root { --primary: #00e5ff; --secondary: #ff007f; --bg-dark: #070b19; --panel-bg: rgba(7, 11, 25, 0.85); --text-main: #ffffff; --text-muted: #a0aabf; --gold: #ffd166; --border: rgba(0, 229, 255, 0.2); }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; }
+        .navbar { padding: 12px 20px; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 100; position: relative; }
+        .back-btn { color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+
+        .workspace { display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 58px); overflow: hidden; }
+
+        /* --- Topic sidebar --- */
+        .sidebar { width: 320px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-right: 1px solid var(--border); overflow-y: auto; padding: 16px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+        .group-title { font-size: 0.7rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1.5px; font-weight: bold; margin: 18px 0 8px; }
+        .group-title:first-child { margin-top: 0; }
+        .topic-btn { display: block; width: 100%; text-align: left; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 10px 12px; border-radius: 8px; font-size: 0.82rem; margin-bottom: 6px; cursor: pointer; transition: all 0.15s ease; }
+        .topic-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
+        .topic-btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); font-weight: bold; }
+
+        /* --- Formula display area --- */
+        .formula-wrapper { position: relative; flex-grow: 1; height: 100%; overflow-y: auto; padding: 30px 40px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
+        .formula-wrapper::-webkit-scrollbar { width: 5px; }
+        .formula-wrapper::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-image: url('/logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.06; pointer-events: none; z-index: 0; }
+        .content { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; }
+
+        .topic-header { font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 4px; }
+        .topic-sub { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+
+        .card { background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
+        .card h3 { margin: 0 0 12px; font-size: 0.78rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+        .eq { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--text-main); font-size: 1.08rem; margin: 10px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .eq .plain { font-style: normal; color: var(--text-muted); font-size: 0.85rem; margin-right: 4px; }
+        .note { color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; margin: 6px 0; }
+        .note b { color: var(--text-main); }
+        .highlight { color: var(--gold); font-weight: bold; }
+        .frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.3; font-size: 1rem; vertical-align: middle; }
+        .frac-num, .frac-den { padding: 0 4px; white-space: nowrap; }
+        .frac-line { width: 100%; height: 1px; background: var(--primary); margin: 2px 0; }
+        .boxed { border: 1px solid var(--primary); border-radius: 8px; padding: 10px 16px; display: inline-block; background: rgba(0,229,255,0.06); }
+        ul.pts { margin: 6px 0; padding-left: 20px; color: var(--text-muted); font-size: 0.82rem; line-height: 1.6; }
+        ul.pts li b { color: var(--text-main); }
+        .order { font-family: monospace; color: var(--primary); font-size: 0.9rem; letter-spacing: 1px; }
+
+        @media (max-width: 900px) {
+            .workspace { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; max-height: none; border-right: none; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; overflow-y: hidden; white-space: nowrap; padding: 12px; gap: 8px; }
+            .group-title { display: none; }
+            .topic-btn { display: inline-block; width: auto; flex-shrink: 0; margin-bottom: 0; white-space: nowrap; }
+            .formula-wrapper { padding: 20px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/class12/ray-optics/refraction/index.html" class="back-btn">← Refraction Dashboard</a>
+        <h1>Refraction Formulas</h1>
+    </nav>
+
+    <div class="workspace">
+        <div class="sidebar" id="sidebar"></div>
+        <div class="formula-wrapper" id="formulaWrapper">
+            <div class="watermark" id="watermark"></div>
+            <div class="content" id="content"></div>
+        </div>
+    </div>
+
+    <script>
+        const TOPICS = [
+            { id: 'apparent-depth', group: 'Apparent Depth & Shift', title: 'Apparent Depth', body: `
+                <div class="card"><h3>Object in Denser Medium, Observer in Rarer Medium</h3>
+                    <div class="eq"><span class="plain">Apparent depth</span> h' = <span class="frac"><span class="frac-num">h</span><span class="frac-line"></span><span class="frac-den">n</span></span></div>
+                    <div class="eq">Shift = h − h' = h<span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">1</span></span> = h(1 − 1/n)</div>
+                </div>
+                <div class="card"><h3>Object in Rarer Medium, Observer in Denser Medium</h3>
+                    <div class="eq"><span class="plain">Apparent height</span> h' = n × h</div>
+                    <div class="eq">Shift = h' − h = h(n − 1)</div>
+                </div>
+                <div class="card"><h3>Direction of Shift</h3>
+                    <ul class="pts">
+                        <li>Object in <b>denser</b> medium → image shifts <b>towards</b> the surface</li>
+                        <li>Object in <b>rarer</b> medium → image shifts <b>away</b> from the surface</li>
+                    </ul>
+                </div>` },
+
+            { id: 'bubble-slab', group: 'Apparent Depth & Shift', title: 'Air Bubble in Glass Slab', body: `
+                <div class="card"><h3>Apparent Positions From Each Face</h3>
+                    <div class="eq">a = x / n &nbsp;&nbsp; (from face 1)</div>
+                    <div class="eq">b = y / n &nbsp;&nbsp; (from face 2)</div>
+                </div>
+                <div class="card"><h3>Slab Width</h3>
+                    <div class="eq boxed">x + y = na + nb</div>
+                    <div class="note">x and y are the real distances of the bubble from each face; a and b are the apparent distances seen from outside each face.</div>
+                </div>` },
+
+            { id: 'multiple-medium', group: 'Apparent Depth & Shift', title: 'Multiple Medium (Stacked Slabs)', body: `
+                <div class="card"><h3>Apparent Depth Seen by an Observer</h3>
+                    <div class="eq boxed">Apparent depth = n<sub>observer</sub> × Σ (x<sub>i</sub> / n<sub>i</sub>)</div>
+                    <div class="note">For a stack of transparent media (n₁, n₂, n₃ … with real thicknesses x₁, x₂, x₃ …) sitting between the object and the observer, sum each layer's real thickness divided by its own index, then multiply by the observer's medium index.</div>
+                </div>` },
+
+            { id: 'bird-fish', group: 'Apparent Depth & Shift', title: 'Bird–Fish Problem', body: `
+                <div class="card"><h3>Setup</h3>
+                    <div class="note">A bird at height <b>x</b> above a water surface and a fish at depth <b>y</b> below it — each sees the other's <i>apparent</i> position/velocity, distorted by refraction at the surface.</div>
+                </div>
+                <div class="card"><h3>Apparent Position</h3>
+                    <div class="eq">Fish sees bird at: x<sub>Bird/Fish</sub> = n<sub>Fish</sub> <span class="frac"><span class="frac-num">x</span><span class="frac-line"></span><span class="frac-den">n<sub>Bird</sub></span></span> + y</div>
+                </div>
+                <div class="card"><h3>Apparent Velocity</h3>
+                    <div class="eq">V<sub>Fish/Bird</sub> = n<sub>Bird</sub> <span class="frac"><span class="frac-num">x</span><span class="frac-line"></span><span class="frac-den">n<sub>Bird</sub></span></span> + <span class="frac"><span class="frac-num">y</span><span class="frac-line"></span><span class="frac-den">n<sub>Fish</sub></span></span></div>
+                    <div class="note">Differentiate the apparent-position relation with respect to time to get the apparent relative velocity seen across the surface.</div>
+                </div>` },
+
+            { id: 'tir-critical', group: 'Total Internal Reflection', title: 'Critical Angle & TIR', body: `
+                <div class="card"><h3>Critical Angle</h3>
+                    <div class="eq boxed">i<sub>c</sub> = sin<sup>−1</sup> ( n<sub>rarer</sub> / n<sub>denser</sub> )</div>
+                </div>
+                <div class="card"><h3>Condition for TIR</h3>
+                    <ul class="pts">
+                        <li>Ray must travel from a <b>denser</b> to a <b>rarer</b> medium</li>
+                        <li>Angle of incidence must exceed the critical angle: <b>i ≥ i<sub>c</sub></b></li>
+                    </ul>
+                </div>` },
+
+            { id: 'tir-multiple', group: 'Total Internal Reflection', title: 'TIR in Multiple Media', body: `
+                <div class="card"><h3>Snell's Law Chain</h3>
+                    <div class="eq boxed">n₁ sinθ₁ = n₂ sinθ₂ = n₃ sinθ₃ = …</div>
+                    <div class="note">Applies at every parallel interface — the product n·sinθ stays constant all the way through the stack.</div>
+                </div>
+                <div class="card"><h3>Condition for TIR to Occur</h3>
+                    <div class="note">TIR happens once sinθ = 1 in some layer. Working back through the chain from the first medium (n<sub>1</sub>) at incidence i:</div>
+                    <div class="eq">sin i &gt; <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">n</span></span> &nbsp; i.e. &nbsp; n &gt; <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">sin i</span></span></div>
+                </div>` },
+
+            { id: 'tir-fibre', group: 'Total Internal Reflection', title: 'Applications: Optical Fibre', body: `
+                <div class="card"><h3>Core–Cladding Critical Angle</h3>
+                    <div class="eq boxed">sin i<sub>c</sub> = n<sub>cladding</sub> / n<sub>core</sub></div>
+                </div>
+                <div class="card"><h3>Acceptance Angle at the Fibre Face</h3>
+                    <div class="eq">sin i<sub>c</sub> = <span class="frac"><span class="frac-num">n<sub>c</sub></span><span class="frac-line"></span><span class="frac-den">n<sub>g</sub></span></span> ,&nbsp; sin i<sub>o</sub> = <span class="frac"><span class="frac-num">√(n<sub>g</sub>² − n<sub>c</sub>²)</span><span class="frac-line"></span><span class="frac-den">n<sub>g</sub></span></span></div>
+                    <div class="eq">cos i<sub>c</sub> = <span class="frac"><span class="frac-num">n<sub>g</sub></span><span class="frac-line"></span><span class="frac-den">√(n<sub>g</sub>² − n<sub>c</sub>²)</span></span></div>
+                    <div class="note">n<sub>g</sub> = core index, n<sub>c</sub> = cladding index. Light entering within the acceptance cone undergoes repeated TIR and stays guided along the fibre.</div>
+                </div>` },
+
+            { id: 'visible-region', group: 'Total Internal Reflection', title: 'Area of Visible Region (Underwater)', body: `
+                <div class="card"><h3>Radius of the Visible Circle (Snell's Window)</h3>
+                    <div class="eq boxed">r = h × <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">√[(n<sub>d</sub>/n<sub>r</sub>)² − 1]</span></span></div>
+                    <div class="note">h = depth of the object/eye below the surface, n<sub>d</sub> = denser medium index, n<sub>r</sub> = rarer medium index.</div>
+                </div>
+                <div class="card"><h3>Special Case — Viewing Into Air (n<sub>r</sub> = 1, n<sub>d</sub> = n)</h3>
+                    <div class="eq">r = <span class="frac"><span class="frac-num">h</span><span class="frac-line"></span><span class="frac-den">√(n² − 1)</span></span> &nbsp;&nbsp; Area = <span class="frac"><span class="frac-num">π h²</span><span class="frac-line"></span><span class="frac-den">n² − 1</span></span></div>
+                </div>
+                <div class="card"><h3>Cone Angle</h3>
+                    <div class="eq">Total angle = 2 × i<sub>c</sub> = 2θ</div>
+                </div>` },
+
+            { id: 'tir-prism', group: 'Total Internal Reflection', title: 'TIR in a Prism', body: `
+                <div class="card"><h3>Grazing Emergence at the Second Face (e = 90°)</h3>
+                    <div class="eq">n × sin r₂ = 1 × sin 90° &nbsp;⇒&nbsp; sin r₂ = <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">n</span></span></div>
+                    <div class="eq">r₁ + r₂ = A</div>
+                    <div class="eq boxed">sin i<sub>c</sub> = n × sin r₁</div>
+                </div>
+                <div class="card"><h3>Condition for TIR Inside the Prism</h3>
+                    <div class="eq">i ≥ i<sub>c</sub> &nbsp;&nbsp;⇒&nbsp;&nbsp; n ≥ <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">sin i</span></span></div>
+                </div>` },
+
+            { id: 'prism-basic', group: 'Prism', title: 'Prism — Basic Relations', body: `
+                <div class="card"><h3>Geometry</h3>
+                    <div class="eq boxed">A = r₁ + r₂</div>
+                    <div class="note">A = angle of the prism, r₁ and r₂ = angles of refraction at the first and second face.</div>
+                </div>
+                <div class="card"><h3>Deviation</h3>
+                    <div class="eq boxed">δ = i + e − A &nbsp; (= i + e − (r₁ + r₂))</div>
+                    <div class="note">i = angle of incidence, e = angle of emergence, δ = total angle of deviation.</div>
+                </div>` },
+
+            { id: 'min-deviation', group: 'Prism', title: 'Minimum Deviation', body: `
+                <div class="card"><h3>At Minimum Deviation</h3>
+                    <ul class="pts">
+                        <li><b>i = e</b></li>
+                        <li><b>r₁ = r₂ = r</b>, so <b>2r = A</b></li>
+                        <li>δ<sub>min</sub> = D = i + e − (r₁+r₂) = i + e − A = 2i − A</li>
+                    </ul>
+                </div>
+                <div class="card"><h3>Refractive Index From Minimum Deviation</h3>
+                    <div class="eq boxed">n = <span class="frac"><span class="frac-num">sin[(A+D)/2]</span><span class="frac-line"></span><span class="frac-den">sin(A/2)</span></span></div>
+                </div>
+                <div class="card"><h3>Special Case</h3>
+                    <div class="note">If the angle of the prism equals the angle of minimum deviation (A = D):</div>
+                    <div class="eq boxed">n = 2 cos(A/2)</div>
+                </div>` },
+
+            { id: 'deviation-graph', group: 'Prism', title: 'Deviation vs Incidence Graph', body: `
+                <div class="card"><h3>Shape of the δ–i Curve</h3>
+                    <ul class="pts">
+                        <li>The graph of deviation <b>δ</b> against angle of incidence <b>i</b> is a <b>U-shaped curve</b></li>
+                        <li>It falls to a single minimum value <b>δ<sub>min</sub></b> at some incidence <b>i<sub>m</sub></b>, then rises again</li>
+                        <li>At the minimum point, <b>i = e</b> (the ray path is symmetric through the prism)</li>
+                        <li>For any deviation above δ<sub>min</sub>, there are <b>two</b> angles of incidence (i₁ and i₂) that produce it — by ray reversibility, one equals the emergence angle of the other</li>
+                    </ul>
+                </div>` },
+
+            { id: 'cauchy', group: 'Dispersion', title: "Cauchy's Relation", body: `
+                <div class="card"><h3>Refractive Index vs Wavelength</h3>
+                    <div class="eq boxed">n = A + <span class="frac"><span class="frac-num">B</span><span class="frac-line"></span><span class="frac-den">λ²</span></span></div>
+                    <div class="note">A and B are constants for a given medium; n decreases as wavelength λ increases.</div>
+                </div>
+                <div class="card"><h3>Ordering Across VIBGYOR</h3>
+                    <div class="order">λ: &nbsp; V &lt; I &lt; B &lt; G &lt; Y &lt; O &lt; R</div>
+                    <div class="order">n: &nbsp; V &gt; I &gt; B &gt; G &gt; Y &gt; O &gt; R</div>
+                    <div class="order">i<sub>c</sub>: &nbsp; V &lt; I &lt; B &lt; G &lt; Y &lt; O &lt; R</div>
+                    <div class="note">Since sin i<sub>c</sub> = 1/n, i<sub>c</sub> ∝ 1/n — so violet (highest n) has the smallest critical angle, red (lowest n) has the largest.</div>
+                </div>
+                <div class="card"><h3>Value of i for Which a Ray Retraces Its Path</h3>
+                    <div class="eq boxed">sin i = (n₂ / n₁) sin A</div>
+                </div>` },
+
+            { id: 'thin-prism', group: 'Dispersion', title: 'Thin Prism', body: `
+                <div class="card"><h3>Small-Angle Approximation</h3>
+                    <div class="eq">sin θ ≈ θ &nbsp; (θ in radians, valid for small angles)</div>
+                </div>
+                <div class="card"><h3>Deviation</h3>
+                    <div class="eq boxed">D = (n − 1) × A</div>
+                    <div class="note">For a thin prism, deviation no longer depends on the angle of incidence — it depends only on the prism angle A and the refractive index n.</div>
+                </div>` },
+
+            { id: 'dispersion-prism', group: 'Dispersion', title: 'Dispersion in a Prism', body: `
+                <div class="card"><h3>Cause</h3>
+                    <div class="note">Since n = A + B/λ² (Cauchy) and D = (n−1)A, deviation depends on wavelength: <b>D ∝ n</b>. Different colours (different λ) bend by different amounts, splitting white light into a spectrum.</div>
+                </div>
+                <div class="card"><h3>Extremes and Mean</h3>
+                    <div class="eq">Maximum deviation → <b>Violet</b>: &nbsp; D<sub>max</sub> = (n<sub>V</sub> − 1)A</div>
+                    <div class="eq">Minimum deviation → <b>Red</b>: &nbsp; D<sub>min</sub> = (n<sub>R</sub> − 1)A</div>
+                    <div class="eq">Mean ray (Yellow): &nbsp; n<sub>Y</sub> = <span class="frac"><span class="frac-num">n<sub>V</sub> + n<sub>R</sub></span><span class="frac-line"></span><span class="frac-den">2</span></span></div>
+                </div>` },
+
+            { id: 'angular-dispersion', group: 'Dispersion', title: 'Angular Dispersion', body: `
+                <div class="card"><h3>Angular Dispersion (θ)</h3>
+                    <div class="eq boxed">θ = (n<sub>V</sub> − n<sub>R</sub>) × A</div>
+                    <div class="note">The angular separation between the extreme violet and red rays after passing through the prism.</div>
+                </div>
+                <div class="card"><h3>Deviation of the Mean Ray</h3>
+                    <div class="eq boxed">D<sub>Y</sub> = [ <span class="frac"><span class="frac-num">n<sub>R</sub> + n<sub>V</sub></span><span class="frac-line"></span><span class="frac-den">2</span></span> − 1 ] × A</div>
+                </div>` },
+
+            { id: 'dispersive-power', group: 'Dispersion', title: 'Dispersive Power', body: `
+                <div class="card"><h3>Dispersive Power (ω)</h3>
+                    <div class="eq boxed">ω = <span class="frac"><span class="frac-num">n<sub>V</sub> − n<sub>R</sub></span><span class="frac-line"></span><span class="frac-den">n<sub>Y</sub> − 1</span></span> &nbsp;,&nbsp; n<sub>Y</sub> = <span class="frac"><span class="frac-num">n<sub>V</sub> + n<sub>R</sub></span><span class="frac-line"></span><span class="frac-den">2</span></span></div>
+                    <div class="note">Ratio of angular dispersion to the mean deviation — a material property independent of the prism angle.</div>
+                </div>
+                <div class="card"><h3>Achromatic Combination</h3>
+                    <div class="eq boxed">(n₁ − 1) A₁ = (n₂ − 1) A₂</div>
+                    <div class="note">Condition for two prisms combined to produce zero net dispersion (deviation without dispersion) for the mean ray.</div>
+                </div>` },
+
+            { id: 'rainbow', group: 'Natural Phenomena', title: 'Rainbow', body: `
+                <div class="card"><h3>Formation</h3>
+                    <div class="note">Combined effect of <b>dispersion</b>, <b>refraction</b>, and <b>internal reflection</b> of sunlight inside spherical water droplets.</div>
+                    <ul class="pts">
+                        <li>Sunlight refracts on entering a raindrop, causing dispersion</li>
+                        <li>Violet bends most, red bends least</li>
+                        <li>Light undergoes internal reflection if the angle at the drop surface exceeds the critical angle (~48°)</li>
+                        <li>Light refracts again on leaving the drop</li>
+                        <li>Violet emerges at ~40° to the incoming sunlight, red at ~42°</li>
+                    </ul>
+                </div>
+                <div class="card"><h3>Viewing Condition</h3>
+                    <div class="note">Sun must be shining in one part of the sky, with rain in the opposite part — the observer sees a rainbow only with their <b>back towards the Sun</b>.</div>
+                </div>
+                <div class="card"><h3>Primary vs Secondary Rainbow</h3>
+                    <ul class="pts">
+                        <li><b>Primary:</b> one internal reflection, colours clearer, red on top / violet on bottom</li>
+                        <li><b>Secondary:</b> two internal reflections, colours fainter, violet on top / red on bottom</li>
+                    </ul>
+                </div>` },
+
+            { id: 'scattering', group: 'Natural Phenomena', title: 'Scattering of Light', body: `
+                <div class="card"><h3>Rayleigh Scattering</h3>
+                    <div class="eq boxed">I ∝ 1/λ⁴ &nbsp;&nbsp; (equivalently, I ∝ f⁴)</div>
+                    <div class="note">Valid only when particle size a ≪ λ. If a ≫ λ, all wavelengths scatter roughly equally.</div>
+                </div>
+                <div class="card"><h3>Everyday Consequences</h3>
+                    <ul class="pts">
+                        <li><b>Blue sky:</b> blue (shorter λ) scatters far more than red, and our eyes are also more sensitive to blue than violet</li>
+                        <li><b>White clouds:</b> water droplets there are large (a ≫ λ), so all wavelengths scatter equally</li>
+                        <li><b>Red sunrise/sunset:</b> sunlight travels a longer path through the atmosphere; shorter wavelengths get scattered away, leaving the least-scattered red/orange light to reach the eye</li>
+                    </ul>
+                </div>` }
+        ];
+
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+        let groups = [];
+        TOPICS.forEach(t => { if (!groups.includes(t.group)) groups.push(t.group); });
+
+        groups.forEach(g => {
+            const h = document.createElement('div');
+            h.className = 'group-title';
+            h.textContent = g;
+            sidebar.appendChild(h);
+            TOPICS.filter(t => t.group === g).forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = 'topic-btn';
+                btn.id = 'btn-' + t.id;
+                btn.textContent = t.title;
+                btn.onclick = () => selectTopic(t.id);
+                sidebar.appendChild(btn);
+            });
+        });
+
+        function selectTopic(id) {
+            const topic = TOPICS.find(t => t.id === id);
+            if (!topic) return;
+            document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + id).classList.add('active');
+            content.innerHTML = `<div class="topic-header">${topic.title}</div><div class="topic-sub">${topic.group}</div>${topic.body}`;
+            document.getElementById('formulaWrapper').scrollTop = 0;
+        }
+
+        // Background logo: centred on the formula panel, sized off the panel's actual
+        // pixel dimensions so it scales correctly on any device/orientation.
+        const formulaWrapper = document.getElementById('formulaWrapper');
+        const watermark = document.getElementById('watermark');
+        const wmObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const w = entry.contentRect.width, h = entry.contentRect.height;
+                const size = Math.min(w, h) * 0.75;
+                watermark.style.width = size + 'px';
+                watermark.style.height = size + 'px';
+            }
+        });
+        wmObserver.observe(formulaWrapper);
+
+        selectTopic(TOPICS[0].id);
+    </script>
+</body>
+</html>
