@@ -350,6 +350,7 @@
             drawArrowLine(hit1.x, hit1.y, hit1.x + d_inc.x*400, hit1.y + d_inc.y*400, "rgba(255,255,255,0.2)", true);
 
             let ref1 = refract(d_inc, {x: n1x, y: n1y}, 1.0, n);
+            let currentDelta = null, currentE = null;
 
             if (!ref1.tir) {
                 let hit2 = lineIntersect(hit1.x, hit1.y, ref1.dir.x, ref1.dir.y, apex.x, apex.y, br.x, br.y);
@@ -385,6 +386,8 @@
                         
                         document.getElementById('dOut').textContent = `${delta_deg.toFixed(1)}°`;
                         document.getElementById('dBox').classList.remove('alert');
+                        currentDelta = delta_deg;
+                        currentE = e_rad * 180 / Math.PI;
 
                         drawArrowLine(hit2.x, hit2.y, hit2.x + ref2.dir.x*600, hit2.y + ref2.dir.y*600, "#ffffff");
                         drawArcLabel(hit2.x, hit2.y, Math.atan2(ref2.dir.y, ref2.dir.x), Math.atan2(hit2Normal.y, hit2Normal.x), 40*drawScale, `e=${(e_rad*180/Math.PI).toFixed(1)}°`, "#ffffff");
@@ -394,111 +397,138 @@
                             const t = ((hit2.x - hit1.x)*ref2.dir.y - (hit2.y - hit1.y)*ref2.dir.x) / cross;
                             const devX = hit1.x + t*d_inc.x, devY = hit1.y + t*d_inc.y;
                             drawArrowLine(hit2.x, hit2.y, devX, devY, "#ffffff", true);
-                            drawArcLabel(devX, devY, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(ref2.dir.y, ref2.dir.x), 30*drawScale, `δ=${delta_deg.toFixed(1)}°`, "#ffd166");
+                            drawArcLabel(devX, devY, Math.atan2(d_inc.y, d_inc.x), Math.atan2(ref2.dir.y, ref2.dir.x), 30*drawScale, `δ=${delta_deg.toFixed(1)}°`, "#ffd166");
                         }
                     }
                 }
             }
 
-            // --- DEVIATION GRAPH OVERLAY ---
-            const gW = Math.min(300, W * 0.8) * drawScale; 
-            const gH = 200 * drawScale;
-            let gX, gY;
-
-            if (window.innerWidth > 900) {
-                gX = originX + 220 * drawScale; 
-                gY = originY - gH / 2;
-            } else {
-                gX = W / 2 - gW / 2; 
-                gY = H - gH - 10 * drawScale; // Guaranteed to be strictly inside the canvas area above HUD
-            }
-            
-            ctx.save();
-            ctx.fillStyle = "rgba(7, 11, 25, 0.98)"; 
-            ctx.fillRect(gX, gY, gW, gH); 
-            
-            ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(gX, gY); ctx.lineTo(gX, gY + gH); // Y Axis
-            ctx.lineTo(gX + gW, gY + gH); // X Axis
-            ctx.stroke();
-
-            ctx.fillStyle = "#fff"; ctx.font = "12px 'Segoe UI'";
-            ctx.textAlign = "left"; ctx.textBaseline = "bottom";
-            ctx.fillText("δ (Deviation)", gX + 10, gY + 15);
-            ctx.textAlign = "right";
-            ctx.fillText("i (Incidence)", gX + gW - 10, gY + gH - 10);
-            ctx.textAlign = "right"; ctx.textBaseline = "top";
-            ctx.fillText("0", gX - 5, gY + gH + 5);
-
-            // CLIPPING MASK FOR GRAPH CURVE ONLY (so lines don't spill out)
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(gX, gY, gW, gH);
-            ctx.clip();
-
-            ctx.beginPath();
-            let firstPoint = true;
-            for(let i = 0; i <= 90; i++) {
-                let i_r = i * Math.PI / 180;
+            // --- DEVIATION vs INCIDENCE GRAPH (textbook i1 / i / i2 style) ---
+            // Sample delta(i) first so the axes can be scaled to the ACTUAL data range
+            let curvePts = [];
+            for (let ii = 0; ii <= 90; ii++) {
+                let i_r = ii * Math.PI / 180;
                 let sin_r1 = Math.sin(i_r) / n;
-                if(sin_r1 > 1) continue;
+                if (sin_r1 > 1) continue;
                 let r1_r = Math.asin(sin_r1);
                 let r2_r = A_rad - r1_r;
+                if (r2_r < 0 || r2_r > Math.PI / 2) continue;
                 let sin_e = n * Math.sin(r2_r);
-                if(sin_e > 1) continue;
+                if (sin_e > 1) continue;
                 let e_r = Math.asin(sin_e);
                 let delta = (i_r + e_r - A_rad) * 180 / Math.PI;
-                
-                let px = gX + (i / 90) * gW;
-                // Scale to 180 to prevent blowout
-                let py = gY + gH - (delta / 180) * gH; 
-                if(firstPoint) { ctx.moveTo(px, py); firstPoint = false; } 
-                else { ctx.lineTo(px, py); }
+                curvePts.push({ i: ii, d: delta });
             }
-            ctx.strokeStyle = "var(--primary)"; ctx.lineWidth = 2; ctx.stroke();
-            ctx.restore(); // Removes clip
 
-            // Plot Minimum Deviation Point inside the graph bounds
-            const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
-            if (!isNaN(i_min_rad)) {
-                const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
-                const i_min_deg = i_min_rad * 180 / Math.PI;
-                
-                let px_min = gX + (i_min_deg / 90) * gW;
-                let py_min = gY + gH - (d_min_deg / 180) * gH;
+            if (curvePts.length > 1) {
+                const xMin = curvePts[0].i, xMax = curvePts[curvePts.length - 1].i;
+                let dMin = Infinity, dMax = -Infinity;
+                curvePts.forEach(p => { if (p.d < dMin) dMin = p.d; if (p.d > dMax) dMax = p.d; });
+                const dPad = Math.max((dMax - dMin) * 0.18, 2);
+                const yMin = dMin - dPad, yMax = dMax + dPad;
 
-                ctx.setLineDash([4,4]); ctx.strokeStyle = "rgba(255,255,255,0.6)";
-                ctx.beginPath(); 
-                ctx.moveTo(px_min, gY + gH); ctx.lineTo(px_min, py_min); 
-                ctx.lineTo(gX, py_min); ctx.stroke();
-                ctx.setLineDash([]);
-                
-                // Plot Current Point
-                const r1_rad = Math.asin(Math.sin(i_rad) / n);
-                const r2_rad = A_rad - r1_rad;
-                if (n * Math.sin(r2_rad) <= 1) {
-                    const e_rad = Math.asin(n * Math.sin(r2_rad));
-                    const delta_deg = (i_rad + e_rad - A_rad) * 180 / Math.PI;
-                    let cX = gX + (i_deg / 90) * gW;
-                    let cY = gY + gH - (delta_deg / 180) * gH;
-                    
-                    ctx.shadowBlur = 10; ctx.shadowColor = "var(--gold)"; ctx.fillStyle = "var(--gold)";
-                    ctx.beginPath(); ctx.arc(cX, cY, 5, 0, Math.PI*2); ctx.fill();
-                    ctx.shadowBlur = 0;
+                const boxW = Math.min(340, W * 0.85) * drawScale;
+                const boxH = 230 * drawScale;
+                let boxX, boxY;
+                if (window.innerWidth > 900) {
+                    boxX = originX + 210 * drawScale;
+                    boxY = originY - boxH / 2;
+                } else {
+                    boxX = W / 2 - boxW / 2;
+                    boxY = H - boxH - 10 * drawScale;
                 }
 
-                // Draw labels (outside clipping mask)
-                ctx.fillStyle = "var(--gold)"; ctx.font = "italic 13px 'Segoe UI'";
+                const padL = 46 * drawScale, padB = 34 * drawScale, padT = 22 * drawScale, padR = 14 * drawScale;
+                const plotX = boxX + padL, plotY = boxY + padT;
+                const plotW = boxW - padL - padR, plotH = boxH - padT - padB;
+
+                const gx = (iv) => plotX + (iv - xMin) / (xMax - xMin) * plotW;
+                const gy = (dv) => plotY + plotH - (dv - yMin) / (yMax - yMin) * plotH;
+
+                ctx.save();
+
+                // Panel background
+                ctx.fillStyle = "rgba(7, 11, 25, 0.97)";
+                ctx.strokeStyle = "rgba(0,229,255,0.25)"; ctx.lineWidth = 1;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, 8 * drawScale); else ctx.rect(boxX, boxY, boxW, boxH);
+                ctx.fill(); ctx.stroke();
+
+                // Soft fill under the curve
+                ctx.beginPath();
+                ctx.moveTo(gx(curvePts[0].i), plotY + plotH);
+                curvePts.forEach(p => ctx.lineTo(gx(p.i), gy(p.d)));
+                ctx.lineTo(gx(curvePts[curvePts.length - 1].i), plotY + plotH);
+                ctx.closePath();
+                ctx.fillStyle = "rgba(0, 229, 255, 0.08)";
+                ctx.fill();
+
+                // Axes with arrowheads (matches textbook style)
+                ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(plotX, plotY - 8 * drawScale); ctx.lineTo(plotX, plotY + plotH);
+                ctx.lineTo(plotX + plotW + 8 * drawScale, plotY + plotH);
+                ctx.stroke();
+                ctx.fillStyle = "rgba(255,255,255,0.55)";
+                ctx.beginPath(); ctx.moveTo(plotX, plotY - 8 * drawScale); ctx.lineTo(plotX - 4 * drawScale, plotY + 2 * drawScale); ctx.lineTo(plotX + 4 * drawScale, plotY + 2 * drawScale); ctx.closePath(); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(plotX + plotW + 8 * drawScale, plotY + plotH); ctx.lineTo(plotX + plotW - 2 * drawScale, plotY + plotH - 4 * drawScale); ctx.lineTo(plotX + plotW - 2 * drawScale, plotY + plotH + 4 * drawScale); ctx.closePath(); ctx.fill();
+
+                // Axis titles
+                ctx.fillStyle = "#dfe7f5"; ctx.font = "italic 11px 'Segoe UI'";
+                ctx.save();
+                ctx.translate(boxX + 13 * drawScale, plotY + plotH / 2);
+                ctx.rotate(-Math.PI / 2);
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText("Angle of Deviation (δ)", 0, 0);
+                ctx.restore();
                 ctx.textAlign = "center"; ctx.textBaseline = "top";
-                ctx.fillText("iₘ", px_min, gY + gH + 5);
-                ctx.textAlign = "right"; ctx.textBaseline = "middle";
-                ctx.fillText("δₘ", gX - 5, py_min);
-                document.getElementById('dmOut').textContent = `${d_min_deg.toFixed(1)}°`;
+                ctx.fillText("Angle of Incidence (i)", plotX + plotW / 2, plotY + plotH + 16 * drawScale);
+
+                // The δ(i) curve, now scaled to its real range so the U-shape is clearly visible
+                ctx.beginPath();
+                curvePts.forEach((p, idx) => { const px = gx(p.i), py = gy(p.d); if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); });
+                ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2.5; ctx.shadowBlur = 6; ctx.shadowColor = "#00e5ff"; ctx.stroke(); ctx.shadowBlur = 0;
+
+                function guideToAxes(iv, dv, color, xLabel, yLabel, showY) {
+                    const px = gx(iv), py = gy(dv);
+                    ctx.save();
+                    ctx.strokeStyle = color; ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(px, plotY + plotH); ctx.lineTo(px, py); if (showY) ctx.lineTo(plotX, py); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = color; ctx.font = "italic bold 11px 'Segoe UI'";
+                    ctx.textAlign = "center"; ctx.textBaseline = "top";
+                    ctx.fillText(xLabel, px, plotY + plotH + 3 * drawScale);
+                    if (showY && yLabel) {
+                        ctx.textAlign = "right"; ctx.textBaseline = "middle";
+                        ctx.fillText(yLabel, plotX - 4 * drawScale, py);
+                    }
+                    ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+                    ctx.restore();
+                }
+
+                // Minimum-deviation point (im, deltam) — bottom of the U
+                const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
+                if (!isNaN(i_min_rad)) {
+                    const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
+                    const i_min_deg = i_min_rad * 180 / Math.PI;
+                    guideToAxes(i_min_deg, d_min_deg, "#ffd166", "iₘ", "δₘ", true);
+                    document.getElementById('dmOut').textContent = `${d_min_deg.toFixed(1)}°`;
+                } else {
+                    document.getElementById('dmOut').textContent = "N/A";
+                }
+
+                // Current incidence (i1) and its ray-reversibility partner (i2) — same delta, either side of the minimum
+                if (currentDelta !== null) {
+                    guideToAxes(i_deg, currentDelta, "#ffffff", "i₁", "δ", true);
+                    if (currentE !== null && Math.abs(currentE - i_deg) > 0.3 && currentE >= xMin && currentE <= xMax) {
+                        guideToAxes(currentE, currentDelta, "rgba(255,255,255,0.7)", "i₂", null, false);
+                    }
+                }
+
+                ctx.restore();
             } else {
                 document.getElementById('dmOut').textContent = "N/A";
             }
-            ctx.restore(); 
         }
     </script>
 </body>
