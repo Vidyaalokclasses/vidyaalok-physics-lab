@@ -22,7 +22,7 @@
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
         .workspace { position: relative; flex-grow: 1; width: 100%; display: flex; overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; cursor: crosshair; }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; background-image: url('../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.06; pointer-events: none; z-index: 0; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; background-image: url('/logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.06; pointer-events: none; z-index: 0; }
         .hud-panel { position: absolute; z-index: 50; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.7); transition: all 0.3s ease; }
         .hud-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
@@ -51,7 +51,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="../index.html" class="back-btn">← Back to Dashboard</a>
+        <a href="/class12/ray-optics/index.html" class="back-btn">← Back to Dashboard</a>
         <h1>Two Prisms</h1>
     </nav>
     <div class="workspace">
@@ -61,10 +61,10 @@
             <div class="hud-header"><h2>Controls</h2></div>
             <div class="hud-content">
                 <div class="toolbar">
-                    <a href="index.html" class="btn">Ray Diagram</a>
-                    <a href="dispersion.html" class="btn">Dispersion</a>
-                    <a href="deviation-graph.html" class="btn">Deviation Graph</a>
-                    <a href="two-prisms.html" class="btn active">Two Prisms</a>
+                    <a href="/class12/ray-optics/prism/index.html" class="btn">Ray Diagram</a>
+                    <a href="/class12/ray-optics/prism/dispersion.html" class="btn">Dispersion</a>
+                    <a href="/class12/ray-optics/prism/deviation-graph.html" class="btn">Deviation Graph</a>
+                    <a href="/class12/ray-optics/prism/two-prisms.html" class="btn active">Two Prisms</a>
                 </div>
                 <div id="controlsContainer">
                     <div class="section-title">Prism 1 Properties</div>
@@ -370,30 +370,21 @@
                 annotateSurface(h.point, h.dIn, h.dOut, h.nOut, h.entering, lbl.in, lbl.out, "#e8ecf5");
             });
 
-            // Deviation caused by prism 1 alone (delta1), geometrically at the intersection of the
-            // incident line extended forward and the prism-1 exit ray extended backward
+            // Deviation caused by prism 1 alone (delta1) — drawn right at prism 1's actual exit
+            // point, between the real exit ray and a parallel copy of the incident direction
             if (ref.hits.length >= 2 && ref.hits[1].dOut) {
                 const exitDir = ref.hits[1].dOut, exitPt = ref.hits[1].point;
-                const cross = d_inc.x*exitDir.y - d_inc.y*exitDir.x;
-                if (Math.abs(cross) > 1e-5) {
-                    const t = ((exitPt.x - startP.x)*exitDir.y - (exitPt.y - startP.y)*exitDir.x) / cross;
-                    const ix = startP.x + t*d_inc.x, iy = startP.y + t*d_inc.y;
-                    const delta1 = Math.abs(angleBetweenDeg(d_inc, exitDir));
-                    drawArcLabel(ix, iy, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(exitDir.y, exitDir.x), 24, `δ₁=${delta1.toFixed(1)}°`, "#ffd166");
-                }
+                const delta1 = Math.abs(angleBetweenDeg(d_inc, exitDir));
+                drawArcLabel(exitPt.x, exitPt.y, Math.atan2(d_inc.y, d_inc.x), Math.atan2(exitDir.y, exitDir.x), 50, `δ₁=${delta1.toFixed(1)}°`, "#ffd166");
             }
 
-            // Net system deviation (delta_net) + "parallel" reference guide
+            // Net system deviation (delta_net) + "parallel" reference guide — both anchored at the
+            // system's actual final exit point, not a computed intersection far from any real ray
             if (ref.exited && ref.finalDir) {
                 const finalDir = ref.finalDir, exitPt = ref.exitP;
                 const netDev = angleBetweenDeg(d_inc, finalDir);
 
-                const cross2 = d_inc.x*finalDir.y - d_inc.y*finalDir.x;
-                if (Math.abs(cross2) > 1e-5) {
-                    const t2 = ((exitPt.x - startP.x)*finalDir.y - (exitPt.y - startP.y)*finalDir.x) / cross2;
-                    const ix2 = startP.x + t2*d_inc.x, iy2 = startP.y + t2*d_inc.y;
-                    drawArcLabel(ix2, iy2, Math.atan2(-d_inc.y, -d_inc.x), Math.atan2(finalDir.y, finalDir.x), 40, `δnet=${Math.abs(netDev).toFixed(1)}°`, "#ffd166");
-                }
+                drawArcLabel(exitPt.x, exitPt.y, Math.atan2(d_inc.y, d_inc.x), Math.atan2(finalDir.y, finalDir.x), 68, `δnet=${Math.abs(netDev).toFixed(1)}°`, "#ffd166");
 
                 const guideStart = { x: exitPt.x - d_inc.x*40, y: exitPt.y - d_inc.y*40 };
                 const guideEnd = { x: exitPt.x + d_inc.x*480, y: exitPt.y + d_inc.y*480 };
