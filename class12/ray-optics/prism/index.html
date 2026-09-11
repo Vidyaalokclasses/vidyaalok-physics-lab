@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Deviation Graph | Vidyaalok Lab</title>
-    
+    <title>Prism Ray Diagram | Vidyaalok Lab</title>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -12,90 +11,64 @@
       gtag('js', new Date());
       gtag('config', 'G-L8DFSQTR66');
     </script>
-
+    <script>
+        window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] }, svg: { fontCache: 'global' } };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     <style>
-        :root { --primary: #00e5ff; --secondary: #ff007f; --bg-dark: #070b19; --panel-bg: rgba(7, 11, 25, 0.85); --text-main: #ffffff; --text-muted: #a0aabf; --gold: #ffd166; --border: rgba(0, 229, 255, 0.2); }
+        :root {
+            --primary: #00e5ff; --secondary: #ff007f; --bg-dark: #070b19;
+            --panel-bg: rgba(7, 11, 25, 0.85); --text-main: #ffffff;
+            --text-muted: #a0aabf; --gold: #ffd166; --border: rgba(0, 229, 255, 0.2);
+        }
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; }
-        .navbar { padding: 12px 20px; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 100; position: relative; }
+        .navbar { padding: 12px 20px; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 100; }
         .back-btn { color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
         .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
-        
-        /* Flexbox Layout ensuring exact visible bounds */
-        .workspace {
-            display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 70px);
-            overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%);
-        }
-        
-        .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; }
+        .workspace { position: relative; flex-grow: 1; width: 100%; display: flex; overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; cursor: crosshair; }
-        
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; height: 85%; background-image: url('../../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
-        
-        .hud-panel { width: 380px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 50; }
+        .hud-panel { position: absolute; z-index: 50; background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.7); transition: all 0.3s ease; }
         .hud-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
         .hud-content { padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 15px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
-        .hud-content::-webkit-scrollbar { width: 4px; }
-        .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
-        
-        @media (max-width: 900px) { 
-            .workspace { flex-direction: column; }
-            .hud-panel { width: 100%; height: 45vh; border-left: none; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); } 
-        }
-        
+        @media (min-width: 901px) { .hud-panel { top: 20px; left: 20px; width: 380px; max-height: calc(100% - 40px); border-radius: 16px; } }
+        @media (max-width: 900px) { .hud-panel { bottom: 0; left: 0; width: 100%; height: 45vh; border-radius: 20px 20px 0 0; border-bottom: none; border-left: none; border-right: none; } }
         .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 10px; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .btn { flex: 1 1 calc(50% - 8px); min-width: 130px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; text-align: center; text-decoration: none; display: inline-block; }
         .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
         .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); pointer-events: none; }
-        
         .control-group { margin-bottom: 12px; }
         .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
         .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
-        
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
         .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
         .stat strong { color: var(--secondary); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
         .stat span { font-size: 1.1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
         .stat.alert span { color: #ff3366; }
-        
-        .formula-panel { background: rgba(0,0,0,0.3); padding: 14px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 8px; align-items: center; }
-        .math-eqn-row { display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--primary); font-size: 1.05rem; }
-        .math-eqn-row sub { font-size: 0.7rem; font-style: normal; }
-        .math-frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.35; font-size: 0.95rem; }
-        .math-frac-num, .math-frac-den { padding: 0 4px; white-space: nowrap; }
-        .math-frac-line { width: 100%; height: 1px; background: var(--primary); margin: 2px 0; }
+        .formula-panel { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--primary); font-weight: bold; font-size: 1rem; display: flex; flex-direction: column; gap: 8px; font-family: 'Segoe UI', serif; font-style: italic; }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <a href="../index.html" class="back-btn">← Dashboard</a>
-        <h1>Deviation Graph</h1>
+        <h1>Prism Ray Diagram</h1>
     </nav>
-
     <div class="workspace">
-        <div class="canvas-wrapper" id="simWrapper">
-            <div class="watermark"></div>
-            <canvas id="simCanvas"></canvas>
-        </div>
-
+        <canvas id="simCanvas"></canvas>
         <div class="hud-panel" id="hudPanel">
-            <div class="hud-header">
-                <h2>Controls</h2>
-            </div>
-            
+            <div class="hud-header"><h2>Controls</h2></div>
             <div class="hud-content">
                 <div class="toolbar">
-                    <a href="index.html" class="btn">Ray Diagram</a>
+                    <a href="index.html" class="btn active">Ray Diagram</a>
                     <a href="dispersion.html" class="btn">Dispersion</a>
-                    <a href="deviation-graph.html" class="btn active">Deviation Graph</a>
+                    <a href="deviation-graph.html" class="btn">Deviation Graph</a>
                     <a href="two-prisms.html" class="btn">Two Prisms</a>
                 </div>
-
                 <div id="controlsContainer">
                     <div class="section-title">Prism Properties</div>
                     <div class="control-group">
@@ -111,425 +84,214 @@
                         <input id="iSlider" type="range" min="0" max="85" step="1" value="45">
                     </div>
                 </div>
-
                 <div class="section-title" style="margin-top: 5px;">Analysis & Results</div>
                 <div id="resultsContainer">
                     <div class="stat-grid">
-                        <div class="stat" id="dBox"><strong>Current Deviation (&delta;)</strong><span id="dOut">0°</span></div>
-                        <div class="stat"><strong>Minimum Deviation (&delta;<sub>m</sub>)</strong><span id="dmOut" style="color:var(--gold);">0°</span></div>
+                        <div class="stat"><strong>Refract 1 (r₁)</strong><span id="r1Out">0°</span></div>
+                        <div class="stat"><strong>Refract 2 (r₂)</strong><span id="r2Out">0°</span></div>
+                        <div class="stat" id="eBox"><strong>Emergence (e)</strong><span id="eOut">0°</span></div>
+                        <div class="stat" id="dBox"><strong>Deviation (δ)</strong><span id="dOut">0°</span></div>
                     </div>
                     <div class="formula-panel">
-                        <div class="math-eqn-row">
-                            <span>n</span>
-                            <span>=</span>
-                            <span class="math-frac">
-                                <span class="math-frac-num">sin[(A + &delta;<sub>m</sub>) / 2]</span>
-                                <span class="math-frac-line"></span>
-                                <span class="math-frac-den">sin(A / 2)</span>
-                            </span>
-                        </div>
+                        <div>r₁ + r₂ = A</div>
+                        <div>δ = i + e - A</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
         const canvas = document.getElementById("simCanvas");
         const ctx = canvas.getContext("2d");
+        const hudPanel = document.getElementById("hudPanel");
+        const aSlider = document.getElementById("aSlider"), nSlider = document.getElementById("nSlider"), iSlider = document.getElementById("iSlider");
         
-        const aSlider = document.getElementById("aSlider");
-        const nSlider = document.getElementById("nSlider");
-        const iSlider = document.getElementById("iSlider");
-        
-        let W = 0, H = 0, originX = 0, originY = 0;
-        let drawScale = 1; 
-        let initialized = false;
+        let W = 0, H = 0, originX = 0, originY = 0, drawScale = 1, initialized = false;
 
         function updateLayout() {
-            // W and H are natively the exact dimensions of the visible canvas wrapper
-            // (i.e. exactly the pixel space left above/beside the HUD panel on this device)
-            const isDesktop = window.innerWidth > 900;
-            if (isDesktop) {
-                originX = W * 0.35; // Shift left for graph
-                originY = H * 0.65;
-                drawScale = Math.min(1, H / 500);
+            if (W > 900) {
+                originX = 380 + (W - 380) * 0.45; originY = H * 0.55; drawScale = Math.min(1, H / 600);
             } else {
-                originX = W * 0.5; // Perfectly centered horizontally
-                originY = H * 0.45; // Shift UP to make room for graph below
-                drawScale = Math.min(1, H / 450, W / 600);
+                const visH = H - (hudPanel.offsetHeight || (H * 0.45));
+                originX = W * 0.5; originY = visH * 0.65; drawScale = Math.min(1, visH / 400, W / 600);
             }
         }
 
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
-                W = Math.floor(entry.contentRect.width);
-                H = Math.floor(entry.contentRect.height);
-                canvas.width = W;
-                canvas.height = H;
-                updateLayout();
-                if (!initialized && W > 10 && H > 10) { initialized = true; draw(); } 
-                else if (initialized) draw();
+                W = Math.floor(entry.contentRect.width); H = Math.floor(entry.contentRect.height);
+                canvas.width = W; canvas.height = H; updateLayout();
+                if (!initialized && W > 10 && H > 10) { initialized = true; draw(); } else if (initialized) draw();
             }
         });
-        resizeObserver.observe(document.getElementById('simWrapper'));
-
-        setTimeout(() => {
-            if (!initialized && canvas.parentElement.clientWidth > 10) {
-                W = canvas.parentElement.clientWidth;
-                H = canvas.parentElement.clientHeight || 500; 
-                canvas.width = W;
-                canvas.height = H;
-                initialized = true; 
-                updateLayout();
-                draw();
-            }
-        }, 300);
+        resizeObserver.observe(document.querySelector('.workspace'));
+        setTimeout(() => { if (!initialized) { W = canvas.parentElement.clientWidth; H = canvas.parentElement.clientHeight || 500; canvas.width = W; canvas.height = H; initialized = true; updateLayout(); draw(); } }, 300);
 
         function updateUI() {
-            document.getElementById("aVal").textContent = `${aSlider.value}°`;
-            document.getElementById("nVal").textContent = parseFloat(nSlider.value).toFixed(2);
-            document.getElementById("iVal").textContent = `${iSlider.value}°`;
+            document.getElementById("aVal").textContent = `${aSlider.value}°`; document.getElementById("nVal").textContent = parseFloat(nSlider.value).toFixed(2); document.getElementById("iVal").textContent = `${iSlider.value}°`;
             draw();
         }
-
         [aSlider, nSlider, iSlider].forEach(el => el.addEventListener("input", updateUI));
 
         function mapX(x) { return originX + x * drawScale; }
-        function mapY(y) { return originY - y * drawScale; } // Standard Cartesian: +Y is UP
-
-        function drawArrowLine(x1, y1, x2, y2, color, dashed=false) {
-            ctx.save();
-            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
-            if(dashed) { ctx.setLineDash([5,5]); ctx.globalAlpha = 0.5; }
-            else { ctx.shadowBlur = 10; ctx.shadowColor = color; }
-            
-            const sx1 = mapX(x1), sy1 = mapY(y1);
-            const sx2 = mapX(x2), sy2 = mapY(y2);
-            
-            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
-            ctx.setLineDash([]); ctx.shadowBlur = 0;
-
-            const dx = sx2 - sx1, dy = sy2 - sy1;
-            const len = Math.hypot(dx, dy);
-            if(len > 30 && !dashed) {
-                const angle = Math.atan2(dy, dx);
-                const mx = sx1 + (dx/len) * Math.min(len * 0.6, 120);
-                const my = sy1 + (dy/len) * Math.min(len * 0.6, 120);
-                ctx.beginPath();
-                ctx.moveTo(mx, my);
-                ctx.lineTo(mx - 12 * Math.cos(angle - 0.4), my - 12 * Math.sin(angle - 0.4));
-                ctx.lineTo(mx - 12 * Math.cos(angle + 0.4), my - 12 * Math.sin(angle + 0.4));
-                ctx.closePath(); ctx.fill();
-            }
-            ctx.restore();
+        function mapY(y) { return originY - y * drawScale; }
+        function norm(v) { let l = Math.hypot(v.x, v.y) || 1; return { x: v.x/l, y: v.y/l }; }
+        function dot(a, b) { return a.x*b.x + a.y*b.y; }
+        function getOutwardNormal(p1, p2, center) {
+            let dx = p2.x - p1.x, dy = p2.y - p1.y, l = Math.hypot(dx, dy), n = { x: dy/l, y: -dx/l }; 
+            let mid = { x: (p1.x + p2.x)/2, y: (p1.y + p2.y)/2 }, toCenter = { x: center.x - mid.x, y: center.y - mid.y };
+            if (dot(n, toCenter) > 0) { n.x = -n.x; n.y = -n.y; } return n;
         }
-
-        function drawNormalLine(x, y, nx, ny) {
-            ctx.save();
-            ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5; ctx.setLineDash([4,4]);
-            const sx = mapX(x), sy = mapY(y);
-            const snx = nx, sny = -ny; // Invert Y for screen space normal
-            
-            const p1x = sx + snx * 100, p1y = sy + sny * 100; // Outward
-            const p2x = sx - snx * 100, p2y = sy - sny * 100; // Inward
-            ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.stroke();
-            
-            // Arrows on normal
-            const a1 = Math.atan2(sny, snx);
-            const a2 = Math.atan2(-sny, -snx);
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
-            ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p1x - 8*Math.cos(a1-0.4), p1y - 8*Math.sin(a1-0.4)); ctx.lineTo(p1x - 8*Math.cos(a1+0.4), p1y - 8*Math.sin(a1+0.4)); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(p2x, p2y); ctx.lineTo(p2x - 8*Math.cos(a2-0.4), p2y - 8*Math.sin(a2-0.4)); ctx.lineTo(p2x - 8*Math.cos(a2+0.4), p2y - 8*Math.sin(a2+0.4)); ctx.fill();
-            ctx.restore();
-        }
-
-        function drawArcLabel(x, y, a1, a2, radius, label, color) {
-            ctx.save();
-            const sx = mapX(x), sy = mapY(y);
-            // Convert physical angles to screen angles (invert direction)
-            let sa1 = -a1; let sa2 = -a2;
-            if(sa1 < 0) sa1 += 2*Math.PI; if(sa2 < 0) sa2 += 2*Math.PI;
-            
-            let start = Math.min(sa1, sa2);
-            let end = Math.max(sa1, sa2);
-            if(end - start > Math.PI) {
-                start = Math.max(sa1, sa2);
-                end = Math.min(sa1, sa2) + 2*Math.PI;
-            }
-
-            ctx.beginPath(); ctx.arc(sx, sy, radius, start, end);
-            ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.stroke();
-            
-            const mid = (start + end)/2;
-            ctx.fillStyle = color; ctx.font = "italic 14px 'Segoe UI'";
-            ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText(label, sx + (radius + 15)*Math.cos(mid), sy + (radius + 15)*Math.sin(mid));
-            ctx.restore();
-        }
-
-        function lineIntersect(x1,y1, dx1,dy1, x3,y3, x4,y4) {
-            const x2 = x1+dx1, y2 = y1+dy1;
-            const den = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
-            if(Math.abs(den) < 1e-6) return null;
-            const t = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / den;
-            const u = -((x1-x2)*(y1-y3) - (y1-y2)*(x1-x3)) / den;
-            if(t > 1e-4 && u >= 0 && u <= 1) return { t: t, x: x1+t*dx1, y: y1+t*dy1 };
-            return null;
-        }
-
         function refract(D, N, n1, n2) {
-            let r = n1 / n2;
-            let c = -(D.x*N.x + D.y*N.y);
+            let r = n1 / n2, c = -dot(D, N);
             if (c < 0) { N = {x: -N.x, y: -N.y}; c = -c; }
             let sin2_t = r * r * (1 - c * c);
             if (sin2_t > 1.0) return { tir: true };
             let cos_t = Math.sqrt(1 - sin2_t);
             return { tir: false, dir: { x: r * D.x + (r * c - cos_t) * N.x, y: r * D.y + (r * c - cos_t) * N.y } };
         }
-
-        function reflect(D, N) {
-            let cosI = -(D.x*N.x + D.y*N.y);
-            let outN = {x: N.x, y: N.y};
-            if (cosI < 0) { outN = {x: -N.x, y: -N.y}; cosI = -cosI; }
-            return { x: D.x + 2 * cosI * outN.x, y: D.y + 2 * cosI * outN.y };
+        function lineIntersect(p1, d1, a, b) {
+            let v1 = p1, v2 = {x: p1.x + d1.x, y: p1.y + d1.y}, v3 = a, v4 = b;
+            let denom = (v1.x - v2.x)*(v3.y - v4.y) - (v1.y - v2.y)*(v3.x - v4.x);
+            if (Math.abs(denom) < 1e-6) return null;
+            let t = ((v1.x - v3.x)*(v3.y - v4.y) - (v1.y - v3.y)*(v3.x - v4.x)) / denom;
+            let u = -((v1.x - v2.x)*(v1.y - v3.y) - (v1.y - v2.y)*(v1.x - v3.x)) / denom;
+            if (t > 1e-5 && u >= 0 && u <= 1) return { t: t, p: { x: p1.x + t*d1.x, y: p1.y + t*d1.y } };
+            return null;
+        }
+        function getPrismPoints(offsetX, A_rad, n) {
+            const side = 260, h = side * Math.cos(A_rad/2), w = side * Math.sin(A_rad/2);
+            let pts = [ {x: offsetX, y: h*0.5}, {x: offsetX - w, y: -h*0.5}, {x: offsetX + w, y: -h*0.5} ];
+            const center = { x: offsetX, y: (pts[0].y + pts[1].y + pts[2].y) / 3 };
+            const edges = [
+                { a: pts[1], b: pts[0], n: getOutwardNormal(pts[1], pts[0], center) },
+                { a: pts[0], b: pts[2], n: getOutwardNormal(pts[0], pts[2], center) },
+                { a: pts[2], b: pts[1], n: getOutwardNormal(pts[2], pts[1], center) }
+            ];
+            return { pts, edges, n, A_rad };
+        }
+        function getPrismIntersection(p, d, prism) {
+            let bestHit = null; const eps = 1e-4; 
+            const px = p.x + d.x * eps, py = p.y + d.y * eps;
+            for (let edge of prism.edges) {
+                let hit = lineIntersect({x: px, y: py}, d, edge.a, edge.b);
+                if (hit && hit.t > 0) {
+                    if (!bestHit || hit.t < bestHit.t) bestHit = { t: hit.t + eps, p: { x: p.x + (hit.t + eps)*d.x, y: p.y + (hit.t + eps)*d.y }, n: edge.n }; 
+                }
+            } return bestHit;
+        }
+        function drawArrowLine(p1, p2, color, dashed=false, showArrow=true) {
+            const sx1 = mapX(p1.x), sy1 = mapY(p1.y), sx2 = mapX(p2.x), sy2 = mapY(p2.y);
+            ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+            if(dashed) { ctx.setLineDash([5,5]); ctx.globalAlpha = 0.5; } else { ctx.shadowBlur = 10; ctx.shadowColor = color; }
+            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
+            ctx.setLineDash([]); ctx.shadowBlur = 0;
+            const dx = sx2 - sx1, dy = sy2 - sy1, len = Math.hypot(dx, dy);
+            if(showArrow && len > 30 && !dashed) {
+                const angle = Math.atan2(dy, dx), mx = sx1 + (dx/len) * Math.min(len * 0.5, 120), my = sy1 + (dy/len) * Math.min(len * 0.5, 120);
+                ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - 12*Math.cos(angle-0.4), my - 12*Math.sin(angle-0.4)); ctx.lineTo(mx - 12*Math.cos(angle+0.4), my - 12*Math.sin(angle+0.4)); ctx.closePath(); ctx.fill();
+            }
+            ctx.restore();
+        }
+        function drawNormalArrow(x, y, dir_screen) {
+            const angle = Math.atan2(dir_screen.y, dir_screen.x);
+            ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 8*Math.cos(angle-0.4), y - 8*Math.sin(angle-0.4)); ctx.lineTo(x - 8*Math.cos(angle+0.4), y - 8*Math.sin(angle+0.4)); ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.fill();
+        }
+        function drawDashedNormal(p, N) {
+            ctx.save(); ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.setLineDash([4,4]); ctx.lineWidth = 1.5; ctx.beginPath();
+            let screen_N = { x: N.x, y: -N.y };
+            let px1 = mapX(p.x) + screen_N.x * 120, py1 = mapY(p.y) + screen_N.y * 120;
+            let px2 = mapX(p.x) - screen_N.x * 120, py2 = mapY(p.y) - screen_N.y * 120;
+            ctx.moveTo(px1, py1); ctx.lineTo(px2, py2); ctx.stroke();
+            drawNormalArrow(px1, py1, screen_N); drawNormalArrow(px2, py2, {x: -screen_N.x, y: -screen_N.y}); ctx.restore();
+        }
+        function drawArcLabel(p, v1, v2, radius, label, color) {
+            const sx = mapX(p.x), sy = mapY(p.y);
+            let a1 = Math.atan2(-v1.y, v1.x), a2 = Math.atan2(-v2.y, v2.x);
+            if(a1 < 0) a1 += 2*Math.PI; if(a2 < 0) a2 += 2*Math.PI;
+            let start = Math.min(a1, a2), end = Math.max(a1, a2);
+            if(end - start > Math.PI) { start = Math.max(a1, a2); end = Math.min(a1, a2) + 2*Math.PI; }
+            ctx.save(); ctx.beginPath(); ctx.arc(sx, sy, radius, start, end); ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.stroke();
+            let mid = start + (end - start > Math.PI ? (end - start - 2*Math.PI)/2 : (end - start)/2);
+            ctx.fillStyle = color; ctx.font = "italic 13px 'Segoe UI'"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(label, sx + (radius + 20)*Math.cos(mid), sy + (radius + 20)*Math.sin(mid)); ctx.restore();
         }
 
         function draw() {
             if(!initialized) return;
             ctx.clearRect(0, 0, W, H);
             
-            const A = parseFloat(aSlider.value);
-            const n = parseFloat(nSlider.value);
-            const i_deg = parseFloat(iSlider.value);
-            
-            const A_rad = A * Math.PI / 180;
-            const i_rad = i_deg * Math.PI / 180;
-            const side = 300;
-            
-            // Prism Geometry
-            const apex = { x: 0, y: side * Math.cos(A_rad/2) };
-            const bl = { x: -side * Math.sin(A_rad/2), y: 0 };
-            const br = { x: side * Math.sin(A_rad/2), y: 0 };
+            const A = parseFloat(aSlider.value), n = parseFloat(nSlider.value), i_deg = parseFloat(iSlider.value);
+            const A_rad = A * Math.PI / 180, i_rad = i_deg * Math.PI / 180;
+            const p1 = getPrismPoints(0, A_rad, n);
 
-            ctx.save();
-            ctx.beginPath(); ctx.moveTo(mapX(apex.x), mapY(apex.y)); ctx.lineTo(mapX(bl.x), mapY(bl.y)); ctx.lineTo(mapX(br.x), mapY(br.y)); ctx.closePath();
-            ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill();
-            ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 3; ctx.stroke();
+            ctx.save(); ctx.beginPath(); ctx.moveTo(mapX(p1.pts[0].x), mapY(p1.pts[0].y)); ctx.lineTo(mapX(p1.pts[1].x), mapY(p1.pts[1].y)); ctx.lineTo(mapX(p1.pts[2].x), mapY(p1.pts[2].y)); ctx.closePath();
+            ctx.fillStyle = "rgba(0, 229, 255, 0.15)"; ctx.fill(); ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 3; ctx.stroke();
             ctx.fillStyle = "#fff"; ctx.font = "bold 16px 'Segoe UI'"; ctx.textAlign = "center";
-            ctx.fillText("A", mapX(apex.x), mapY(apex.y) - 15);
-            ctx.fillText("B", mapX(bl.x) - 15, mapY(bl.y) + 15);
-            ctx.fillText("C", mapX(br.x) + 15, mapY(br.y) + 15);
+            ctx.fillText("A", mapX(p1.pts[0].x), mapY(p1.pts[0].y) - 15); ctx.fillText("B", mapX(p1.pts[1].x) - 15, mapY(p1.pts[1].y) + 25); ctx.fillText("C", mapX(p1.pts[2].x) + 15, mapY(p1.pts[2].y) + 25);
+            drawArcLabel(p1.pts[0], {x: p1.pts[1].x - p1.pts[0].x, y: p1.pts[1].y - p1.pts[0].y}, {x: p1.pts[2].x - p1.pts[0].x, y: p1.pts[2].y - p1.pts[0].y}, 35*drawScale, `A=${A}°`, "#ffffff");
             ctx.restore();
 
-            drawArcLabel(apex.x, apex.y, Math.atan2(bl.y-apex.y, bl.x-apex.x), Math.atan2(br.y-apex.y, br.x-apex.x), 30*drawScale, `A=${A}°`, "#fff");
+            const outNormalLeft = p1.edges[0].n; 
+            const inwardNormalAngle = Math.atan2(-outNormalLeft.y, -outNormalLeft.x);
+            const rayAngle = inwardNormalAngle + i_rad; // Forces ray to travel up and right from bottom-left
+            const d_inc = { x: Math.cos(rayAngle), y: Math.sin(rayAngle) };
+            const hitTarget = { x: p1.pts[1].x + (p1.pts[0].x - p1.pts[1].x)*0.35, y: p1.pts[1].y + (p1.pts[0].y - p1.pts[1].y)*0.35 };
 
-            // Left Face Outward Normal
-            const dx1 = apex.x - bl.x, dy1 = apex.y - bl.y;
-            const len1 = Math.hypot(dx1, dy1);
-            const n1x = -dy1/len1, n1y = dx1/len1; 
+            let startP = { x: hitTarget.x - d_inc.x * 400, y: hitTarget.y - d_inc.y * 400 };
+            let hit1 = getPrismIntersection(startP, d_inc, p1);
+            if (!hit1) hit1 = { p: hitTarget, t: 400, n: outNormalLeft }; 
             
-            // Right Face Outward Normal
-            const dx2 = br.x - apex.x, dy2 = br.y - apex.y;
-            const len2 = Math.hypot(dx2, dy2);
-            const n2x = -dy2/len2, n2y = dx2/len2; 
-
-            // Incident Ray (From Bottom Left)
-            const n1_ang = Math.atan2(n1y, n1x);
-            const in_n1_ang = n1_ang - Math.PI; // Points down-right
-            const ray_ang = in_n1_ang + i_rad; // Shift UPWARD
-            const d_inc = { x: Math.cos(ray_ang), y: Math.sin(ray_ang) };
+            drawArrowLine(startP, hit1.p, "#ffffff");
+            drawDashedNormal(hit1.p, hit1.n);
+            drawArcLabel(hit1.p, {x: -d_inc.x, y: -d_inc.y}, hit1.n, 40*drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
             
-            const hit1 = { x: bl.x + dx1*0.4, y: bl.y + dy1*0.4 };
-            const startP = { x: hit1.x - d_inc.x*400, y: hit1.y - d_inc.y*400 };
+            const extEnd = { x: hit1.p.x + d_inc.x * 600, y: hit1.p.y + d_inc.y * 600 };
+            drawArrowLine(hit1.p, extEnd, "rgba(255,255,255,0.2)", true, false);
 
-            drawArrowLine(startP.x, startP.y, hit1.x, hit1.y, "#ffffff");
-            drawNormalLine(hit1.x, hit1.y, n1x, n1y);
-            drawArcLabel(hit1.x, hit1.y, Math.atan2(-d_inc.y, -d_inc.x), n1_ang, 40*drawScale, `i=${i_deg.toFixed(1)}°`, "#ffffff");
-
-            drawArrowLine(hit1.x, hit1.y, hit1.x + d_inc.x*400, hit1.y + d_inc.y*400, "rgba(255,255,255,0.2)", true);
-
-            let ref1 = refract(d_inc, {x: n1x, y: n1y}, 1.0, n);
-            let currentDelta = null, currentE = null;
-
+            let ref1 = refract(d_inc, hit1.n, 1.0, n);
             if (!ref1.tir) {
-                let hit2 = lineIntersect(hit1.x, hit1.y, ref1.dir.x, ref1.dir.y, apex.x, apex.y, br.x, br.y);
-                let hit2Normal = {x: n2x, y: n2y};
+                let hit2 = getPrismIntersection(hit1.p, ref1.dir, p1);
+                if (hit2) {
+                    drawArrowLine(hit1.p, hit2.p, "#ffffff"); 
+                    const r1_val = (Math.asin(Math.sin(i_rad) / n) * 180 / Math.PI).toFixed(1);
+                    drawArcLabel(hit1.p, ref1.dir, {x: -hit1.n.x, y: -hit1.n.y}, 40*drawScale, `r₁=${r1_val}°`, "#ffffff");
 
-                if(!hit2) {
-                    hit2 = lineIntersect(hit1.x, hit1.y, ref1.dir.x, ref1.dir.y, bl.x, bl.y, br.x, br.y); 
-                    hit2Normal = {x: 0, y: -1}; // base normal
-                }
-
-                if(hit2) {
-                    drawArrowLine(hit1.x, hit1.y, hit2.x, hit2.y, "#ffffff");
+                    let inNormal2 = { x: -hit2.n.x, y: -hit2.n.y };
+                    let ref2 = refract(ref1.dir, inNormal2, n, 1.0);
+                    drawDashedNormal(hit2.p, hit2.n);
                     
-                    const r1_rad = Math.asin(Math.sin(i_rad) / n);
-                    drawArcLabel(hit1.x, hit1.y, Math.atan2(ref1.dir.y, ref1.dir.x), in_n1_ang, 40*drawScale, `r₁=${(r1_rad*180/Math.PI).toFixed(1)}°`, "#ffffff");
-
-                    drawNormalLine(hit2.x, hit2.y, hit2Normal.x, hit2Normal.y);
-
-                    const r2_rad = A_rad - r1_rad;
-                    const in_n2_ang = Math.atan2(-hit2Normal.y, -hit2Normal.x); 
-                    drawArcLabel(hit2.x, hit2.y, Math.atan2(-ref1.dir.y, -ref1.dir.x), in_n2_ang, 40*drawScale, `r₂=${(r2_rad*180/Math.PI).toFixed(1)}°`, "#ffffff");
-
-                    let ref2 = refract(ref1.dir, hit2Normal, n, 1.0);
+                    const r2_val = (A - parseFloat(r1_val)).toFixed(1);
+                    drawArcLabel(hit2.p, {x: -ref1.dir.x, y: -ref1.dir.y}, inNormal2, 40*drawScale, `r₂=${r2_val}°`, "#ffffff");
+                    
+                    document.getElementById('r1Out').textContent = `${r1_val}°`; document.getElementById('r2Out').textContent = `${r2_val}°`;
 
                     if (ref2.tir) {
-                        document.getElementById('dOut').textContent = "N/A";
-                        document.getElementById('dBox').classList.add('alert');
-                        let tirDir = reflect(ref1.dir, hit2Normal);
-                        drawArrowLine(hit2.x, hit2.y, hit2.x + tirDir.x*400, hit2.y + tirDir.y*400, "#ffffff");
+                        document.getElementById('eOut').textContent = "TIR"; document.getElementById('dOut').textContent = "N/A";
+                        document.getElementById('eBox').classList.add('alert'); document.getElementById('dBox').classList.add('alert');
+                        drawArrowLine(hit2.p, {x: hit2.p.x + ref2.dir.x * 600, y: hit2.p.y + ref2.dir.y * 600}, "#ffffff");
                     } else {
-                        const e_rad = Math.asin(n * Math.sin(r2_rad));
-                        const delta_deg = i_deg + (e_rad * 180 / Math.PI) - A;
-                        
-                        document.getElementById('dOut').textContent = `${delta_deg.toFixed(1)}°`;
-                        document.getElementById('dBox').classList.remove('alert');
-                        currentDelta = delta_deg;
-                        currentE = e_rad * 180 / Math.PI;
+                        const e_val = (Math.asin(n * Math.sin(r2_val * Math.PI/180)) * 180 / Math.PI).toFixed(1);
+                        const dev_val = (i_deg + parseFloat(e_val) - A).toFixed(1);
+                        document.getElementById('eOut').textContent = `${e_val}°`; document.getElementById('dOut').textContent = `${dev_val}°`;
+                        document.getElementById('eBox').classList.remove('alert'); document.getElementById('dBox').classList.remove('alert');
 
-                        drawArrowLine(hit2.x, hit2.y, hit2.x + ref2.dir.x*600, hit2.y + ref2.dir.y*600, "#ffffff");
-                        drawArcLabel(hit2.x, hit2.y, Math.atan2(ref2.dir.y, ref2.dir.x), Math.atan2(hit2Normal.y, hit2Normal.x), 40*drawScale, `e=${(e_rad*180/Math.PI).toFixed(1)}°`, "#ffffff");
+                        drawArrowLine(hit2.p, { x: hit2.p.x + ref2.dir.x * 800, y: hit2.p.y + ref2.dir.y * 800 }, "#ffffff");
+                        drawArcLabel(hit2.p, ref2.dir, hit2.n, 40*drawScale, `e=${e_val}°`, "#ffffff");
 
+                        // Deviation Intersection
                         const cross = d_inc.x * ref2.dir.y - d_inc.y * ref2.dir.x;
                         if(Math.abs(cross) > 1e-5) {
-                            const t = ((hit2.x - hit1.x)*ref2.dir.y - (hit2.y - hit1.y)*ref2.dir.x) / cross;
-                            const devX = hit1.x + t*d_inc.x, devY = hit1.y + t*d_inc.y;
-                            drawArrowLine(hit2.x, hit2.y, devX, devY, "#ffffff", true);
-                            drawArcLabel(devX, devY, Math.atan2(d_inc.y, d_inc.x), Math.atan2(ref2.dir.y, ref2.dir.x), 30*drawScale, `δ=${delta_deg.toFixed(1)}°`, "#ffd166");
+                            const t = ((hit2.p.x - hit1.p.x)*ref2.dir.y - (hit2.p.y - hit1.p.y)*ref2.dir.x) / cross;
+                            const devP = { x: hit1.p.x + t*d_inc.x, y: hit1.p.y + t*d_inc.y };
+                            drawArrowLine(hit2.p, devP, "#ffffff", true, false);
+                            drawArcLabel(devP, d_inc, ref2.dir, 30*drawScale, `δ=${dev_val}°`, "#ffd166");
                         }
                     }
                 }
             }
-
-            // --- DEVIATION vs INCIDENCE GRAPH (textbook i1 / i / i2 style) ---
-            // Sample delta(i) first so the axes can be scaled to the ACTUAL data range
-            let curvePts = [];
-            for (let ii = 0; ii <= 90; ii++) {
-                let i_r = ii * Math.PI / 180;
-                let sin_r1 = Math.sin(i_r) / n;
-                if (sin_r1 > 1) continue;
-                let r1_r = Math.asin(sin_r1);
-                let r2_r = A_rad - r1_r;
-                if (r2_r < 0 || r2_r > Math.PI / 2) continue;
-                let sin_e = n * Math.sin(r2_r);
-                if (sin_e > 1) continue;
-                let e_r = Math.asin(sin_e);
-                let delta = (i_r + e_r - A_rad) * 180 / Math.PI;
-                curvePts.push({ i: ii, d: delta });
-            }
-
-            if (curvePts.length > 1) {
-                const xMin = curvePts[0].i, xMax = curvePts[curvePts.length - 1].i;
-                let dMin = Infinity, dMax = -Infinity;
-                curvePts.forEach(p => { if (p.d < dMin) dMin = p.d; if (p.d > dMax) dMax = p.d; });
-                const dPad = Math.max((dMax - dMin) * 0.18, 2);
-                const yMin = dMin - dPad, yMax = dMax + dPad;
-
-                const boxW = Math.min(340, W * 0.85) * drawScale;
-                const boxH = 230 * drawScale;
-                let boxX, boxY;
-                if (window.innerWidth > 900) {
-                    boxX = originX + 210 * drawScale;
-                    boxY = originY - boxH / 2;
-                } else {
-                    boxX = W / 2 - boxW / 2;
-                    boxY = H - boxH - 10 * drawScale;
-                }
-
-                const padL = 46 * drawScale, padB = 34 * drawScale, padT = 22 * drawScale, padR = 14 * drawScale;
-                const plotX = boxX + padL, plotY = boxY + padT;
-                const plotW = boxW - padL - padR, plotH = boxH - padT - padB;
-
-                const gx = (iv) => plotX + (iv - xMin) / (xMax - xMin) * plotW;
-                const gy = (dv) => plotY + plotH - (dv - yMin) / (yMax - yMin) * plotH;
-
-                ctx.save();
-
-                // Panel background
-                ctx.fillStyle = "rgba(7, 11, 25, 0.97)";
-                ctx.strokeStyle = "rgba(0,229,255,0.25)"; ctx.lineWidth = 1;
-                ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, 8 * drawScale); else ctx.rect(boxX, boxY, boxW, boxH);
-                ctx.fill(); ctx.stroke();
-
-                // Soft fill under the curve
-                ctx.beginPath();
-                ctx.moveTo(gx(curvePts[0].i), plotY + plotH);
-                curvePts.forEach(p => ctx.lineTo(gx(p.i), gy(p.d)));
-                ctx.lineTo(gx(curvePts[curvePts.length - 1].i), plotY + plotH);
-                ctx.closePath();
-                ctx.fillStyle = "rgba(0, 229, 255, 0.08)";
-                ctx.fill();
-
-                // Axes with arrowheads (matches textbook style)
-                ctx.strokeStyle = "rgba(255,255,255,0.55)"; ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(plotX, plotY - 8 * drawScale); ctx.lineTo(plotX, plotY + plotH);
-                ctx.lineTo(plotX + plotW + 8 * drawScale, plotY + plotH);
-                ctx.stroke();
-                ctx.fillStyle = "rgba(255,255,255,0.55)";
-                ctx.beginPath(); ctx.moveTo(plotX, plotY - 8 * drawScale); ctx.lineTo(plotX - 4 * drawScale, plotY + 2 * drawScale); ctx.lineTo(plotX + 4 * drawScale, plotY + 2 * drawScale); ctx.closePath(); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(plotX + plotW + 8 * drawScale, plotY + plotH); ctx.lineTo(plotX + plotW - 2 * drawScale, plotY + plotH - 4 * drawScale); ctx.lineTo(plotX + plotW - 2 * drawScale, plotY + plotH + 4 * drawScale); ctx.closePath(); ctx.fill();
-
-                // Axis titles
-                ctx.fillStyle = "#dfe7f5"; ctx.font = "italic 11px 'Segoe UI'";
-                ctx.save();
-                ctx.translate(boxX + 13 * drawScale, plotY + plotH / 2);
-                ctx.rotate(-Math.PI / 2);
-                ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText("Angle of Deviation (δ)", 0, 0);
-                ctx.restore();
-                ctx.textAlign = "center"; ctx.textBaseline = "top";
-                ctx.fillText("Angle of Incidence (i)", plotX + plotW / 2, plotY + plotH + 16 * drawScale);
-
-                // The δ(i) curve, now scaled to its real range so the U-shape is clearly visible
-                ctx.beginPath();
-                curvePts.forEach((p, idx) => { const px = gx(p.i), py = gy(p.d); if (idx === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); });
-                ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2.5; ctx.shadowBlur = 6; ctx.shadowColor = "#00e5ff"; ctx.stroke(); ctx.shadowBlur = 0;
-
-                function guideToAxes(iv, dv, color, xLabel, yLabel, showY) {
-                    const px = gx(iv), py = gy(dv);
-                    ctx.save();
-                    ctx.strokeStyle = color; ctx.setLineDash([3, 3]); ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(px, plotY + plotH); ctx.lineTo(px, py); if (showY) ctx.lineTo(plotX, py); ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.fillStyle = color; ctx.font = "italic bold 11px 'Segoe UI'";
-                    ctx.textAlign = "center"; ctx.textBaseline = "top";
-                    ctx.fillText(xLabel, px, plotY + plotH + 3 * drawScale);
-                    if (showY && yLabel) {
-                        ctx.textAlign = "right"; ctx.textBaseline = "middle";
-                        ctx.fillText(yLabel, plotX - 4 * drawScale, py);
-                    }
-                    ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-                    ctx.restore();
-                }
-
-                // Minimum-deviation point (im, deltam) — bottom of the U
-                const i_min_rad = Math.asin(n * Math.sin(A_rad / 2));
-                if (!isNaN(i_min_rad)) {
-                    const d_min_deg = (2 * i_min_rad - A_rad) * 180 / Math.PI;
-                    const i_min_deg = i_min_rad * 180 / Math.PI;
-                    guideToAxes(i_min_deg, d_min_deg, "#ffd166", "iₘ", "δₘ", true);
-                    document.getElementById('dmOut').textContent = `${d_min_deg.toFixed(1)}°`;
-                } else {
-                    document.getElementById('dmOut').textContent = "N/A";
-                }
-
-                // Current incidence (i1) and its ray-reversibility partner (i2) — same delta, either side of the minimum
-                if (currentDelta !== null) {
-                    guideToAxes(i_deg, currentDelta, "#ffffff", "i₁", "δ", true);
-                    if (currentE !== null && Math.abs(currentE - i_deg) > 0.3 && currentE >= xMin && currentE <= xMax) {
-                        guideToAxes(currentE, currentDelta, "rgba(255,255,255,0.7)", "i₂", null, false);
-                    }
-                }
-
-                ctx.restore();
-            } else {
-                document.getElementById('dmOut').textContent = "N/A";
-            }
         }
+        setMode('ray');
     </script>
 </body>
 </html>
