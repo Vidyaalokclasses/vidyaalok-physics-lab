@@ -83,6 +83,58 @@
 
     <script>
         const TOPICS = [
+            { id: 'snells-law', group: 'Basics', title: "Snell's Law & Refractive Index", body: `
+                <div class="card"><h3>Snell's Law</h3>
+                    <div class="eq boxed">n₁ sin i = n₂ sin r</div>
+                    <div class="note">i = angle of incidence, r = angle of refraction, n₁ and n₂ = refractive indices of the first and second medium.</div>
+                </div>
+                <div class="card"><h3>Refractive Index</h3>
+                    <div class="eq">n = <span class="frac"><span class="frac-num">sin i</span><span class="frac-line"></span><span class="frac-den">sin r</span></span> &nbsp;&nbsp; (going from medium 1 into medium 2)</div>
+                    <div class="eq">n = <span class="frac"><span class="frac-num">c</span><span class="frac-line"></span><span class="frac-den">v</span></span> &nbsp;&nbsp; (absolute refractive index: speed of light in vacuum ÷ speed in the medium)</div>
+                </div>
+                <div class="card"><h3>Relation Between Media</h3>
+                    <div class="eq boxed">n<sub>21</sub> = <span class="frac"><span class="frac-num">n₂</span><span class="frac-line"></span><span class="frac-den">n₁</span></span> = <span class="frac"><span class="frac-num">v₁</span><span class="frac-line"></span><span class="frac-den">v₂</span></span></div>
+                </div>` },
+
+            { id: 'lens-formula', group: 'Lenses', title: 'Lens Formula & Magnification', body: `
+                <div class="card"><h3>Thin Lens Formula</h3>
+                    <div class="eq boxed"><span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">v</span></span> − <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">u</span></span> = <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">f</span></span></div>
+                    <div class="note">u = object distance, v = image distance, f = focal length — all measured from the optical centre, with signs per the Cartesian sign convention (distances against the incident light are negative).</div>
+                </div>
+                <div class="card"><h3>Linear Magnification</h3>
+                    <div class="eq boxed">m = <span class="frac"><span class="frac-num">h'</span><span class="frac-line"></span><span class="frac-den">h</span></span> = <span class="frac"><span class="frac-num">v</span><span class="frac-line"></span><span class="frac-den">u</span></span></div>
+                    <div class="note">h = object height, h' = image height. m is negative for a real (inverted) image, positive for a virtual (upright) image.</div>
+                </div>` },
+
+            { id: 'lens-makers', group: 'Lenses', title: "Lens Maker's Formula", body: `
+                <div class="card"><h3>Lens Maker's Formula</h3>
+                    <div class="eq boxed"><span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">f</span></span> = (n − 1) [ <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">R₁</span></span> − <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">R₂</span></span> ]</div>
+                    <div class="note">n = refractive index of the lens material relative to the surrounding medium, R₁ and R₂ = radii of curvature of the first and second surfaces (signed per convention).</div>
+                </div>
+                <div class="card"><h3>Sign Convention for R</h3>
+                    <ul class="pts">
+                        <li>Radius measured from the optical centre to the surface, in the direction of the incident light → <b>positive</b></li>
+                        <li>Radius measured against the direction of incident light → <b>negative</b></li>
+                        <li>For a double-convex lens: R₁ &gt; 0, R₂ &lt; 0</li>
+                    </ul>
+                </div>` },
+
+            { id: 'lens-power', group: 'Lenses', title: 'Power of a Lens', body: `
+                <div class="card"><h3>Power</h3>
+                    <div class="eq boxed">P = <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">f (in metres)</span></span></div>
+                    <div class="note">Unit: <b>Dioptre (D)</b>. A converging (convex) lens has positive power; a diverging (concave) lens has negative power. Larger |P| means the lens bends light more strongly (shorter focal length).</div>
+                </div>` },
+
+            { id: 'lens-combo', group: 'Lenses', title: 'Combination of Lenses', body: `
+                <div class="card"><h3>Thin Lenses in Contact</h3>
+                    <div class="eq boxed"><span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">F</span></span> = <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">f₁</span></span> + <span class="frac"><span class="frac-num">1</span><span class="frac-line"></span><span class="frac-den">f₂</span></span> + …</div>
+                    <div class="note">F = equivalent focal length of the combination.</div>
+                </div>
+                <div class="card"><h3>Combined Power</h3>
+                    <div class="eq boxed">P = P₁ + P₂ + P₃ + …</div>
+                    <div class="note">Net magnification of the combination: m = m₁ × m₂ × m₃ × …</div>
+                </div>` },
+
             { id: 'apparent-depth', group: 'Apparent Depth & Shift', title: 'Apparent Depth', body: `
                 <div class="card"><h3>Object in Denser Medium, Observer in Rarer Medium</h3>
                     <div class="eq"><span class="plain">Apparent depth</span> h' = <span class="frac"><span class="frac-num">h</span><span class="frac-line"></span><span class="frac-den">n</span></span></div>
