@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Human Eye | Vidyaalok Lab</title>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <style>
+        :root { --primary: #00e5ff; --secondary: #ff007f; --bg-dark: #070b19; --panel-bg: rgba(7, 11, 25, 0.85); --text-main: #ffffff; --text-muted: #a0aabf; --gold: #ffd166; --border: rgba(0, 229, 255, 0.2); }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; }
+        .navbar { padding: 12px 20px; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 100; position: relative; }
+        .back-btn { color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+
+        .workspace { display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 58px); overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
+
+        .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; cursor: pointer; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-image: url('../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
+
+        .hud-panel { width: 360px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 50; }
+        .hud-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .hud-content { padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
+        .hud-content::-webkit-scrollbar { width: 4px; }
+        .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+        @media (max-width: 900px) {
+            .workspace { flex-direction: column; }
+            .hud-panel { width: 100%; height: 48vh; border-left: none; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+        }
+
+        .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn { flex: 1 1 calc(33.333% - 6px); min-width: 90px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); padding: 9px 6px; border-radius: 6px; font-weight: bold; font-size: 0.72rem; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+        .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
+        .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
+
+        .control-group { margin-bottom: 4px; }
+        .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+        .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
+        .stat strong { color: var(--secondary); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .stat span { font-size: 1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
+
+        .status-banner { padding: 10px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; text-align: center; border: 1px solid; transition: all 0.2s ease; }
+        .status-banner.blurred { color: #ff6688; border-color: rgba(255,102,136,0.4); background: rgba(255,102,136,0.08); }
+        .status-banner.focused { color: #4ade80; border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.1); }
+
+        .info-box { background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 10px; padding: 14px; min-height: 90px; }
+        .info-box .part-name { color: var(--primary); font-weight: bold; font-size: 1rem; margin-bottom: 6px; }
+        .info-box .part-desc { color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; }
+        .info-box .placeholder { color: var(--text-muted); font-size: 0.8rem; font-style: italic; }
+
+        .part-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        .part-chip { font-size: 0.68rem; padding: 5px 9px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: var(--text-muted); cursor: pointer; transition: all 0.15s ease; }
+        .part-chip:hover, .part-chip.active { background: rgba(0,229,255,0.15); border-color: var(--primary); color: var(--primary); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Ray Optics Dashboard</a>
+        <h1>Human Eye</h1>
+    </nav>
+
+    <div class="workspace">
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <div class="watermark" id="watermark"></div>
+            <canvas id="simCanvas"></canvas>
+        </div>
+
+        <div class="hud-panel">
+            <div class="hud-header"><h2>Controls</h2></div>
+            <div class="hud-content">
+                <div class="toolbar">
+                    <button class="btn active" id="btnNormal" onclick="setMode('normal')">Normal Eye</button>
+                    <button class="btn" id="btnMyopia" onclick="setMode('myopia')">Myopia</button>
+                    <button class="btn" id="btnHyper" onclick="setMode('hyper')">Hypermetropia</button>
+                </div>
+
+                <div id="normalPanel">
+                    <div class="section-title" style="margin-top:6px;">Anatomy</div>
+                    <div class="info-box" id="infoBox"><span class="placeholder">Click on a part of the eye to see its name and function.</span></div>
+                    <div class="part-list" id="partList"></div>
+                </div>
+
+                <div id="defectPanel" style="display:none;">
+                    <div class="section-title" style="margin-top:6px;" id="defectTitle">Defect</div>
+                    <div class="note" style="color:var(--text-muted); font-size:0.78rem; line-height:1.5; margin-bottom:10px;" id="defectNote"></div>
+
+                    <div class="control-group">
+                        <label>Corrective Lens Power <span id="powerVal">0.00 D</span></label>
+                        <input id="powerSlider" type="range" min="-10" max="10" step="0.25" value="0">
+                    </div>
+
+                    <div class="stat-grid" style="margin-top:10px;">
+                        <div class="stat"><strong>Lens Type</strong><span id="lensTypeOut">—</span></div>
+                        <div class="stat"><strong>Focal Length</strong><span id="focalOut">∞</span></div>
+                    </div>
+
+                    <div class="status-banner blurred" id="statusBanner" style="margin-top:10px;">Image not yet focused on retina</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+        const canvasWrapper = document.getElementById("canvasWrapper");
+        const watermark = document.getElementById("watermark");
+        const powerSlider = document.getElementById("powerSlider");
+
+        let W = 0, H = 0, originX = 0, originY = 0, drawScale = 1, initialized = false;
+        let mode = 'normal'; // 'normal' | 'myopia' | 'hyper'
+        let selectedPartId = null;
+        let anatomyHotspots = []; // filled each draw() with {id, sx, sy, r} in screen space for click testing
+
+        // ===================== ANATOMY DATA (schematic diagram units) =====================
+        const PARTS = [
+            { id: 'cornea', name: 'Cornea', x: -46, y: 0, r: 10, desc: 'The transparent, curved front layer that does most of the eye\'s focusing (about two-thirds of its total refractive power).' },
+            { id: 'aqueous', name: 'Aqueous Humor', x: -34, y: 18, r: 8, desc: 'Clear watery fluid filling the space between the cornea and the lens; maintains eye pressure and nourishes nearby tissue.' },
+            { id: 'iris', name: 'Iris', x: -22, y: 22, r: 7, desc: 'The coloured muscular ring that controls how much light enters by adjusting the size of the pupil.' },
+            { id: 'pupil', name: 'Pupil', x: -22, y: 0, r: 6, desc: 'The opening at the centre of the iris through which light enters the eye.' },
+            { id: 'lens', name: 'Lens (Crystalline Lens)', x: -14, y: 0, r: 9, desc: 'A flexible biconvex lens that fine-tunes focus by changing shape (accommodation) to image objects at different distances onto the retina.' },
+            { id: 'ciliary', name: 'Ciliary Muscles', x: -14, y: 26, r: 7, desc: 'Ring of muscles surrounding the lens; contracting or relaxing changes the lens\'s curvature during accommodation.' },
+            { id: 'vitreous', name: 'Vitreous Humor', x: 20, y: -30, r: 10, desc: 'Clear gel filling the large chamber between the lens and retina, helping the eyeball hold its shape.' },
+            { id: 'retina', name: 'Retina', x: 62, y: 32, r: 9, desc: 'Light-sensitive layer lining the back of the eye, containing rods and cones that convert light into nerve signals.' },
+            { id: 'fovea', name: 'Fovea', x: 78, y: 0, r: 6, desc: 'A small pit in the retina, directly on the optical axis, packed with cone cells — the point of sharpest central vision.' },
+            { id: 'opticnerve', name: 'Optic Nerve', x: 90, y: -22, r: 7, desc: 'Bundle of nerve fibres carrying visual signals from the retina to the brain; its exit point creates the eye\'s natural blind spot.' },
+            { id: 'sclera', name: 'Sclera', x: 30, y: 52, r: 9, desc: 'The tough white outer coat of the eyeball that gives it its shape and protects the inner structures.' }
+        ];
+
+        // ===================== DEFECT / RAY OPTICS (real mm, paraxial thin-lens system) =====================
+        const RETINA_X = 24;    // retina distance from the eye's optical centre (mm)
+        const CORR_X = -12;     // corrective spectacle lens position (mm in front of the eye)
+        const EYE_F = { normal: 24, myopia: 22, hyper: 26 }; // eye's own fixed focal length per mode (mm)
+
+        function propagate(state, L) { return { h: state.h + state.m * L, m: state.m }; }
+        function thinLens(state, f) { return { h: state.h, m: state.m - state.h / f }; }
+
+        // Trace one ray (parallel input at given height h0) through [optional corrective lens] + eye lens.
+        // Returns the sequence of {x,h} points for drawing, plus the final state at the retina plane.
+        function traceEyeRay(h0, f_eye, f_c, startX) {
+            const pts = [];
+            let state = { h: h0, m: 0 };
+            let x = startX;
+            pts.push({ x, h: state.h });
+
+            if (f_c !== null) {
+                state = propagate(state, CORR_X - x); x = CORR_X; pts.push({ x, h: state.h });
+                state = thinLens(state, f_c); pts.push({ x, h: state.h });
+            }
+            state = propagate(state, 0 - x); x = 0; pts.push({ x, h: state.h });
+            state = thinLens(state, f_eye); pts.push({ x, h: state.h });
+
+            state = propagate(state, RETINA_X - x); x = RETINA_X; pts.push({ x, h: state.h });
+            return { pts, retinaH: state.h };
+        }
+
+        function updateUI() {
+            document.getElementById("powerVal").textContent = `${parseFloat(powerSlider.value).toFixed(2)} D`;
+            draw();
+        }
+        powerSlider.addEventListener("input", updateUI);
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('btnNormal').classList.toggle('active', m === 'normal');
+            document.getElementById('btnMyopia').classList.toggle('active', m === 'myopia');
+            document.getElementById('btnHyper').classList.toggle('active', m === 'hyper');
+            document.getElementById('normalPanel').style.display = (m === 'normal') ? 'block' : 'none';
+            document.getElementById('defectPanel').style.display = (m === 'normal') ? 'none' : 'block';
+
+            if (m === 'myopia') {
+                document.getElementById('defectTitle').textContent = 'Myopia (Near-sightedness)';
+                document.getElementById('defectNote').textContent = 'The eyeball focuses too strongly — parallel rays from a distant object converge in front of the retina. Choose a diverging (concave) lens to push the focus back onto the retina.';
+                powerSlider.min = -10; powerSlider.max = -0.25; powerSlider.value = -0.25;
+            } else if (m === 'hyper') {
+                document.getElementById('defectTitle').textContent = 'Hypermetropia (Far-sightedness)';
+                document.getElementById('defectNote').textContent = 'The eyeball focuses too weakly — parallel rays would converge behind the retina. Choose a converging (convex) lens to pull the focus forward onto the retina.';
+                powerSlider.min = 0.25; powerSlider.max = 10; powerSlider.value = 0.25;
+            }
+            updateUI();
+            draw();
+        }
+
+        // ===================== RESIZE / RESPONSIVE SCALING =====================
+        const resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                W = Math.floor(entry.contentRect.width);
+                H = Math.floor(entry.contentRect.height);
+                canvas.width = W; canvas.height = H;
+                if (!initialized && W > 10 && H > 10) initialized = true;
+                if (initialized) draw();
+            }
+        });
+        resizeObserver.observe(canvasWrapper);
+        setTimeout(() => {
+            if (!initialized) {
+                W = canvasWrapper.clientWidth; H = canvasWrapper.clientHeight || 500;
+                canvas.width = W; canvas.height = H; initialized = true; draw();
+            }
+        }, 300);
+
+        // Watermark: centred on the canvas panel, sized off its actual measured pixel dimensions
+        const wmObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const size = Math.min(entry.contentRect.width, entry.contentRect.height) * 0.75;
+                watermark.style.width = size + 'px';
+                watermark.style.height = size + 'px';
+            }
+        });
+        wmObserver.observe(canvasWrapper);
+
+        function mapX(x) { return originX + x * drawScale; }
+        function mapY(y) { return originY - y * drawScale; }
+
+        // ===================== DRAWING HELPERS =====================
+        function drawArrowLine(x1, y1, x2, y2, color, dashed = false) {
+            const sx1 = mapX(x1), sy1 = mapY(y1), sx2 = mapX(x2), sy2 = mapY(y2);
+            ctx.save();
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+            if (dashed) { ctx.setLineDash([5, 5]); ctx.globalAlpha = 0.55; } else { ctx.shadowBlur = 6; ctx.shadowColor = color; }
+            ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
+            ctx.setLineDash([]); ctx.shadowBlur = 0;
+            const dx = sx2 - sx1, dy = sy2 - sy1, len = Math.hypot(dx, dy);
+            if (len > 20 && !dashed) {
+                const angle = Math.atan2(dy, dx);
+                const mx = sx2 - Math.cos(angle) * 8, my = sy2 - Math.sin(angle) * 8;
+                ctx.beginPath();
+                ctx.moveTo(sx2, sy2);
+                ctx.lineTo(mx - 8 * Math.cos(angle - 0.5), my - 8 * Math.sin(angle - 0.5));
+                ctx.lineTo(mx - 8 * Math.cos(angle + 0.5), my - 8 * Math.sin(angle + 0.5));
+                ctx.closePath(); ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // ===================== NORMAL EYE (ANATOMY) DRAWING =====================
+        function drawAnatomyPart(part, highlighted) {
+            const sx = mapX(part.x), sy = mapY(part.y), sr = part.r * drawScale;
+            ctx.save();
+            ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+            ctx.fillStyle = highlighted ? "rgba(0,229,255,0.35)" : "rgba(0,229,255,0.10)";
+            ctx.fill();
+            ctx.strokeStyle = highlighted ? "#00e5ff" : "rgba(0,229,255,0.4)";
+            ctx.lineWidth = highlighted ? 2.5 : 1.3;
+            ctx.shadowBlur = highlighted ? 12 : 0; ctx.shadowColor = "#00e5ff";
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawEyeOutline() {
+            // Sclera / main eyeball body
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(mapX(20), mapY(0), 62 * drawScale, 56 * drawScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255,255,255,0.04)";
+            ctx.strokeStyle = "rgba(255,255,255,0.35)"; ctx.lineWidth = 2;
+            ctx.fill(); ctx.stroke();
+
+            // Cornea bulge (front)
+            ctx.beginPath();
+            ctx.arc(mapX(4), mapY(0), 46 * drawScale, Math.PI * 0.68, Math.PI * 1.32);
+            ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Lens (biconvex)
+            ctx.beginPath();
+            ctx.ellipse(mapX(-14), mapY(0), 9 * drawScale, 20 * drawScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0,229,255,0.15)"; ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 1.5;
+            ctx.fill(); ctx.stroke();
+
+            // Pupil gap indicator
+            ctx.beginPath();
+            ctx.moveTo(mapX(-22), mapY(14)); ctx.lineTo(mapX(-22), mapY(-14));
+            ctx.strokeStyle = "#070b19"; ctx.lineWidth = 6 * drawScale; ctx.stroke();
+
+            // Iris band
+            ctx.beginPath();
+            ctx.moveTo(mapX(-22), mapY(48)); ctx.lineTo(mapX(-22), mapY(14));
+            ctx.moveTo(mapX(-22), mapY(-14)); ctx.lineTo(mapX(-22), mapY(-48));
+            ctx.strokeStyle = var_secondary(); ctx.lineWidth = 6 * drawScale; ctx.stroke();
+
+            // Retina lining (inner back arc)
+            ctx.beginPath();
+            ctx.arc(mapX(20), mapY(0), 56 * drawScale, -Math.PI * 0.42, Math.PI * 0.42);
+            ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Optic nerve stub
+            ctx.beginPath();
+            ctx.moveTo(mapX(78), mapY(-22)); ctx.lineTo(mapX(96), mapY(-30));
+            ctx.strokeStyle = "#ffd166"; ctx.lineWidth = 5 * drawScale; ctx.lineCap = 'round';
+            ctx.stroke();
+
+            ctx.restore();
+        }
+        function var_secondary() { return "#c7a6ff"; }
+
+        function drawNormalMode() {
+            drawEyeOutline();
+            anatomyHotspots = [];
+            PARTS.forEach(p => {
+                drawAnatomyPart(p, p.id === selectedPartId);
+                anatomyHotspots.push({ id: p.id, sx: mapX(p.x), sy: mapY(p.y), sr: Math.max(p.r * drawScale, 14) });
+            });
+        }
+
+        // ===================== DEFECT MODE DRAWING (Myopia / Hypermetropia) =====================
+        function drawDefectMode() {
+            const fEye = EYE_F[mode];
+            const powerD = parseFloat(powerSlider.value);
+            const fC = Math.abs(powerD) < 0.001 ? null : 1000.0 / powerD; // mm
+
+            // Simplified eye silhouette (schematic, mm-scale)
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(mapX(12), mapY(0), 20 * drawScale, 15 * drawScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 2;
+            ctx.fill(); ctx.stroke();
+            // Eye lens marker (thin vertical biconvex symbol at x=0)
+            ctx.beginPath();
+            ctx.ellipse(mapX(0), mapY(0), 2 * drawScale, 15 * drawScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0,229,255,0.2)"; ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 1.5;
+            ctx.fill(); ctx.stroke();
+            // Retina line
+            ctx.beginPath();
+            ctx.moveTo(mapX(RETINA_X), mapY(-15)); ctx.lineTo(mapX(RETINA_X), mapY(15));
+            ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 3; ctx.stroke();
+            ctx.fillStyle = "#ff007f"; ctx.font = `${12 * Math.min(drawScale,1.2)}px 'Segoe UI'`; ctx.textAlign = 'center';
+            ctx.fillText("Retina", mapX(RETINA_X), mapY(-20));
+            ctx.restore();
+
+            // Corrective lens marker
+            if (fC !== null) {
+                ctx.save();
+                const isConverging = fC > 0;
+                ctx.beginPath();
+                if (isConverging) {
+                    ctx.ellipse(mapX(CORR_X), mapY(0), 2.2 * drawScale, 18 * drawScale, 0, 0, Math.PI * 2);
+                } else {
+                    ctx.moveTo(mapX(CORR_X) - 3, mapY(18)); ctx.lineTo(mapX(CORR_X) + 3, mapY(18));
+                    ctx.lineTo(mapX(CORR_X) + 3, mapY(-18)); ctx.lineTo(mapX(CORR_X) - 3, mapY(-18));
+                    ctx.closePath();
+                }
+                ctx.fillStyle = "rgba(255,209,102,0.25)"; ctx.strokeStyle = "#ffd166"; ctx.lineWidth = 1.5;
+                ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "#ffd166"; ctx.font = `${11 * Math.min(drawScale,1.2)}px 'Segoe UI'`; ctx.textAlign = 'center';
+                ctx.fillText(isConverging ? "Convex" : "Concave", mapX(CORR_X), mapY(24));
+                ctx.restore();
+            }
+
+            // Trace a fan of parallel rays
+            const heights = [-10, -5, 0, 5, 10];
+            const startX = -60;
+            let maxSpread = 0;
+            heights.forEach(h0 => {
+                const { pts, retinaH } = traceEyeRay(h0, fEye, fC, startX);
+                for (let i = 0; i < pts.length - 1; i++) {
+                    drawArrowLine(pts[i].x, pts[i].h, pts[i+1].x, pts[i+1].h, "#ffffff");
+                }
+                maxSpread = Math.max(maxSpread, Math.abs(retinaH));
+            });
+
+            const focused = maxSpread < 1.2; // mm tolerance at retina
+            const banner = document.getElementById('statusBanner');
+            if (focused) {
+                banner.textContent = "✓ Image sharply focused on the retina!";
+                banner.className = "status-banner focused";
+            } else {
+                const dir = mode === 'myopia' ? 'in front of' : 'behind';
+                banner.textContent = `Blurred — rays are converging ${dir} the retina`;
+                banner.className = "status-banner blurred";
+            }
+
+            document.getElementById('lensTypeOut').textContent = fC === null ? "None" : (fC > 0 ? "Convex" : "Concave");
+            document.getElementById('focalOut').textContent = fC === null ? "∞" : `${(fC/10).toFixed(1)} cm`;
+        }
+
+        // ===================== MASTER DRAW =====================
+        function draw() {
+            if (!initialized) return;
+            ctx.clearRect(0, 0, W, H);
+
+            // Bounding box (diagram units) differs per mode; fit it to the exact available pixel space
+            let bbox;
+            if (mode === 'normal') {
+                bbox = { minX: -60, maxX: 105, minY: -65, maxY: 65 };
+            } else {
+                bbox = { minX: -75, maxX: 40, minY: -35, maxY: 35 };
+            }
+            const bw = bbox.maxX - bbox.minX, bh = bbox.maxY - bbox.minY;
+            const availW = W * 0.88, availH = H * 0.88;
+            drawScale = Math.min(availW / bw, availH / bh, 6);
+            if (!isFinite(drawScale) || drawScale <= 0) drawScale = 1;
+            const bcx = (bbox.minX + bbox.maxX) / 2, bcy = (bbox.minY + bbox.maxY) / 2;
+            originX = W / 2 - bcx * drawScale;
+            originY = H / 2 + bcy * drawScale;
+
+            if (mode === 'normal') drawNormalMode();
+            else drawDefectMode();
+        }
+
+        // ===================== CLICK HANDLING (Normal mode anatomy labelling) =====================
+        function handleClick(clientX, clientY) {
+            if (mode !== 'normal') return;
+            const rect = canvas.getBoundingClientRect();
+            const px = clientX - rect.left, py = clientY - rect.top;
+            let best = null, bestDist = Infinity;
+            anatomyHotspots.forEach(h => {
+                const d = Math.hypot(px - h.sx, py - h.sy);
+                if (d < h.sr && d < bestDist) { bestDist = d; best = h; }
+            });
+            if (best) selectPart(best.id);
+        }
+        canvas.addEventListener('click', (e) => handleClick(e.clientX, e.clientY));
+        canvas.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length > 0) handleClick(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        });
+
+        function selectPart(id) {
+            selectedPartId = id;
+            const part = PARTS.find(p => p.id === id);
+            if (!part) return;
+            document.getElementById('infoBox').innerHTML = `<div class="part-name">${part.name}</div><div class="part-desc">${part.desc}</div>`;
+            document.querySelectorAll('.part-chip').forEach(c => c.classList.toggle('active', c.dataset.id === id));
+            draw();
+        }
+
+        // Build the quick-jump chip list in the HUD
+        const partList = document.getElementById('partList');
+        PARTS.forEach(p => {
+            const chip = document.createElement('div');
+            chip.className = 'part-chip';
+            chip.dataset.id = p.id;
+            chip.textContent = p.name;
+            chip.onclick = () => selectPart(p.id);
+            partList.appendChild(chip);
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>
