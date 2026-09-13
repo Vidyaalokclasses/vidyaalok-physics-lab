@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Optical Instruments | Vidyaalok Lab</title>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+
+    <style>
+        :root { --primary: #00e5ff; --secondary: #ff007f; --bg-dark: #070b19; --panel-bg: rgba(7, 11, 25, 0.85); --text-main: #ffffff; --text-muted: #a0aabf; --gold: #ffd166; --border: rgba(0, 229, 255, 0.2); }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; }
+        .navbar { padding: 12px 20px; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 100; position: relative; }
+        .back-btn { color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+
+        .workspace { display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 58px); overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
+
+        .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-image: url('../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
+
+        .hud-panel { width: 380px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 50; }
+        .hud-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .hud-content { padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
+        .hud-content::-webkit-scrollbar { width: 4px; }
+        .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+
+        @media (max-width: 900px) {
+            .workspace { flex-direction: column; }
+            .hud-panel { width: 100%; height: 54vh; border-left: none; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+        }
+
+        .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn { flex: 1 1 calc(33.333% - 6px); min-width: 90px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); padding: 9px 4px; border-radius: 6px; font-weight: bold; font-size: 0.68rem; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+        .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
+        .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); }
+        .btn2 { flex: 1 1 calc(50% - 4px); }
+
+        .control-group { margin-bottom: 4px; }
+        .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+        .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 9px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
+        .stat strong { color: var(--secondary); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .stat span { font-size: 0.95rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
+
+        .formula-panel { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .formula-panel .fname { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 4px; }
+        .formula-panel .fname:first-child { margin-top: 0; }
+        .eq-row { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--primary); font-size: 0.95rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.25; font-size: 0.88rem; vertical-align: middle; }
+        .frac-num, .frac-den { padding: 0 3px; white-space: nowrap; }
+        .frac-line { width: 100%; height: 1px; background: var(--primary); margin: 1px 0; }
+
+        .hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="back-btn">← Ray Optics Dashboard</a>
+        <h1>Optical Instruments</h1>
+    </nav>
+
+    <div class="workspace">
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <div class="watermark" id="watermark"></div>
+            <canvas id="simCanvas"></canvas>
+        </div>
+
+        <div class="hud-panel">
+            <div class="hud-header"><h2>Controls</h2></div>
+            <div class="hud-content">
+                <div class="toolbar">
+                    <button class="btn active" id="btnSimple" onclick="setInstrument('simple')">Simple<br>Microscope</button>
+                    <button class="btn" id="btnCompound" onclick="setInstrument('compound')">Compound<br>Microscope</button>
+                    <button class="btn" id="btnTelescope" onclick="setInstrument('telescope')">Astronomical<br>Telescope</button>
+                </div>
+
+                <div id="panelSimple">
+                    <div class="section-title" style="margin-top:6px;">Final Image</div>
+                    <div class="toolbar">
+                        <button class="btn btn2 active" id="s_atD" onclick="setSimpleMode('D')">At Near Point</button>
+                        <button class="btn btn2" id="s_atInf" onclick="setSimpleMode('inf')">At Infinity</button>
+                    </div>
+                    <div class="control-group" style="margin-top:10px;">
+                        <label>Focal Length (f) <span id="s_fVal">10 cm</span></label>
+                        <input id="s_fSlider" type="range" min="3" max="20" step="0.5" value="10">
+                    </div>
+                    <div class="stat-grid" style="margin-top:8px;">
+                        <div class="stat"><strong>Object Distance</strong><span id="s_uOut">—</span></div>
+                        <div class="stat"><strong>Magnification</strong><span id="s_mOut">—</span></div>
+                    </div>
+                    <div class="section-title" style="margin-top:12px;">Formulas</div>
+                    <div class="formula-panel">
+                        <div class="fname">Image at Near Point (D = 25 cm)</div>
+                        <div class="eq-row boxed">m = 1 + <span class="frac"><span class="frac-num">D</span><span class="frac-line"></span><span class="frac-den">f</span></span></div>
+                        <div class="fname">Image at Infinity (relaxed eye)</div>
+                        <div class="eq-row boxed">m = <span class="frac"><span class="frac-num">D</span><span class="frac-line"></span><span class="frac-den">f</span></span></div>
+                    </div>
+                </div>
+
+                <div id="panelCompound" style="display:none;">
+                    <div class="section-title" style="margin-top:6px;">Final Image</div>
+                    <div class="toolbar">
+                        <button class="btn btn2 active" id="c_atD" onclick="setCompoundMode('D')">At Near Point</button>
+                        <button class="btn btn2" id="c_atInf" onclick="setCompoundMode('inf')">At Infinity</button>
+                    </div>
+                    <div class="control-group" style="margin-top:10px;">
+                        <label>Objective Focal Length (f<sub>o</sub>) <span id="c_foVal">1.0 cm</span></label>
+                        <input id="c_foSlider" type="range" min="0.5" max="3" step="0.1" value="1.0">
+                    </div>
+                    <div class="control-group">
+                        <label>Eyepiece Focal Length (f<sub>e</sub>) <span id="c_feVal">5.0 cm</span></label>
+                        <input id="c_feSlider" type="range" min="2" max="8" step="0.25" value="5.0">
+                    </div>
+                    <div class="control-group">
+                        <label>Object Distance Beyond f<sub>o</sub> <span id="c_duVal">10%</span></label>
+                        <input id="c_duSlider" type="range" min="2" max="60" step="1" value="10">
+                    </div>
+                    <div class="stat-grid" style="margin-top:8px;">
+                        <div class="stat"><strong>Objective Mag. (m<sub>o</sub>)</strong><span id="c_moOut">—</span></div>
+                        <div class="stat"><strong>Eyepiece Mag. (m<sub>e</sub>)</strong><span id="c_meOut">—</span></div>
+                    </div>
+                    <div class="stat-grid" style="margin-top:8px;">
+                        <div class="stat"><strong>Total Magnification</strong><span id="c_MOut">—</span></div>
+                        <div class="stat"><strong>Tube Length (L)</strong><span id="c_LOut">—</span></div>
+                    </div>
+                    <div class="section-title" style="margin-top:12px;">Formulas</div>
+                    <div class="formula-panel">
+                        <div class="fname">Objective Magnification</div>
+                        <div class="eq-row boxed">m<sub>o</sub> = v<sub>o</sub> / u<sub>o</sub></div>
+                        <div class="fname">Total Magnification (Image at D)</div>
+                        <div class="eq-row boxed">M = m<sub>o</sub> × ( 1 + <span class="frac"><span class="frac-num">D</span><span class="frac-line"></span><span class="frac-den">f<sub>e</sub></span></span> )</div>
+                        <div class="fname">Total Magnification (Image at Infinity)</div>
+                        <div class="eq-row boxed">M = m<sub>o</sub> × <span class="frac"><span class="frac-num">D</span><span class="frac-line"></span><span class="frac-den">f<sub>e</sub></span></span> &nbsp;≈&nbsp; <span class="frac"><span class="frac-num">L</span><span class="frac-line"></span><span class="frac-den">f<sub>o</sub></span></span> × <span class="frac"><span class="frac-num">D</span><span class="frac-line"></span><span class="frac-den">f<sub>e</sub></span></span></div>
+                    </div>
+                </div>
+
+                <div id="panelTelescope" style="display:none;">
+                    <div class="section-title" style="margin-top:6px;">Adjustment</div>
+                    <div class="toolbar">
+                        <button class="btn btn2 active" id="t_normal" onclick="setTelescopeMode('normal')">Normal (∞)</button>
+                        <button class="btn btn2" id="t_near" onclick="setTelescopeMode('near')">Near Point</button>
+                    </div>
+                    <div class="control-group" style="margin-top:10px;">
+                        <label>Objective Focal Length (f<sub>o</sub>) <span id="t_foVal">30 cm</span></label>
+                        <input id="t_foSlider" type="range" min="15" max="50" step="1" value="30">
+                    </div>
+                    <div class="control-group">
+                        <label>Eyepiece Focal Length (f<sub>e</sub>) <span id="t_feVal">5 cm</span></label>
+                        <input id="t_feSlider" type="range" min="2" max="10" step="0.25" value="5">
+                    </div>
+                    <div class="stat-grid" style="margin-top:8px;">
+                        <div class="stat"><strong>Magnifying Power</strong><span id="t_mOut">—</span></div>
+                        <div class="stat"><strong>Tube Length (L)</strong><span id="t_LOut">—</span></div>
+                    </div>
+                    <div class="section-title" style="margin-top:12px;">Formulas</div>
+                    <div class="formula-panel">
+                        <div class="fname">Normal Adjustment (Final Image at Infinity)</div>
+                        <div class="eq-row boxed">m = <span class="frac"><span class="frac-num">f<sub>o</sub></span><span class="frac-line"></span><span class="frac-den">f<sub>e</sub></span></span> &nbsp;,&nbsp; L = f<sub>o</sub> + f<sub>e</sub></div>
+                        <div class="fname">Near Point Adjustment (Final Image at D)</div>
+                        <div class="eq-row boxed">m = <span class="frac"><span class="frac-num">f<sub>o</sub></span><span class="frac-line"></span><span class="frac-den">f<sub>e</sub></span></span> ( 1 + <span class="frac"><span class="frac-num">f<sub>e</sub></span><span class="frac-line"></span><span class="frac-den">D</span></span> )</div>
+                    </div>
+                    <div class="hint" style="margin-top:8px;">In normal adjustment, light leaves the eyepiece as a parallel bundle at a wider angle than it arrived — that angle ratio <i>is</i> the magnifying power. The image is inverted (negative sign omitted here for clarity).</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+        const canvasWrapper = document.getElementById("canvasWrapper");
+        const watermark = document.getElementById("watermark");
+        const D = 25; // near point, cm
+
+        let W = 0, H = 0, originX = 0, originY = 0, drawScale = 1, initialized = false;
+        let instrument = 'simple';
+        let simpleMode = 'D';
+        let compoundMode = 'D';
+        let telescopeMode = 'normal';
+
+        // ===================== RESIZE / RESPONSIVE =====================
+        const resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                W = Math.floor(entry.contentRect.width); H = Math.floor(entry.contentRect.height);
+                canvas.width = W; canvas.height = H;
+                if (!initialized && W > 10 && H > 10) initialized = true;
+                if (initialized) draw();
+            }
+        });
+        resizeObserver.observe(canvasWrapper);
+        setTimeout(() => { if (!initialized) { W = canvasWrapper.clientWidth; H = canvasWrapper.clientHeight || 500; canvas.width = W; canvas.height = H; initialized = true; draw(); } }, 300);
+
+        const wmObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const size = Math.min(entry.contentRect.width, entry.contentRect.height) * 0.75;
+                watermark.style.width = size + 'px'; watermark.style.height = size + 'px';
+            }
+        });
+        wmObserver.observe(canvasWrapper);
+
+        function mapX(x) { return originX + x * drawScale; }
+        function mapY(y) { return originY - y * drawScale; }
+
+        // ===================== THIN LENS CORE MATH =====================
+        // u, f, v in cm. u negative (object to the left). Returns null v => image at infinity.
+        function lensImage(u, f) {
+            const denom = u + f;
+            if (Math.abs(denom) < 1e-6) return { v: null, m: null };
+            const v = (u * f) / denom;
+            const m = v / u;
+            return { v, m };
+        }
+
+        function drawLine(x1, y1, x2, y2, color, dashed = false, width = 2) {
+            ctx.save();
+            ctx.strokeStyle = color; ctx.lineWidth = width;
+            if (dashed) { ctx.setLineDash([5, 4]); ctx.globalAlpha = 0.6; }
+            ctx.beginPath(); ctx.moveTo(mapX(x1), mapY(y1)); ctx.lineTo(mapX(x2), mapY(y2)); ctx.stroke();
+            ctx.setLineDash([]); ctx.restore();
+        }
+
+        function drawArrowShape(x, hFrom, hTo, color, dashed = false) {
+            ctx.save();
+            const sx = mapX(x), sy1 = mapY(hFrom), sy2 = mapY(hTo);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.5;
+            if (dashed) { ctx.setLineDash([5, 4]); ctx.globalAlpha = 0.65; }
+            ctx.beginPath(); ctx.moveTo(sx, sy1); ctx.lineTo(sx, sy2); ctx.stroke();
+            ctx.setLineDash([]);
+            const dir = sy2 > sy1 ? -1 : 1;
+            ctx.beginPath(); ctx.moveTo(sx, sy2);
+            ctx.lineTo(sx - 6, sy2 - dir * 10); ctx.lineTo(sx + 6, sy2 - dir * 10);
+            ctx.closePath(); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawLensIcon(x, halfHeight, color) {
+            const cx = mapX(x), midY = mapY(0);
+            const hh = halfHeight * drawScale;
+            const edgeHalfWidth = Math.max(hh * 0.16, 3); // bulge thickness, scales with lens size
+            ctx.save();
+            ctx.strokeStyle = color; ctx.lineWidth = 2.2;
+            ctx.fillStyle = color.startsWith('#') ? hexToRgba(color, 0.12) : color;
+            ctx.beginPath();
+            ctx.ellipse(cx, midY, edgeHalfWidth, hh, 0, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+            ctx.restore();
+        }
+        function hexToRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+
+        // Draw the 3 standard construction rays from an object at (u,h) through a lens at x=lensX
+        // with focal length f, to the analytically-known image (v, hi). Handles real/virtual/infinite.
+        function drawRayDiagram(lensX, f, u, h, color, imgColor) {
+            const { v, m } = lensImage(u, f);
+            const hi = (m !== null) ? m * h : null;
+            const objX = lensX + u;
+            const atFocus = Math.abs(f + u) < 1e-4; // object exactly at the near focal point -> image at infinity
+
+            // Heights at the lens plane for each standard ray (verified analytically to converge to (v,hi))
+            const hParallel = h;   // ray parallel to axis before the lens
+            const hCenter = 0;     // ray through the optical centre
+            const rays = [{ hAtLens: hParallel }, { hAtLens: hCenter }];
+            if (!atFocus) rays.push({ hAtLens: h * f / (f + u) }); // ray through the near focal point (singular exactly at the focus, so omitted there)
+
+            // Object arrow
+            drawArrowShape(objX, 0, h, color);
+
+            // Common exit slope when the image is at infinity: every ray leaves parallel to the
+            // undeviated centre ray, whose slope is simply h/f (never singular).
+            const commonExitSlope = h / f;
+
+            rays.forEach(r => {
+                drawLine(objX, h, lensX, r.hAtLens, color); // object -> lens
+                if (v === null) {
+                    const farX = lensX + 150;
+                    drawLine(lensX, r.hAtLens, farX, r.hAtLens + commonExitSlope * (farX - lensX), color);
+                } else if (v > 0) {
+                    drawLine(lensX, r.hAtLens, lensX + v, hi, color);
+                } else {
+                    // virtual image: short real segment forward, dashed back to the virtual image
+                    const slope = (hi - r.hAtLens) / v;
+                    drawLine(lensX, r.hAtLens, lensX + 40, r.hAtLens + slope * 40, color);
+                    drawLine(lensX, r.hAtLens, lensX + v, hi, imgColor, true);
+                }
+            });
+
+            if (v !== null) {
+                drawArrowShape(lensX + v, 0, hi, imgColor, v < 0);
+            }
+            return { v, m, hi, objX, imgX: (v !== null) ? lensX + v : null };
+        }
+
+        // ===================== UI WIRING =====================
+        function setInstrument(inst) {
+            instrument = inst;
+            ['Simple','Compound','Telescope'].forEach(n => document.getElementById('btn'+n).classList.toggle('active', inst === n.toLowerCase()));
+            document.getElementById('panelSimple').style.display = inst === 'simple' ? 'block' : 'none';
+            document.getElementById('panelCompound').style.display = inst === 'compound' ? 'block' : 'none';
+            document.getElementById('panelTelescope').style.display = inst === 'telescope' ? 'block' : 'none';
+            draw();
+        }
+        function setSimpleMode(m) { simpleMode = m; document.getElementById('s_atD').classList.toggle('active', m==='D'); document.getElementById('s_atInf').classList.toggle('active', m==='inf'); draw(); }
+        function setCompoundMode(m) { compoundMode = m; document.getElementById('c_atD').classList.toggle('active', m==='D'); document.getElementById('c_atInf').classList.toggle('active', m==='inf'); draw(); }
+        function setTelescopeMode(m) { telescopeMode = m; document.getElementById('t_normal').classList.toggle('active', m==='normal'); document.getElementById('t_near').classList.toggle('active', m==='near'); draw(); }
+
+        const s_fSlider = document.getElementById('s_fSlider');
+        const c_foSlider = document.getElementById('c_foSlider'), c_feSlider = document.getElementById('c_feSlider'), c_duSlider = document.getElementById('c_duSlider');
+        const t_foSlider = document.getElementById('t_foSlider'), t_feSlider = document.getElementById('t_feSlider');
+        [s_fSlider, c_foSlider, c_feSlider, c_duSlider, t_foSlider, t_feSlider].forEach(el => el.addEventListener('input', draw));
+
+        // ===================== MASTER DRAW =====================
+        function draw() {
+            if (!initialized) return;
+            ctx.clearRect(0, 0, W, H);
+
+            let bbox;
+            if (instrument === 'simple') bbox = computeSimple().bbox;
+            else if (instrument === 'compound') bbox = computeCompound().bbox;
+            else bbox = computeTelescope().bbox;
+
+            const bw = bbox.maxX - bbox.minX, bh = bbox.maxY - bbox.minY;
+            const availW = W * 0.85, availH = H * 0.85;
+            drawScale = Math.min(availW / bw, availH / bh, 40);
+            if (!isFinite(drawScale) || drawScale <= 0) drawScale = 1;
+            const bcx = (bbox.minX + bbox.maxX) / 2, bcy = (bbox.minY + bbox.maxY) / 2;
+            originX = W / 2 - bcx * drawScale;
+            originY = H / 2 + bcy * drawScale;
+
+            if (instrument === 'simple') renderSimple();
+            else if (instrument === 'compound') renderCompound();
+            else renderTelescope();
+        }
+
+        // ===================== SIMPLE MICROSCOPE =====================
+        function computeSimple() {
+            const f = parseFloat(s_fSlider.value);
+            let u;
+            if (simpleMode === 'D') { const v = -D; u = 1 / (1/v - 1/f); }
+            else { u = -f; }
+            const h = f * 0.35;
+            const imgX = (simpleMode === 'D') ? -D : f + 150; // 'inf' has no finite image; just give the parallel-ray region room
+            const pad = 15;
+            const bbox = {
+                minX: Math.min(u, imgX) - pad, maxX: Math.max(0, f + 20) + pad,
+                minY: -Math.abs(h) * 3 - pad, maxY: Math.abs(h) * 3 + pad
+            };
+            return { f, u, h, bbox };
+        }
+        function renderSimple() {
+            const { f, u, h } = computeSimple();
+            document.getElementById('s_fVal').textContent = `${f.toFixed(1)} cm`;
+            drawLine(-1000, 0, 1000, 0, "rgba(255,255,255,0.25)");
+            drawLensIcon(0, 18, "#00e5ff");
+            drawRayDiagram(0, f, u, h, "#ffffff", "#ffd166");
+            document.getElementById('s_uOut').textContent = `${Math.abs(u).toFixed(1)} cm`;
+            const mVal = simpleMode === 'D' ? (1 + D/f) : (D/f);
+            document.getElementById('s_mOut').textContent = `${mVal.toFixed(2)}×`;
+        }
+
+        // ===================== COMPOUND MICROSCOPE =====================
+        function computeCompound() {
+            const fo = parseFloat(c_foSlider.value);
+            const fe = parseFloat(c_feSlider.value);
+            const duPct = parseFloat(c_duSlider.value);
+            const uo = -fo * (1 + duPct/100);
+            const ho = fo * 0.4;
+            const { v: vo, m: mo } = lensImage(uo, fo);
+            const hio = mo * ho;
+
+            let ue;
+            if (compoundMode === 'D') { const ve = -D; ue = 1/(1/ve - 1/fe); }
+            else { ue = -fe; }
+            const eyepieceX = vo - ue;
+
+            const uActual = vo - eyepieceX; // == ue by construction, kept explicit for clarity
+            const { v: ve2, m: me2 } = lensImage(uActual, fe);
+            const finalImgX = (ve2 !== null) ? eyepieceX + ve2 : eyepieceX + 120;
+            const finalHi = (ve2 !== null) ? me2 * hio : hio * 8; // rough visual extent when image is at infinity
+
+            const pad = Math.max(fo, fe) * 2;
+            const bbox = {
+                minX: uo - pad, maxX: Math.max(eyepieceX, finalImgX) + pad,
+                minY: -Math.max(Math.abs(hio), Math.abs(finalHi), 20) * 1.15 - pad*0.3,
+                maxY: Math.max(Math.abs(hio), Math.abs(finalHi), 20) * 1.15 + pad*0.3
+            };
+            return { fo, fe, duPct, uo, ho, vo, mo, hio, eyepieceX, bbox };
+        }
+        function renderCompound() {
+            const { fo, fe, duPct, uo, ho, vo, mo, hio, eyepieceX } = computeCompound();
+            document.getElementById('c_foVal').textContent = `${fo.toFixed(1)} cm`;
+            document.getElementById('c_feVal').textContent = `${fe.toFixed(1)} cm`;
+            document.getElementById('c_duVal').textContent = `${duPct}%`;
+
+            drawLine(-1000, 0, 1000, 0, "rgba(255,255,255,0.25)");
+            drawLensIcon(0, 14, "#00e5ff");
+            drawLensIcon(eyepieceX, 20, "#ff007f");
+
+            const r1 = drawRayDiagram(0, fo, uo, ho, "#ffffff", "#4ade80");
+            const uActual = r1.imgX - eyepieceX;
+            drawRayDiagram(eyepieceX, fe, uActual, hio, "#4ade80", "#ffd166");
+
+            const me = compoundMode === 'D' ? (1 + D/fe) : (D/fe);
+            const M = mo * me;
+            document.getElementById('c_moOut').textContent = `${mo.toFixed(2)}×`;
+            document.getElementById('c_meOut').textContent = `${me.toFixed(2)}×`;
+            document.getElementById('c_MOut').textContent = `${M.toFixed(1)}×`;
+            document.getElementById('c_LOut').textContent = `${eyepieceX.toFixed(2)} cm`;
+        }
+
+        // ===================== ASTRONOMICAL TELESCOPE =====================
+        function computeTelescope() {
+            const fo = parseFloat(t_foSlider.value);
+            const fe = parseFloat(t_feSlider.value);
+            const ho = Math.max(fo, fe) * 0.15;
+
+            let L, m;
+            if (telescopeMode === 'normal') { L = fo + fe; m = fo / fe; }
+            else {
+                const ve = -D; const ue = 1/(1/ve - 1/fe);
+                L = fo - ue; m = (fo/fe) * (1 + fe/D);
+            }
+            const pad = Math.max(fo, fe) * 0.6;
+            const bbox = {
+                minX: -fo * 0.9 - pad, maxX: L + pad,
+                minY: -ho * 2.4 - pad*0.3, maxY: ho * 2.4 + pad*0.3
+            };
+            return { fo, fe, ho, L, m, bbox };
+        }
+        function renderTelescope() {
+            const { fo, fe, ho, L, m } = computeTelescope();
+            document.getElementById('t_foVal').textContent = `${fo.toFixed(0)} cm`;
+            document.getElementById('t_feVal').textContent = `${fe.toFixed(0)} cm`;
+
+            drawLine(-1000, 0, 1000, 0, "rgba(255,255,255,0.25)");
+            drawLensIcon(0, ho*1.6, "#00e5ff");
+            drawLensIcon(L, ho*0.9, "#ff007f");
+
+            // Incoming parallel ray bundle converging at the objective's focal plane
+            [-1, 0, 1].forEach(k => {
+                const hAtObj = k * ho * 0.35;
+                drawLine(-fo * 0.85, hAtObj, 0, hAtObj, "#ffffff");
+                drawLine(0, hAtObj, fo, ho, "#ffffff");
+            });
+            drawArrowShape(fo, 0, ho, "#4ade80");
+
+            const uActual = fo - L;
+            drawRayDiagram(L, fe, uActual, ho, "#4ade80", "#ffd166");
+
+            document.getElementById('t_mOut').textContent = `${m.toFixed(1)}×`;
+            document.getElementById('t_LOut').textContent = `${L.toFixed(1)} cm`;
+        }
+
+        setInstrument('simple');
+    </script>
+</body>
+</html>
