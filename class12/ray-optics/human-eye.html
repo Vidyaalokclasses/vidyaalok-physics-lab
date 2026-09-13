@@ -148,7 +148,7 @@
         // ===================== DEFECT / RAY OPTICS (real mm, paraxial thin-lens system) =====================
         const RETINA_X = 24;    // retina distance from the eye's optical centre (mm)
         const CORR_X = -12;     // corrective spectacle lens position (mm in front of the eye)
-        const EYE_F = { normal: 24, myopia: 22, hyper: 26 }; // eye's own fixed focal length per mode (mm)
+        const EYE_F = { normal: 24, myopia: 21.986014, hyper: 25.937220 }; // eye's own fixed focal length per mode (mm) — chosen so the correction lands exactly on -4.00D / +3.00D
 
         function propagate(state, L) { return { h: state.h + state.m * L, m: state.m }; }
         function thinLens(state, f) { return { h: state.h, m: state.m - state.h / f }; }
@@ -188,11 +188,11 @@
 
             if (m === 'myopia') {
                 document.getElementById('defectTitle').textContent = 'Myopia (Near-sightedness)';
-                document.getElementById('defectNote').textContent = 'The eyeball focuses too strongly — parallel rays from a distant object converge in front of the retina. Choose a diverging (concave) lens to push the focus back onto the retina.';
+                document.getElementById('defectNote').innerHTML = '<b>Cause:</b> an elongated eyeball, or a cornea/lens that is too strongly curved — either way the eye refracts light more than it should. <b>Effect:</b> parallel rays from a distant object converge in front of the retina, so distant objects look blurred (though near objects are still seen clearly). <b>Correction:</b> a diverging (concave) lens, placed in front of the eye, spreads the rays out slightly before they enter — pushing the focus back onto the retina.';
                 powerSlider.min = -10; powerSlider.max = -0.25; powerSlider.value = -0.25;
             } else if (m === 'hyper') {
                 document.getElementById('defectTitle').textContent = 'Hypermetropia (Far-sightedness)';
-                document.getElementById('defectNote').textContent = 'The eyeball focuses too weakly — parallel rays would converge behind the retina. Choose a converging (convex) lens to pull the focus forward onto the retina.';
+                document.getElementById('defectNote').innerHTML = '<b>Cause:</b> a shortened eyeball, or a cornea/lens that is too weakly curved — the eye does not refract light enough. <b>Effect:</b> parallel rays would converge behind the retina, so near objects look blurred (though distant objects are still seen clearly). <b>Correction:</b> a converging (convex) lens pre-converges the rays slightly before they enter — pulling the focus forward onto the retina.';
                 powerSlider.min = 0.25; powerSlider.max = 10; powerSlider.value = 0.25;
             }
             updateUI();
@@ -351,12 +351,18 @@
             if (fC !== null) {
                 ctx.save();
                 const isConverging = fC > 0;
+                const cx = mapX(CORR_X), midY = mapY(0), topY = mapY(18), botY = mapY(-18);
                 ctx.beginPath();
                 if (isConverging) {
-                    ctx.ellipse(mapX(CORR_X), mapY(0), 2.2 * drawScale, 18 * drawScale, 0, 0, Math.PI * 2);
+                    // Biconvex: fat in the middle, tapering to points at top/bottom
+                    ctx.ellipse(cx, midY, 2.2 * drawScale, 18 * drawScale, 0, 0, Math.PI * 2);
                 } else {
-                    ctx.moveTo(mapX(CORR_X) - 3, mapY(18)); ctx.lineTo(mapX(CORR_X) + 3, mapY(18));
-                    ctx.lineTo(mapX(CORR_X) + 3, mapY(-18)); ctx.lineTo(mapX(CORR_X) - 3, mapY(-18));
+                    // Biconcave: pinched in the middle, flared at top/bottom — both surfaces curve INWARD
+                    const edge = 3.2 * drawScale, pinch = 0.7 * drawScale;
+                    ctx.moveTo(cx + edge, topY);
+                    ctx.quadraticCurveTo(cx + pinch, midY, cx + edge, botY); // right surface (concave)
+                    ctx.lineTo(cx - edge, botY);
+                    ctx.quadraticCurveTo(cx - pinch, midY, cx - edge, topY); // left surface (concave)
                     ctx.closePath();
                 }
                 ctx.fillStyle = "rgba(255,209,102,0.25)"; ctx.strokeStyle = "#ffd166"; ctx.lineWidth = 1.5;
@@ -378,14 +384,16 @@
                 maxSpread = Math.max(maxSpread, Math.abs(retinaH));
             });
 
-            const focused = maxSpread < 1.2; // mm tolerance at retina
             const banner = document.getElementById('statusBanner');
-            if (focused) {
-                banner.textContent = "✓ Image sharply focused on the retina!";
+            const dir = mode === 'myopia' ? 'in front of' : 'behind';
+            if (maxSpread < 0.3) {
+                banner.textContent = `✓ Image sharply focused on the retina! (blur: ${maxSpread.toFixed(2)} mm)`;
                 banner.className = "status-banner focused";
+            } else if (maxSpread < 3) {
+                banner.textContent = `Almost there — keep fine-tuning (blur: ${maxSpread.toFixed(2)} mm)`;
+                banner.className = "status-banner blurred";
             } else {
-                const dir = mode === 'myopia' ? 'in front of' : 'behind';
-                banner.textContent = `Blurred — rays are converging ${dir} the retina`;
+                banner.textContent = `Blurred — rays converging ${dir} the retina (blur: ${maxSpread.toFixed(1)} mm)`;
                 banner.className = "status-banner blurred";
             }
 
