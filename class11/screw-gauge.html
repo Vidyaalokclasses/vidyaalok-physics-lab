@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Screw Gauge | Vidyaalok Lab</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-L8DFSQTR66');
+    </script>
+    <style>
+        :root { --primary: #00e5ff; --secondary: #ff007f; --bg-dark: #070b19; --panel-bg: rgba(7, 11, 25, 0.85); --text-main: #ffffff; --text-muted: #a0aabf; --gold: #ffd166; --border: rgba(0, 229, 255, 0.2); }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; }
+        .navbar { padding: 12px 20px; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; z-index: 100; position: relative; }
+        .back-btn { color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .navbar h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; color: rgba(255,255,255,0.8); }
+        .workspace { display: flex; flex-direction: row; flex-grow: 1; width: 100%; height: calc(100vh - 58px); overflow: hidden; }
+        .canvas-wrapper { position: relative; flex-grow: 1; height: 100%; overflow: hidden; background: radial-gradient(circle at center, rgba(0, 229, 255, 0.05), transparent 80%); }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-image: url('../../logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.07; pointer-events: none; z-index: 0; }
+        .hud-panel { width: 370px; flex-shrink: 0; background: var(--panel-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,0.5); z-index: 50; }
+        .hud-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        .hud-header h2 { margin: 0; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+        .hud-content { padding: 16px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--primary) transparent; }
+        .hud-content::-webkit-scrollbar { width: 4px; }
+        .hud-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+        @media (max-width: 900px) {
+            .workspace { flex-direction: column; }
+            .hud-panel { width: 100%; height: 54vh; border-left: none; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+        }
+        .section-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: bold; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn { flex: 1 1 calc(33.333% - 6px); min-width: 100px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: var(--text-main); padding: 8px 4px; border-radius: 6px; font-weight: bold; font-size: 0.72rem; cursor: pointer; transition: all 0.2s ease; text-align: center; text-decoration: none; display: inline-block; }
+        .btn:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
+        .btn.active { border-color: var(--primary); background: rgba(0, 229, 255, 0.15); color: var(--primary); pointer-events: none; }
+        .btn2 { flex: 1 1 calc(50% - 4px); }
+        .control-group { margin-bottom: 4px; }
+        .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; }
+        .control-group span { color: var(--text-main); font-family: monospace; font-size: 0.85rem;}
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; margin-top: -6px; box-shadow: 0 0 10px var(--primary); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+        input[type=range]:disabled::-webkit-slider-thumb { background: #555; box-shadow: none; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); padding: 9px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; }
+        .stat strong { color: var(--secondary); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .stat span { font-size: 1rem; font-weight: bold; color: var(--text-main); font-family: monospace; }
+        .stat.wide { grid-column: span 2; }
+        .formula-panel { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .eq-row { font-family: 'Times New Roman', Times, serif; font-style: italic; color: var(--primary); font-size: 0.9rem; margin: 6px 0; }
+        .hint { font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="../index.html" class="back-btn">← Class 11 Dashboard</a>
+        <h1>Screw Gauge</h1>
+    </nav>
+    <div class="workspace">
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <div class="watermark" id="watermark"></div>
+            <canvas id="simCanvas"></canvas>
+        </div>
+        <div class="hud-panel">
+            <div class="hud-header"><h2>Controls</h2></div>
+            <div class="hud-content">
+                <div class="toolbar">
+                    <a href="index.html" class="btn">Vernier Calipers</a>
+                    <a href="screw-gauge.html" class="btn active">Screw Gauge</a>
+                    <a href="formulas.html" class="btn">Formulas</a>
+                </div>
+
+                <div class="section-title" style="margin-top:6px;">Step</div>
+                <div class="toolbar">
+                    <button class="btn btn2 active" id="btnZero" onclick="setStep('zero')">1. Check Zero Error</button>
+                    <button class="btn btn2" id="btnMeasure" onclick="setStep('measure')">2. Measure Object</button>
+                </div>
+
+                <div class="control-group" style="margin-top:10px;">
+                    <label>Zero Error (set once, then measure) <span id="zVal">0.00 mm</span></label>
+                    <input id="zSlider" type="range" min="-20" max="20" step="1" value="0">
+                </div>
+                <div class="control-group" id="dGroup">
+                    <label>True Object Diameter <span id="dVal">3.00 mm</span></label>
+                    <input id="dSlider" type="range" min="0" max="6" step="0.02" value="3" disabled>
+                </div>
+
+                <div class="section-title" style="margin-top:8px;">Reading</div>
+                <div class="stat-grid">
+                    <div class="stat"><strong>Pitch Scale (PSR)</strong><span id="psrOut">—</span></div>
+                    <div class="stat"><strong>Circular Scale (CSR)</strong><span id="csrOut">—</span></div>
+                    <div class="stat wide"><strong>Observed Reading</strong><span id="obsOut">—</span></div>
+                    <div class="stat wide" id="corrBox"><strong>Corrected Reading</strong><span id="corrOut">—</span></div>
+                </div>
+
+                <div class="section-title" style="margin-top:8px;">Formulas</div>
+                <div class="formula-panel">
+                    <div class="eq-row">Pitch = distance moved per rotation = <span style="color:var(--gold)">1.00 mm</span></div>
+                    <div class="eq-row">Least Count = Pitch / (Circular Scale Divisions) = 1/100 = <span style="color:var(--gold)">0.01 mm</span></div>
+                    <div class="eq-row">Reading = PSR + (CSR × LC)</div>
+                    <div class="eq-row">Corrected Reading = Observed − Zero Error</div>
+                </div>
+                <div class="hint" id="stepHint">With the spindle gently closed on the anvil (no object), whatever the circular scale reads against the reference line <i>is</i> the zero error — then move to Step 2 to measure the object.</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById("simCanvas");
+        const ctx = canvas.getContext("2d");
+        const canvasWrapper = document.getElementById("canvasWrapper");
+        const watermark = document.getElementById("watermark");
+        const zSlider = document.getElementById("zSlider");
+        const dSlider = document.getElementById("dSlider");
+
+        const PITCH = 1.0;   // mm per full rotation
+        const CSD = 100;     // circular scale divisions
+        const LC = PITCH / CSD; // 0.01 mm
+        let W = 0, H = 0, originX = 0, originY = 0, drawScale = 1, initialized = false;
+        let step = 'zero';
+
+        function setStep(s) {
+            step = s;
+            document.getElementById('btnZero').classList.toggle('active', s === 'zero');
+            document.getElementById('btnMeasure').classList.toggle('active', s === 'measure');
+            dSlider.disabled = (s === 'zero');
+            document.getElementById('stepHint').innerHTML = (s === 'zero')
+                ? "With the spindle gently closed on the anvil (no object), whatever the circular scale reads against the reference line <i>is</i> the zero error — then move to Step 2 to measure the object."
+                : "The zero error stays fixed from Step 1 (it's a property of this instrument). Adjust the object's diameter and see how the observed reading differs from the true diameter by exactly the zero error.";
+            draw();
+        }
+
+        function updateUI() {
+            document.getElementById("zVal").textContent = `${(parseInt(zSlider.value)*LC).toFixed(2)} mm`;
+            document.getElementById("dVal").textContent = `${parseFloat(dSlider.value).toFixed(2)} mm`;
+            draw();
+        }
+        [zSlider, dSlider].forEach(el => el.addEventListener("input", updateUI));
+
+        const resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                W = Math.floor(entry.contentRect.width); H = Math.floor(entry.contentRect.height);
+                canvas.width = W; canvas.height = H;
+                if (!initialized && W > 10 && H > 10) initialized = true;
+                if (initialized) draw();
+            }
+        });
+        resizeObserver.observe(canvasWrapper);
+        setTimeout(() => { if (!initialized) { W = canvasWrapper.clientWidth; H = canvasWrapper.clientHeight || 500; canvas.width = W; canvas.height = H; initialized = true; draw(); } }, 300);
+
+        const wmObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const size = Math.min(entry.contentRect.width, entry.contentRect.height) * 0.75;
+                watermark.style.width = size + 'px'; watermark.style.height = size + 'px';
+            }
+        });
+        wmObserver.observe(canvasWrapper);
+
+        function mapX(x) { return originX + x * drawScale; }
+        function mapY(y) { return originY - y * drawScale; }
+
+        // Verified independently: returns PSR (mm), CSR (0-99), observed reading (mm)
+        function computeReading(d, z) {
+            const raw = d + z;
+            const steps = Math.round(raw / LC);
+            let psrSteps = Math.floor(steps / CSD) * CSD;
+            let csr = steps - psrSteps;
+            if (csr < 0) { csr += CSD; psrSteps -= CSD; }
+            const psr = psrSteps * LC;
+            const observed = psr + csr * LC;
+            return { psr, csr, observed };
+        }
+
+        function draw() {
+            if (!initialized) return;
+            ctx.clearRect(0, 0, W, H);
+
+            const z = parseInt(zSlider.value) * LC;
+            const d = (step === 'zero') ? 0 : parseFloat(dSlider.value);
+            const { psr, csr, observed } = computeReading(d, z);
+            const corrected = observed - z;
+
+            const bbox = { minX: -10, maxX: 20, minY: -30, maxY: 42 };
+            const bw = bbox.maxX - bbox.minX, bh = bbox.maxY - bbox.minY;
+            drawScale = Math.min(W*0.85/bw, H*0.85/bh, 60);
+            originX = W/2 - (bbox.minX+bbox.maxX)/2*drawScale;
+            originY = H/2 + (bbox.minY+bbox.maxY)/2*drawScale;
+
+            // Pitch (linear/main) scale: fixed sleeve marked in whole mm, reference line at x=0
+            ctx.save();
+            ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(mapX(-6), mapY(10)); ctx.lineTo(mapX(6), mapY(10)); ctx.stroke();
+            ctx.fillStyle = "#e8ecf5"; ctx.font = "12px monospace"; ctx.textAlign = 'center';
+            for (let mm = -6; mm <= 6; mm++) {
+                ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.moveTo(mapX(mm), mapY(10)); ctx.lineTo(mapX(mm), mapY(10) - 7); ctx.stroke();
+                ctx.fillText(mm.toString(), mapX(mm), mapY(10) - 12);
+            }
+            // reference/index line
+            ctx.strokeStyle = "#ffd166"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(mapX(0), mapY(16)); ctx.lineTo(mapX(0), mapY(-24)); ctx.stroke();
+            ctx.fillStyle = "rgba(160,170,191,0.85)"; ctx.font = "11px 'Segoe UI'"; ctx.textAlign = 'left';
+            ctx.fillText("Pitch Scale (mm)", mapX(-6), mapY(24));
+            ctx.restore();
+
+            // Circular scale, "unrolled" as a strip that slides under the reference line — its position
+            // relative to the index line encodes the PSR (how many whole mm have passed) and which
+            // circular division (CSR) currently sits under the index.
+            ctx.save();
+            const stripY = -6;
+            const spacing = 0.5; // visual spacing between circular-scale ticks
+            const shift = (psr/LC + csr) * 0; // no-op kept for clarity; strip is positioned by csr directly
+            ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(mapX(-8), mapY(stripY)); ctx.lineTo(mapX(8), mapY(stripY)); ctx.stroke();
+            ctx.font = "9px monospace"; ctx.textAlign = 'center';
+            for (let k = -8; k <= 8; k++) {
+                const div = ((csr + k) % CSD + CSD) % CSD;
+                const isRef = (k === 0);
+                const x = k * spacing;
+                ctx.strokeStyle = isRef ? "#ffd166" : "#ff007f"; ctx.lineWidth = isRef ? 2.4 : 1;
+                const th = (div % 10 === 0) ? 10 : 6;
+                ctx.beginPath(); ctx.moveTo(mapX(x), mapY(stripY)); ctx.lineTo(mapX(x), mapY(stripY) + (isRef ? 16 : th)); ctx.stroke();
+                if (div % 10 === 0 || isRef) {
+                    ctx.fillStyle = isRef ? "#ffd166" : "#ffb3d9";
+                    ctx.fillText(div.toString(), mapX(x), mapY(stripY) + th + 12);
+                }
+            }
+            ctx.fillStyle = "rgba(255,0,127,0.85)"; ctx.font = "11px 'Segoe UI'"; ctx.textAlign = 'left';
+            ctx.fillText("Circular Scale (thimble, unrolled)", mapX(-8), mapY(stripY) - 20);
+            ctx.restore();
+
+            // Anvil + spindle + object (visual)
+            ctx.save();
+            ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(mapX(-8), mapY(30)); ctx.lineTo(mapX(-8), mapY(18)); ctx.stroke(); // anvil post
+            ctx.beginPath(); ctx.moveTo(mapX(-8), mapY(18)); ctx.lineTo(mapX(-8+d*1.2), mapY(18)); ctx.stroke(); // anvil face extends toward spindle if d small
+            if (d > 0.02) {
+                ctx.fillStyle = "rgba(74,222,128,0.25)"; ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 1.5;
+                const ox = mapX(-8), ow = mapX(-8+d*1.2) - mapX(-8);
+                ctx.fillRect(ox, mapY(21), ow, mapY(15)-mapY(21));
+                ctx.strokeRect(ox, mapY(21), ow, mapY(15)-mapY(21));
+            }
+            ctx.restore();
+
+            document.getElementById('psrOut').textContent = `${psr.toFixed(2)} mm`;
+            document.getElementById('csrOut').textContent = csr;
+            document.getElementById('obsOut').textContent = `${observed.toFixed(2)} mm`;
+            document.getElementById('corrOut').textContent = `${corrected.toFixed(2)} mm`;
+        }
+
+        setStep('zero');
+    </script>
+</body>
+</html>
