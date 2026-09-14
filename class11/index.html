@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Class 11 Physics | Vidyaalok Lab</title>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-L8DFSQTR66');
+    </script>
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ffd166;
+            --tertiary: #ff007f;
+            --bg-dark: #070b19;
+            --text-main: #EEEEEE;
+            --text-muted: #a0aabf;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; min-height: 100%;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden;
+        }
+        #rayCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .wrapper { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .navbar {
+            padding: 1.5rem 2rem; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .navbar .brand {
+            color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+        }
+        .navbar h2 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: rgba(255,255,255,0.7); text-transform: uppercase; }
+        header { text-align: center; padding: 3rem 1rem 1rem 1rem; }
+        header h1 {
+            font-size: 3rem; margin: 0;
+            background: linear-gradient(45deg, var(--primary), var(--tertiary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        header p { margin-top: 0.5rem; font-size: 1.1rem; color: var(--text-muted); }
+        .category-header { max-width: 1200px; margin: 2rem auto 1rem auto; padding: 0 1.5rem; width: 100%; box-sizing: border-box; }
+        .category-header h2 {
+            font-size: 1.3rem; border-bottom: 2px solid rgba(0, 229, 255, 0.3); color: var(--primary);
+            padding-bottom: 0.5rem; margin: 0; text-transform: uppercase; letter-spacing: 1.5px;
+            display: flex; align-items: baseline; gap: 10px;
+        }
+        .category-header h2 .unit-num { color: var(--secondary); font-size: 0.85rem; letter-spacing: 2px; }
+        .container {
+            max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 2.5rem 1.5rem; width: 100%; box-sizing: border-box;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.5rem; perspective: 1000px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 16px;
+            padding: 1.6rem; text-decoration: none; color: inherit; display: flex; flex-direction: column;
+            transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); will-change: transform;
+        }
+        .card:hover { border-color: var(--primary); box-shadow: 0 15px 35px rgba(0, 229, 255, 0.15); }
+        .card-content { transform: translateZ(30px); -webkit-transform: translateZ(30px); display: flex; flex-direction: column; height: 100%; pointer-events: none; }
+        .card .chapter-num { color: var(--secondary); font-size: 0.72rem; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+        .card h3 { font-size: 1.2rem; margin: 0 0 0.7rem 0; color: var(--text-main); }
+        .card p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; flex-grow: 1; margin-bottom: 1.5rem; }
+        .btn-text {
+            font-weight: bold; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 8px; margin-top: auto; color: var(--primary);
+        }
+        .btn-text::after { content: '→'; transition: transform 0.3s ease; }
+        .card:hover .btn-text::after { transform: translateX(5px); }
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.2rem; }
+            .category-header { padding: 0 1rem; }
+            .container { padding: 0 1rem 2rem 1rem; gap: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="rayCanvas"></canvas>
+    <div class="wrapper">
+        <nav class="navbar">
+            <a href="../index.html" class="brand">← Vidyaalok Labs</a>
+            <h2>Class 11</h2>
+        </nav>
+
+        <header>
+            <h1>Class 11 Physics</h1>
+            <p>All chapters, per the CBSE-rationalised NCERT syllabus (10 units, 14 chapters).</p>
+        </header>
+
+        <!-- UNIT I -->
+        <div class="category-header"><h2><span class="unit-num">Unit I</span> Physical World and Measurement</h2></div>
+        <div class="container">
+            <a href="units-measurements/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 1</div>
+                    <h3>Units and Measurements</h3>
+                    <p>SI units, significant figures, dimensional analysis, and estimating uncertainty in measured results.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT II -->
+        <div class="category-header"><h2><span class="unit-num">Unit II</span> Kinematics</h2></div>
+        <div class="container">
+            <a href="motion-straight-line/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 2</div>
+                    <h3>Motion in a Straight Line</h3>
+                    <p>Position, velocity and acceleration; uniformly accelerated motion; position-time and velocity-time graphs.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+            <a href="motion-plane/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 3</div>
+                    <h3>Motion in a Plane</h3>
+                    <p>Vector addition and resolution, projectile motion, and uniform circular motion.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT III -->
+        <div class="category-header"><h2><span class="unit-num">Unit III</span> Laws of Motion</h2></div>
+        <div class="container">
+            <a href="laws-motion/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 4</div>
+                    <h3>Laws of Motion</h3>
+                    <p>Newton's three laws, conservation of linear momentum, friction, and dynamics of circular motion.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT IV -->
+        <div class="category-header"><h2><span class="unit-num">Unit IV</span> Work, Energy and Power</h2></div>
+        <div class="container">
+            <a href="work-energy-power/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 5</div>
+                    <h3>Work, Energy and Power</h3>
+                    <p>Work-energy theorem, potential energy, conservative forces, and elastic/inelastic collisions.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT V -->
+        <div class="category-header"><h2><span class="unit-num">Unit V</span> Motion of System of Particles and Rigid Body</h2></div>
+        <div class="container">
+            <a href="system-particles-rotational-motion/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 6</div>
+                    <h3>System of Particles and Rotational Motion</h3>
+                    <p>Centre of mass, torque, angular momentum, moment of inertia, and rigid body rotation.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT VI -->
+        <div class="category-header"><h2><span class="unit-num">Unit VI</span> Gravitation</h2></div>
+        <div class="container">
+            <a href="gravitation/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 7</div>
+                    <h3>Gravitation</h3>
+                    <p>Kepler's laws, universal law of gravitation, gravitational potential energy, escape speed, and satellites.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT VII -->
+        <div class="category-header"><h2><span class="unit-num">Unit VII</span> Properties of Bulk Matter</h2></div>
+        <div class="container">
+            <a href="mechanical-properties-solids/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 8</div>
+                    <h3>Mechanical Properties of Solids</h3>
+                    <p>Stress-strain relationship, Hooke's law, Young's/bulk/shear modulus, and elastic energy.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+            <a href="mechanical-properties-fluids/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 9</div>
+                    <h3>Mechanical Properties of Fluids</h3>
+                    <p>Pascal's law, viscosity and terminal velocity, Bernoulli's theorem, and surface tension.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+            <a href="thermal-properties-matter/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 10</div>
+                    <h3>Thermal Properties of Matter</h3>
+                    <p>Thermal expansion, specific heat capacity, calorimetry, change of state, and heat transfer.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT VIII -->
+        <div class="category-header"><h2><span class="unit-num">Unit VIII</span> Thermodynamics</h2></div>
+        <div class="container">
+            <a href="thermodynamics/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 11</div>
+                    <h3>Thermodynamics</h3>
+                    <p>Zeroth, first and second laws of thermodynamics; thermodynamic processes and state variables.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT IX -->
+        <div class="category-header"><h2><span class="unit-num">Unit IX</span> Behaviour of Perfect Gases and Kinetic Theory of Gases</h2></div>
+        <div class="container">
+            <a href="kinetic-theory/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 12</div>
+                    <h3>Kinetic Theory</h3>
+                    <p>Equation of state of a perfect gas, kinetic interpretation of temperature, rms speed, and degrees of freedom.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- UNIT X -->
+        <div class="category-header"><h2><span class="unit-num">Unit X</span> Oscillations and Waves</h2></div>
+        <div class="container">
+            <a href="oscillations/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 13</div>
+                    <h3>Oscillations</h3>
+                    <p>Periodic motion, simple harmonic motion, energy in SHM, and the simple pendulum.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+            <a href="waves/index.html" class="card">
+                <div class="card-content">
+                    <div class="chapter-num">Chapter 14</div>
+                    <h3>Waves</h3>
+                    <p>Transverse and longitudinal waves, wave speed, superposition, standing waves, and beats.</p>
+                    <div class="btn-text">Open Chapter</div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 3D CARD TILT EFFECT (Desktop & Mobile Touch Support) ---
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            function handleTilt(clientX, clientY) {
+                const rect = card.getBoundingClientRect();
+                const x = clientX - rect.left, y = clientY - rect.top;
+                const centerX = rect.width / 2, centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -10;
+                const rotateY = ((x - centerX) / centerX) * 10;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+            }
+            card.addEventListener('mousemove', (e) => handleTilt(e.clientX, e.clientY));
+            card.addEventListener('mouseenter', () => { card.style.transition = 'border-color 0.3s ease, box-shadow 0.3s ease'; });
+            card.addEventListener('mouseleave', () => {
+                card.style.transition = 'transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease';
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+            });
+            card.addEventListener('touchmove', (e) => { if (e.touches.length > 0) handleTilt(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+            card.addEventListener('touchend', () => {
+                card.style.transition = 'transform 0.5s ease';
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+            });
+        });
+
+        // --- Particle Ray Background Animation ---
+        const canvas = document.getElementById('rayCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, rays = [];
+
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Ray {
+            constructor() { this.reset(); }
+            reset() {
+                this.length = Math.random() * 150 + 50;
+                this.speed = Math.random() * 2 + 1;
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = this.speed;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                const colors = ['rgba(0, 229, 255, 0.3)', 'rgba(255, 209, 102, 0.25)', 'rgba(255, 0, 127, 0.25)'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x > width + this.length) { this.x = -this.length; this.y = Math.random() * height; }
+            }
+            draw() {
+                ctx.strokeStyle = this.color; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x - this.length, this.y); ctx.stroke();
+            }
+        }
+        for (let i = 0; i < 30; i++) rays.push(new Ray());
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            rays.forEach(r => { r.update(); r.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
