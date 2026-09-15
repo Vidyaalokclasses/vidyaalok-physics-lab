@@ -171,6 +171,29 @@
             return { msr, vsc, observed };
         }
 
+        // ===================== REALISTIC RENDERING HELPERS =====================
+        function roundRectPath(x, y, w, h, r) {
+            const rr = Math.min(r, Math.abs(w)/2, Math.abs(h)/2);
+            ctx.beginPath();
+            ctx.moveTo(x+rr, y); ctx.lineTo(x+w-rr, y); ctx.arcTo(x+w, y, x+w, y+rr, rr);
+            ctx.lineTo(x+w, y+h-rr); ctx.arcTo(x+w, y+h, x+w-rr, y+h, rr);
+            ctx.lineTo(x+rr, y+h); ctx.arcTo(x, y+h, x, y+h-rr, rr);
+            ctx.lineTo(x, y+rr); ctx.arcTo(x, y, x+rr, y, rr);
+            ctx.closePath();
+        }
+        function steelGradient(y1, y2) {
+            const g = ctx.createLinearGradient(0, y1, 0, y2);
+            g.addColorStop(0, '#f2f5f9'); g.addColorStop(0.22, '#cdd4de');
+            g.addColorStop(0.55, '#8c96a6'); g.addColorStop(0.8, '#aab3c0'); g.addColorStop(1, '#66707f');
+            return g;
+        }
+        function brassGradient(y1, y2) {
+            const g = ctx.createLinearGradient(0, y1, 0, y2);
+            g.addColorStop(0, '#fff3d6'); g.addColorStop(0.3, '#ffd166');
+            g.addColorStop(0.6, '#e0a83c'); g.addColorStop(1, '#a9762a');
+            return g;
+        }
+
         function draw() {
             if (!initialized) return;
             ctx.clearRect(0, 0, W, H);
@@ -180,59 +203,106 @@
             const { msr, vsc, observed } = computeReading(w, z);
             const corrected = observed - z;
 
-            // Fit a fixed ruler span (0-100mm) to the available pixel space
-            const bbox = { minX: -8, maxX: 108, minY: -30, maxY: 45 };
+            const bbox = { minX: -10, maxX: 108, minY: -30, maxY: 40 };
             const bw = bbox.maxX - bbox.minX, bh = bbox.maxY - bbox.minY;
             drawScale = Math.min(W*0.9/bw, H*0.9/bh, 14);
             originX = W/2 - (bbox.minX+bbox.maxX)/2*drawScale;
             originY = H/2 + (bbox.minY+bbox.maxY)/2*drawScale;
 
-            // Main scale (fixed ruler, 0-100mm), ticks every mm, labels every 10mm
+            const vOffset = observed; // sliding assembly's physical position
+
+            // --- Main scale body (steel bar) ---
             ctx.save();
-            ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(mapX(0), mapY(20)); ctx.lineTo(mapX(100), mapY(20)); ctx.stroke();
-            ctx.fillStyle = "#e8ecf5"; ctx.font = `${10}px monospace`; ctx.textAlign = 'center';
+            const barTopY = mapY(6), barBotY = mapY(-5);
+            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+            ctx.fillStyle = steelGradient(barTopY, barBotY);
+            roundRectPath(mapX(-9), barTopY, mapX(107)-mapX(-9), barBotY-barTopY, 4*drawScale*0.15);
+            ctx.fill();
+            ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+            ctx.strokeStyle = 'rgba(20,25,35,0.55)'; ctx.lineWidth = 1.2; ctx.stroke();
+
+            // Engraved main-scale ticks on the bar's top face
+            ctx.textAlign = 'center';
             for (let mm = 0; mm <= 100; mm++) {
-                const tall = (mm % 10 === 0);
-                const th = tall ? 14 : (mm % 5 === 0 ? 9 : 6);
-                ctx.strokeStyle = tall ? "#00e5ff" : "rgba(0,229,255,0.5)"; ctx.lineWidth = tall ? 1.6 : 1;
-                ctx.beginPath(); ctx.moveTo(mapX(mm), mapY(20)); ctx.lineTo(mapX(mm), mapY(20) - th); ctx.stroke();
-                if (tall) ctx.fillText((mm/10).toString(), mapX(mm), mapY(20) - 20);
+                const tall = (mm % 10 === 0), mid = (mm % 5 === 0);
+                const th = tall ? 13 : (mid ? 8 : 5);
+                ctx.strokeStyle = tall ? 'rgba(20,25,35,0.85)' : 'rgba(20,25,35,0.55)';
+                ctx.lineWidth = tall ? 1.4 : 0.9;
+                ctx.beginPath(); ctx.moveTo(mapX(mm), mapY(6)); ctx.lineTo(mapX(mm), mapY(6) - th); ctx.stroke();
+                if (tall) { ctx.fillStyle = 'rgba(20,25,35,0.85)'; ctx.font = '10px monospace'; ctx.fillText((mm/10).toString(), mapX(mm), mapY(6) - 18); }
             }
-            ctx.fillStyle = "rgba(160,170,191,0.8)"; ctx.font = "11px 'Segoe UI'"; ctx.textAlign='left';
-            ctx.fillText("Main Scale (cm)", mapX(0), mapY(38));
+            ctx.fillStyle = 'rgba(160,170,191,0.85)'; ctx.font = "11px 'Segoe UI'"; ctx.textAlign = 'left';
+            ctx.fillText("Main Scale (cm)", mapX(-9), mapY(-8));
             ctx.restore();
 
-            // Vernier scale: slides so its zero sits at (w+z) on the main scale; 10 divisions span 9mm
-            const vOffset = observed; // draw the vernier positioned at the quantized (actual instrument) reading
+            // --- Fixed jaw (left, grips toward +x) ---
             ctx.save();
-            ctx.strokeStyle = "#ff007f"; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(mapX(vOffset), mapY(20)); ctx.lineTo(mapX(vOffset+9), mapY(20)); ctx.stroke();
-            ctx.fillStyle = "#ffb3d9"; ctx.font = "10px monospace"; ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+            ctx.fillStyle = steelGradient(mapY(32), mapY(5));
+            ctx.beginPath();
+            ctx.moveTo(mapX(-4.5), mapY(32)); ctx.lineTo(mapX(0.4), mapY(32));
+            ctx.lineTo(mapX(0.4), mapY(5)); ctx.lineTo(mapX(-3), mapY(5));
+            ctx.lineTo(mapX(-3), mapY(24)); ctx.lineTo(mapX(-4.5), mapY(24));
+            ctx.closePath(); ctx.fill();
+            ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(20,25,35,0.6)'; ctx.lineWidth = 1.2; ctx.stroke();
+            ctx.restore();
+
+            // --- Sliding jaw (vernier assembly, grips toward -x) ---
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+            ctx.fillStyle = steelGradient(mapY(32), mapY(-20));
+            ctx.beginPath();
+            ctx.moveTo(mapX(vOffset+4.5), mapY(32)); ctx.lineTo(mapX(vOffset-0.4), mapY(32));
+            ctx.lineTo(mapX(vOffset-0.4), mapY(5)); ctx.lineTo(mapX(vOffset+3), mapY(5));
+            ctx.lineTo(mapX(vOffset+3), mapY(24)); ctx.lineTo(mapX(vOffset+4.5), mapY(24));
+            ctx.closePath(); ctx.fill();
+            // body extends down below the bar to carry the vernier scale plate
+            roundRectPath(mapX(vOffset-1), mapY(-3), mapX(vOffset+13)-mapX(vOffset-1), mapY(-20)-mapY(-3), 2);
+            ctx.fill();
+            ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(20,25,35,0.6)'; ctx.lineWidth = 1.2; ctx.stroke();
+
+            // Thumb-grip knurl (small circle) for realism
+            ctx.fillStyle = 'rgba(20,25,35,0.35)';
+            ctx.beginPath(); ctx.arc(mapX(vOffset+9), mapY(-11.5), 4*drawScale*0.15+3, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+
+            // --- Vernier scale plate (engraved on the sliding assembly, below the bar) ---
+            ctx.save();
+            ctx.fillStyle = 'rgba(160,170,191,0.9)'; ctx.font = "11px 'Segoe UI'"; ctx.textAlign = 'left';
+            ctx.fillText("Vernier Scale", mapX(vOffset-1), mapY(-4.5));
+            ctx.textAlign = 'center'; ctx.font = '9px monospace';
             for (let d = 0; d <= 10; d++) {
                 const x = vOffset + d*0.9;
                 const isCoincidence = (d === vsc);
-                ctx.strokeStyle = isCoincidence ? "#ffd166" : "#ff007f"; ctx.lineWidth = isCoincidence ? 2.4 : 1.3;
-                ctx.beginPath(); ctx.moveTo(mapX(x), mapY(20)); ctx.lineTo(mapX(x), mapY(20) + (isCoincidence ? 16 : 10)); ctx.stroke();
-                ctx.fillStyle = isCoincidence ? "#ffd166" : "#ffb3d9";
-                ctx.fillText(d.toString(), mapX(x), mapY(20) + 24);
+                const th = isCoincidence ? 11 : 7;
+                ctx.strokeStyle = isCoincidence ? '#ffd166' : 'rgba(20,25,35,0.8)';
+                ctx.lineWidth = isCoincidence ? 2.2 : 1;
+                ctx.beginPath(); ctx.moveTo(mapX(x), mapY(-6)); ctx.lineTo(mapX(x), mapY(-6) + th); ctx.stroke();
+                ctx.fillStyle = isCoincidence ? '#ffd166' : 'rgba(20,25,35,0.85)';
+                ctx.fillText(d.toString(), mapX(x), mapY(-6) + th + 10);
+                if (isCoincidence) {
+                    ctx.save(); ctx.shadowColor = '#ffd166'; ctx.shadowBlur = 6;
+                    ctx.beginPath(); ctx.arc(mapX(x), mapY(-6)+2, 2, 0, Math.PI*2); ctx.fillStyle = '#ffd166'; ctx.fill();
+                    ctx.restore();
+                }
             }
-            ctx.fillStyle = "rgba(255,0,127,0.8)"; ctx.font = "11px 'Segoe UI'"; ctx.textAlign='left';
-            ctx.fillText("Vernier Scale", mapX(vOffset), mapY(-4));
             ctx.restore();
 
-            // Jaws + object block (visual only, below the scales)
-            ctx.save();
-            const jawY = -14;
-            ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.moveTo(mapX(-4), mapY(jawY)); ctx.lineTo(mapX(-4), mapY(jawY-12)); ctx.lineTo(mapX(0), mapY(jawY-12)); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(mapX(vOffset+4), mapY(jawY)); ctx.lineTo(mapX(vOffset+4), mapY(jawY-12)); ctx.lineTo(mapX(vOffset), mapY(jawY-12)); ctx.stroke();
+            // --- Object being measured: a shaded rod resting between the jaw tips ---
             if (w > 0.01) {
-                ctx.fillStyle = "rgba(74,222,128,0.25)"; ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 1.5;
-                ctx.fillRect(mapX(0), mapY(jawY-3), mapX(w)-mapX(0), mapY(jawY-9)-mapY(jawY-3));
-                ctx.strokeRect(mapX(0), mapY(jawY-3), mapX(w)-mapX(0), mapY(jawY-9)-mapY(jawY-3));
+                ctx.save();
+                const oy1 = mapY(28), oy2 = mapY(22);
+                const ox1 = mapX(0), ox2 = mapX(vOffset);
+                ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+                const rodGrad = ctx.createLinearGradient(0, oy1, 0, oy2);
+                rodGrad.addColorStop(0, '#fff3d6'); rodGrad.addColorStop(0.35, '#ffd166');
+                rodGrad.addColorStop(0.7, '#dba233'); rodGrad.addColorStop(1, '#8a5f1d');
+                ctx.fillStyle = rodGrad;
+                roundRectPath(ox1, oy1, ox2-ox1, oy2-oy1, (oy1-oy2)/2);
+                ctx.fill();
+                ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(90,60,15,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.restore();
             }
-            ctx.restore();
 
             document.getElementById('msrOut').textContent = `${(msr/10).toFixed(1)} cm`;
             document.getElementById('vscOut').textContent = vsc;
