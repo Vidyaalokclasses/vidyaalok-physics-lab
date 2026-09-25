@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Motion in a Plane | Vidyaalok Lab</title>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L8DFSQTR66"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-L8DFSQTR66');
+    </script>
+    <style>
+        :root {
+            --primary: #00e5ff;
+            --secondary: #ffd166;
+            --tertiary: #ff007f;
+            --bg-dark: #070b19;
+            --text-main: #EEEEEE;
+            --text-muted: #a0aabf;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; min-height: 100%;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark); color: var(--text-main); overflow-x: hidden;
+        }
+        #rayCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .wrapper { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+        .navbar {
+            padding: 1.5rem 2rem; background: rgba(7, 11, 25, 0.8); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .navbar .brand {
+            color: var(--primary); text-decoration: none; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+        }
+        .navbar h2 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: rgba(255,255,255,0.7); text-transform: uppercase; }
+        header { text-align: center; padding: 3rem 1rem 1rem 1rem; }
+        header h1 {
+            font-size: 3rem; margin: 0;
+            background: linear-gradient(45deg, var(--primary), var(--tertiary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        header p { margin-top: 0.5rem; font-size: 1.1rem; color: var(--text-muted); }
+        .container {
+            max-width: 1100px; margin: 2rem auto 0 auto; padding: 0 1.5rem 3rem 1.5rem; width: 100%; box-sizing: border-box;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; perspective: 1200px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid; border-radius: 18px;
+            padding: 2.2rem 2rem; text-decoration: none; color: inherit; display: flex; flex-direction: column;
+            transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.35); will-change: transform;
+            min-height: 220px;
+        }
+        .card-content { transform: translateZ(35px); -webkit-transform: translateZ(35px); display: flex; flex-direction: column; height: 100%; pointer-events: none; }
+        .card .icon { font-size: 2.2rem; margin-bottom: 0.8rem; }
+        .card h3 { font-size: 1.35rem; margin: 0 0 0.8rem 0; color: var(--text-main); }
+        .card p { color: var(--text-muted); font-size: 0.92rem; line-height: 1.55; flex-grow: 1; margin-bottom: 1.6rem; }
+        .btn-text { font-weight: bold; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; margin-top: auto; }
+        .btn-text::after { content: '→'; transition: transform 0.3s ease; }
+        .card:hover .btn-text::after { transform: translateX(5px); }
+
+        .card.vectors { border-color: rgba(0, 229, 255, 0.25); }
+        .card.vectors:hover { border-color: var(--primary); box-shadow: 0 18px 40px rgba(0, 229, 255, 0.18); }
+        .card.vectors .btn-text { color: var(--primary); }
+
+        .card.projectile { border-color: rgba(255, 209, 102, 0.3); }
+        .card.projectile:hover { border-color: var(--secondary); box-shadow: 0 18px 40px rgba(255, 209, 102, 0.18); }
+        .card.projectile .btn-text { color: var(--secondary); }
+
+        .card.relative { border-color: rgba(255, 0, 127, 0.25); }
+        .card.relative:hover { border-color: var(--tertiary); box-shadow: 0 18px 40px rgba(255, 0, 127, 0.18); }
+        .card.relative .btn-text { color: var(--tertiary); }
+
+        .card.formulas { border-color: rgba(160, 170, 191, 0.35); }
+        .card.formulas:hover { border-color: #d8dde3; box-shadow: 0 18px 40px rgba(216, 221, 227, 0.15); }
+        .card.formulas .btn-text { color: #d8dde3; }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2.2rem; }
+            .container { padding: 0 1rem 2rem 1rem; gap: 1.4rem; margin-top: 1.5rem; }
+            .card { min-height: 190px; padding: 1.8rem 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="rayCanvas"></canvas>
+    <div class="wrapper">
+        <nav class="navbar">
+            <a href="../index.html" class="brand">← Class 11 Dashboard</a>
+            <h2>Chapter 3</h2>
+        </nav>
+
+        <header>
+            <h1>Motion in a Plane</h1>
+            <p>Vectors, projectile motion, relative velocity, and the formulas that tie them together.</p>
+        </header>
+
+        <div class="container">
+            <a href="vectors.html" class="card vectors">
+                <div class="card-content">
+                    <div class="icon">↗️</div>
+                    <h3>Vectors</h3>
+                    <p>Vector addition and resolution, components along axes, and the parallelogram/triangle law of vector addition.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="projectile-motion.html" class="card projectile">
+                <div class="card-content">
+                    <div class="icon">🎯</div>
+                    <h3>Projectile Motion</h3>
+                    <p>Drag-and-launch trajectory simulator — aim, fire, and hit the target while exploring range, height, and time of flight.</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="relative-motion.html" class="card relative">
+                <div class="card-content">
+                    <div class="icon">🔄</div>
+                    <h3>Relative Velocity</h3>
+                    <p>Relative velocity in two dimensions — how velocity looks different from different reference frames (e.g. rain, boats, and rivers).</p>
+                    <div class="btn-text">Launch Simulator</div>
+                </div>
+            </a>
+            <a href="formulas.html" class="card formulas">
+                <div class="card-content">
+                    <div class="icon">Σ</div>
+                    <h3>Formulas</h3>
+                    <p>Reference sheet for vector algebra, projectile motion (range, height, time of flight), and relative velocity relations.</p>
+                    <div class="btn-text">View Formulas</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // --- 3D CARD TILT EFFECT (Desktop & Mobile Touch Support) ---
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            function handleTilt(clientX, clientY) {
+                const rect = card.getBoundingClientRect();
+                const x = clientX - rect.left, y = clientY - rect.top;
+                const centerX = rect.width / 2, centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -12;
+                const rotateY = ((x - centerX) / centerX) * 12;
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+            }
+            card.addEventListener('mousemove', (e) => handleTilt(e.clientX, e.clientY));
+            card.addEventListener('mouseenter', () => { card.style.transition = 'border-color 0.3s ease, box-shadow 0.3s ease'; });
+            card.addEventListener('mouseleave', () => {
+                card.style.transition = 'transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease';
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+            });
+            card.addEventListener('touchmove', (e) => { if (e.touches.length > 0) handleTilt(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+            card.addEventListener('touchend', () => {
+                card.style.transition = 'transform 0.5s ease';
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+            });
+        });
+
+        // --- Particle Ray Background Animation ---
+        const canvas = document.getElementById('rayCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, rays = [];
+
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Ray {
+            constructor() { this.reset(); }
+            reset() {
+                this.length = Math.random() * 150 + 50;
+                this.speed = Math.random() * 2 + 1;
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = this.speed;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                const colors = ['rgba(0, 229, 255, 0.3)', 'rgba(255, 209, 102, 0.25)', 'rgba(255, 0, 127, 0.25)'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x > width + this.length) { this.x = -this.length; this.y = Math.random() * height; }
+            }
+            draw() {
+                ctx.strokeStyle = this.color; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x - this.length, this.y); ctx.stroke();
+            }
+        }
+        for (let i = 0; i < 30; i++) rays.push(new Ray());
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            rays.forEach(r => { r.update(); r.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
